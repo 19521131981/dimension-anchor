@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>连接仪式 · 塔罗观测站 — DIMENSION ANCHOR</title>
+<meta name="description" content="DIMENSION ANCHOR 塔罗观测站：连接仪式、牌阵选择、洗牌切牌、扇形抽牌与手动翻牌。">
+<link rel="stylesheet" href="assets/css/observatory.css?v=20261108d">
+<link rel="stylesheet" href="assets/css/reading.css?v=20261107b">
+<link rel="stylesheet" href="assets/css/cards.css">
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261108d">
+</head>
+<body class="rd" data-step="ritual">
+
+<div class="rd__ambient" id="rdAmbient" aria-hidden="true">
+  <video class="rd__ambient-video amb-light" autoplay muted loop playsinline preload="auto"
+         poster="assets/media/ritual-hall.jpg" src="assets/media/ritual-hall.mp4"></video>
+  <div class="amb-dust"></div>
+</div>
+<div class="rd__veil" aria-hidden="true"></div>
+
+<header class="rd-top">
+  <a class="rd-top__back" href="observatory.html" id="backBtn">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M14 6l-6 6 6 6" stroke="currentColor" stroke-width="1.4"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>观测站</span>
+  </a>
+
+  <ol class="steps" id="steps" aria-label="流程进度">
+    <li data-s="ritual"><i>1</i><span>连接</span></li>
+    <li data-s="spread"><i>2</i><span>牌阵</span></li>
+    <li data-s="shuffle"><i>3</i><span>洗牌</span></li>
+    <li data-s="draw"><i>4</i><span>抽牌</span></li>
+    <li data-s="flip"><i>5</i><span>翻牌</span></li>
+  </ol>
+
+  <button class="rd-top__sound" id="soundBtn" aria-pressed="false" aria-label="切换音效">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4z" stroke="currentColor" stroke-width="1.35"
+            stroke-linejoin="round"/>
+      <path d="M15.6 9.2a4 4 0 0 1 0 5.6" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+      <path d="M17.6 8.2l3.6 7.6M21.2 8.2l-3.6 7.6" stroke="currentColor" stroke-width="1.35"
+            stroke-linecap="round" class="mute-line"/>
+    </svg>
+  </button>
+</header>
+
+<main class="rd__main" id="view" tabindex="-1"></main>
+
+<div class="rd-toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/tarot-deck.js"></script>
+<script src="assets/js/tarot-art.js"></script>
+<script src="assets/js/tarot-scenes.js"></script>
+<script src="assets/js/tarot-images.js"></script>
+<script src="assets/js/tarot-backs.js"></script>
+<script src="assets/js/da-card.js"></script>
+<script src="assets/js/tarot-spreads.js"></script>
+<script src="assets/js/tarot-engine.js"></script>
+<script src="assets/js/tarot-sound.js"></script>
+<script src="assets/js/reading.js"></script>
+
+<script>
+/* 与大厅同一策略：明确选"减少"才停；系统减少动态默认降到柔和 */
+try {
+  var m = 'full';
+  try { m = localStorage.getItem('DA2_MOTION') || m; } catch (e) {}
+  if (m === 'full' && matchMedia('(prefers-reduced-motion: reduce)').matches) m = 'soft';
+  document.documentElement.dataset.motion = m;
+  if (m === 'reduced') document.querySelectorAll('video').forEach(function (v) { v.pause(); });
+} catch (e) {}
+</script>
+</body>
+</html>

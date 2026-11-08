@@ -1,0 +1,307 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 统一塔罗卡牌组件（Tarot Card Component）
+   ----------------------------------------------------------------------
+   全站唯一卡牌视觉规范。所有页面必须通过 DA_CARD 渲染卡牌，
+   不允许各自重画边框或另写一套动画。
+
+   分层结构：
+     .dcard
+       .dcard__aura      ① 外层金色柔光 + 投影（克制）
+       .dcard__inner
+         .dcard__side--front  ← DA_ART.face() 生成的 400×600 牌面 SVG
+         .dcard__side--back   ← DA_ART.back() 月环之门牌背
+       .dcard__ring      ② 动态金环：香槟金外轮廓 + 流光轨 + 边线高光
+                        ③ 四角宝石雕花 + 星芒
+   ══════════════════════════════════════════════════════════════════════ */
+
+.dcard {
+  --dc-w: 132px;
+  --dc-r: calc(var(--dc-w) * .058);
+  position: relative;
+  display: block;
+  width: var(--dc-w);
+  aspect-ratio: 2 / 3;
+  border-radius: var(--dc-r);
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── ① 外层柔光 ───────────────────────────────────────────── */
+.dcard__aura {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 1px rgba(255, 246, 224, .50),
+    0 0 0 calc(var(--dc-w) * .020) rgba(201, 162, 104, .14),
+    0 0 calc(var(--dc-w) * .085) rgba(255, 212, 148, .16),
+    0 calc(var(--dc-w) * .055) calc(var(--dc-w) * .12) calc(var(--dc-w) * -.05) rgba(12, 5, 28, .55);
+  transition: box-shadow .42s cubic-bezier(.22, .61, .36, 1);
+  z-index: 1;
+}
+
+/* ── 卡体与双面 ───────────────────────────────────────────── */
+.dcard__inner {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transform-style: preserve-3d;
+  transition: transform .82s cubic-bezier(.2, .78, .2, 1);
+  will-change: transform;
+}
+.dcard__side {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  background: #191130;
+  z-index: 2;
+}
+.dcard__side--back { transform: rotateY(180deg); }
+.dcard__side svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* 反面牌：正逆位翻转 */
+.dcard.is-rev .dcard__side--front svg { transform: rotate(180deg); }
+
+/* 3D 翻牌 */
+.dcard--flip.is-flipped .dcard__inner { transform: rotateY(180deg); }
+.dcard--flip.is-flipping .dcard__ring { opacity: .45; }
+
+/* 点牌瞬间的星芒（选中态） */
+.dcard__glint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 6;
+  background:
+    radial-gradient(closest-side at 50% 46%, rgba(255, 250, 232, .85), rgba(255, 232, 182, .28) 42%, transparent 72%);
+  transform: scale(.86);
+  transition: opacity .5s ease, transform .6s cubic-bezier(.2, .8, .2, 1);
+}
+.dcard.is-picked .dcard__glint {
+  opacity: 1;
+  transform: scale(1.04);
+  transition: opacity .18s ease, transform .28s cubic-bezier(.2, .8, .2, 1);
+}
+
+/* ── ② 动态金环 ───────────────────────────────────────────── */
+.dcard__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+  overflow: visible;
+  transition: opacity .4s ease;
+}
+/* 香槟金外轮廓：完整的四条边 */
+.dc-rim {
+  fill: none;
+  stroke: url(#daGold);
+  stroke-width: 1.25;
+  opacity: .92;
+}
+.dc-rim--soft {
+  fill: none;
+  stroke: url(#daGold);
+  stroke-width: .45;
+  opacity: .38;
+}
+/* 流动光轨：主轨 + 拖尾 + 副轨
+   注意：不用 diagonal gradient，否则光段会随位置变色甚至隐形 */
+.dc-flow {
+  fill: none;
+  stroke: #FFF3D2;
+  stroke-linecap: round;
+  stroke-dasharray: 74 926;
+  animation: dcFlow 10.5s linear infinite;
+}
+.dc-flow--glow {
+  stroke: #FFD79A;
+  stroke-width: 5.5;
+  opacity: .16;
+  stroke-dasharray: 96 904;
+  animation-duration: 10.5s;
+}
+.dc-flow--core {
+  stroke: #FFFDF4;
+  stroke-width: 1.45;
+  opacity: .92;
+  stroke-dasharray: 74 926;
+  animation-duration: 10.5s;
+}
+.dc-flow--b {
+  stroke: #FFE7B8;
+  stroke-width: .85;
+  opacity: .48;
+  stroke-dasharray: 34 966;
+  animation-duration: 16.5s;
+  animation-direction: reverse;
+}
+@keyframes dcFlow {
+  from { stroke-dashoffset: 1000; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ── ③ 四角宝石 + 星芒 ────────────────────────────────────── */
+.dc-bevel       { fill: none; stroke: rgba(12, 5, 26, .5); stroke-width: .9; }
+.dc-gem__halo   { fill: rgba(255, 238, 198, .10); }
+.dc-gem__ring   { fill: none; stroke: url(#daGold); stroke-width: 1.05; opacity: .95; }
+.dc-gem__ring2  { fill: rgba(18, 9, 34, .55); stroke: url(#daGold); stroke-width: .5; opacity: .85; }
+.dc-gem__star   { fill: #FFF7E6; }
+.dc-gem__ray    { stroke: url(#daGold); stroke-width: .7; opacity: .55; stroke-linecap: round; }
+.dc-gem {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: dcGem 6.6s ease-in-out infinite;
+}
+@keyframes dcGem {
+  0%, 62%, 100% { opacity: .55; }
+  74%           { opacity: 1; }
+  86%           { opacity: .7; }
+}
+
+/* ── 状态：悬停 / 选中 / 翻牌 / 展示 ──────────────────────── */
+
+/* 展示态：极缓的呼吸金光 */
+.dcard--live .dcard__aura {
+  animation: dcBreathe 9s ease-in-out infinite;
+}
+@keyframes dcBreathe {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(255, 246, 224, .46),
+      0 0 0 calc(var(--dc-w) * .020) rgba(201, 162, 104, .12),
+      0 0 calc(var(--dc-w) * .08) rgba(255, 212, 148, .14),
+      0 calc(var(--dc-w) * .055) calc(var(--dc-w) * .12) calc(var(--dc-w) * -.05) rgba(12, 5, 28, .55);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(255, 249, 234, .78),
+      0 0 0 calc(var(--dc-w) * .026) rgba(201, 162, 104, .24),
+      0 0 calc(var(--dc-w) * .13) rgba(255, 214, 156, .30),
+      0 calc(var(--dc-w) * .055) calc(var(--dc-w) * .12) calc(var(--dc-w) * -.05) rgba(12, 5, 28, .55);
+  }
+}
+
+/* 悬停：轻微抬起 + 边缘光增强 */
+.dcard--hover .dcard__inner { transition: transform .42s cubic-bezier(.2, .8, .2, 1); }
+.dcard:hover .dcard__inner,
+.dcard:focus-visible .dcard__inner {
+  transform: translateY(calc(var(--dc-w) * -.035));
+}
+.dcard:hover .dcard__aura,
+.dcard:focus-visible .dcard__aura {
+  animation: none;
+  box-shadow:
+    0 0 0 1px rgba(255, 251, 238, .90),
+    0 0 0 calc(var(--dc-w) * .024) rgba(201, 162, 104, .30),
+    0 0 calc(var(--dc-w) * .15) rgba(255, 220, 168, .38),
+    0 calc(var(--dc-w) * .075) calc(var(--dc-w) * .16) calc(var(--dc-w) * -.05) rgba(12, 5, 28, .62);
+}
+.dcard:hover .dc-rim,
+.dcard:focus-visible .dc-rim { opacity: 1; stroke-width: 1.5; }
+.dcard:hover .dc-flow--glow { opacity: .34; }
+.dcard:active .dcard__inner { transform: translateY(calc(var(--dc-w) * -.012)) scale(.994); }
+
+/* 选中：向前突出 + 星芒 */
+.dcard.is-on .dcard__inner { transform: translateY(calc(var(--dc-w) * -.05)) scale(1.03); }
+.dcard.is-on .dcard__aura {
+  animation: none;
+  box-shadow:
+    0 0 0 1px rgba(255, 253, 244, 1),
+    0 0 0 calc(var(--dc-w) * .030) rgba(243, 214, 152, .55),
+    0 0 calc(var(--dc-w) * .18) rgba(255, 226, 176, .50),
+    0 calc(var(--dc-w) * .09) calc(var(--dc-w) * .18) calc(var(--dc-w) * -.05) rgba(12, 5, 28, .7);
+}
+.dcard.is-on .dc-gem { animation-duration: 3.4s; }
+
+/* ── 性能：密集列表只在交互时运行流光 ─────────────────────── */
+.dcard--dense .dc-flow,
+.dcard--dense .dc-gem,
+.dcard--dense .dcard__aura { animation-play-state: paused; }
+.dcard--dense:hover .dc-flow,
+.dcard--dense:focus-visible .dc-flow,
+.dcard--dense:hover .dc-gem,
+.dcard--dense:hover .dcard__aura { animation-play-state: running; }
+
+/* 图鉴网格里，离屏的卡不跑动画 */
+.dcard.is-offscreen .dc-flow,
+.dcard.is-offscreen .dc-gem,
+.dcard.is-offscreen .dcard__aura { animation-play-state: paused; }
+
+/* ── 减少动态 ─────────────────────────────────────────────── */
+html[data-motion="reduced"] .dcard .dc-flow, html[data-motion="reduced"] .dcard .dc-gem, html[data-motion="reduced"] .dcard .dcard__aura{ animation: none !important; }
+html[data-motion="reduced"] .dcard__inner{ transition: none !important; }
+html[data-motion="reduced"] .dcard--flip.is-flipped .dcard__inner{ transform: rotateY(180deg); }
+
+/* ── 尺寸档位（比例始终 2:3，装饰随 --dc-w 等比缩放） ─────── */
+.dcard--xs { --dc-w: 72px; }
+.dcard--sm { --dc-w: 96px; }
+.dcard--md { --dc-w: 132px; }
+.dcard--lg { --dc-w: 200px; }
+.dcard--xl { --dc-w: 300px; }
+
+/* 小尺寸下收一点光，避免糊成一团 */
+.dcard--xs .dc-flow--glow,
+.dcard--sm .dc-flow--glow { stroke-width: 3.4; opacity: .16; }
+.dcard--xs .dc-gem,
+.dcard--sm .dc-gem { opacity: .5; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   就地升级模式（.dcx）
+   ----------------------------------------------------------------------
+   给页面自己管理的卡牌节点（.card / .fan__card / .pc / .cell / .guide__card）
+   补上同一套金环与柔光，不改它们的布局与交互。
+   ══════════════════════════════════════════════════════════════════════ */
+/* 不要在这里写 position: relative ！
+   .pc / .fan__card 本身就是 absolute + inset 定位的容器，
+   被覆盖成 relative 后会塌成 0 高度，牌在翻牌步骤直接消失。
+   定位交给 decorate() 判断：只有原本是 static 的宿主才补 relative（内联）。 */
+.dcx > .dcard__aura { z-index: -1; }
+.dcx > .dcard__ring { z-index: 6; }
+.dcx > .dcard__side svg,
+.dcx > .da-card-svg { border-radius: inherit; }
+
+/* 宿主自带的旧描边让位给统一金环 */
+.fan__card.dcx,
+.pc__back.dcx,
+.card.dcx,
+.cell.dcx { border-color: transparent; }
+
+/* 小卡（扇形 86px 左右）的光要收，不然整排糊成一条 */
+.dcx--dense .dc-flow--glow { stroke-width: 3.6; opacity: .14; }
+.dcx--dense .dcard__aura { box-shadow: 0 0 0 1px rgba(255, 246, 224, .42), 0 0 calc(var(--dc-w) * .10) rgba(255, 212, 148, .16); }
+.dcx--dense:hover .dc-flow--glow { opacity: .30; }
+
+/* 牌阵里已就位的牌保持常亮 */
+.dcx--live .dcard__aura { animation: dcBreathe 9s ease-in-out infinite; }
+
+/* ── 牌堆 / 切牌堆：小尺寸下补一层清晰的金边 ─────────────── */
+.deckpile__card,
+.cutpile {
+  border-color: rgba(240, 220, 178, .74);
+  box-shadow:
+    0 0 0 1px rgba(201, 162, 104, .32),
+    0 16px 34px -18px rgba(30, 18, 56, .86);
+}
+
+/* 牌背改用五套 AI 牌背图片后，容器只负责裁切与圆角 */
+.dcard__backimg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  pointer-events: none;
+  user-select: none;
+}

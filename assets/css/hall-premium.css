@@ -1,0 +1,519 @@
+/* ══════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 星轨大厅 · 精品化视觉层（hall-premium.css）
+   ----------------------------------------------------------------
+   只动视觉，不动任何功能 / 路由 / 事件 / 数据：
+
+   1. 月环之门    同心鎏金双环 + 缓转刻度环 + 四方位宝石 + 品牌衬底
+   2. 品牌层次    月面文字带 multiply 衬底 + 门楣饰线（不重排版，无重影）
+   3. 宫殿入口    拱框金线 + 拱顶宝石 + 五空间专属色 + 英文名铭刻
+   4. 通透对比    收敛云雾、加深画框暗角、底图轻提饱和与对比
+   5. 铭牌玻璃    月相 / 今日主题的取样色补丁 → 深紫玻璃铭牌
+   6. 移动端      首屏加高、入口改「宫门」拱卡（真实空间原画）、间距重排
+   ══════════════════════════════════════════════════════════════ */
+
+/* ══ 1 · 月环之门 ══════════════════════════════════════════════ */
+.moongate {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;                    /* 与轨道同层、画在其前 → 轨道压在门环之上 */
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* 幻想月盘：真实月面纹理 + 珍珠虹彩（生图素材，羽化边缘无缝融入） */
+.mg__moonimg {
+  filter: saturate(1.12) contrast(1.04) brightness(1.0);
+}
+
+/* 月心回辉：柔紫 screen 光，衔接月盘与原画天空 */
+.mg__glow {
+  mix-blend-mode: screen;
+  animation: mgGlow 11s ease-in-out infinite;
+}
+@keyframes mgGlow {
+  0%, 100% { opacity: .82; }
+  50%      { opacity: 1; }
+}
+
+/* 双轨道：银金两环交错，带柔光（后段/前段共用） */
+.mg__orbit--silver { filter: drop-shadow(0 0 3px rgba(226, 226, 248, .5)); }
+.mg__orbit--gold   { filter: drop-shadow(0 0 3px rgba(255, 226, 170, .45)); }
+
+/* 星核光芒：月心极弱的一点星火，8s 呼吸 */
+.mg__core {
+  mix-blend-mode: screen;
+  transform-box: view-box;
+  transform-origin: 824px 268px;
+  animation: mgCore 8s ease-in-out infinite;
+}
+@keyframes mgCore {
+  0%, 100% { opacity: .55; transform: scale(.94); }
+  50%      { opacity: 1;   transform: scale(1.06); }
+}
+
+/* 品牌文字：香槟金渐变金字（SVG text） */
+.mg__brand text {
+  font-family: var(--serif);
+  fill: url(#mgText);
+}
+.mb__name {
+  font-size: 38px;
+  font-weight: 500;
+}
+.mb__tag {
+  font-size: 12px;
+  opacity: .92;
+}
+.mb__cn text {
+  font-size: 23px;
+  letter-spacing: 4px;
+}
+.mb__cn line {
+  stroke: #D9C49A;
+  stroke-width: 1;
+  opacity: .6;
+}
+
+/* 门环：鎏金双环（带金属光感） */
+.mg__under {
+  fill: none;
+  stroke: #FFEFC9;
+  stroke-width: 6;
+  opacity: .2;
+}
+.mg__ring {
+  fill: none;
+  stroke: url(#mgGold);
+}
+.mg__ring--outer {
+  stroke-width: 2;
+  filter: drop-shadow(0 0 2.4px rgba(255, 236, 196, .5));
+}
+.mg__ring--inner { stroke: rgba(255, 246, 228, .62); stroke-width: .8; opacity: .72; }
+
+/* 抛光高光弧：短亮弧模拟金属镜面反射 */
+.mg__spec path {
+  fill: none;
+  stroke: #FFFBEA;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  opacity: .85;
+  filter: drop-shadow(0 0 2.2px rgba(255, 248, 224, .85));
+}
+
+/* 缓转刻度环：一圈细刻度在 160 秒里走完一周 —— 机构在走，门是活的 */
+.mg__turn {
+  transform-box: view-box;
+  transform-origin: 824px 270px;
+  animation: mgTurn 160s linear infinite;
+}
+@keyframes mgTurn {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.mg__dash {
+  fill: none;
+  stroke: #F2DCA8;
+  stroke-width: 1.05;
+  stroke-dasharray: 1.6 9.4;
+  opacity: .55;
+}
+.mg__stud {
+  fill: #F6E7C4;
+  stroke: rgba(255, 252, 244, .8);
+  stroke-width: .7;
+  transform: rotate(45deg);
+  filter: drop-shadow(0 0 3px rgba(255, 238, 200, .75));
+}
+
+/* 门楣饰线 */
+.mg__crest line {
+  stroke: #F0D9A6;
+  stroke-width: .9;
+  opacity: .5;
+}
+.mg__crest circle { fill: #F0D9A6; opacity: .55; }
+.mg__crest-gem {
+  fill: #F8EBC8;
+  opacity: .85;
+  filter: drop-shadow(0 0 2.6px rgba(255, 238, 200, .7));
+}
+
+/* 与轨道 / 星盘同一套移动端几何（对齐 .plate__art 的裁切盒） */
+@media (max-width: 900px) {
+  .moongate {
+    left: -55.7%;
+    top: calc((var(--hero) - 119.3cqw) * 0.146);
+    right: auto;
+    bottom: auto;
+    width: 212%;
+    height: 119.3cqw;
+  }
+}
+
+/* ══ 2 · 通透与对比：整体校色 ═════════════════════════════════ */
+@media (min-width: 901px) {
+  /* 底图与光层轻提饱和：珍珠白更挺、雾紫更润（不再压亮度与生硬加对比） */
+  .plate__art,
+  .plate__light { filter: saturate(1.06) contrast(1.02) brightness(1.01); }
+
+  /* 光层严格回位：视频与底图逐像素对齐。
+     月面区不再完全挖空 —— 中心保留 45% 光量：既比原来亮、
+     又把 AI 重渲染的错位光晕压到不可见；顶部导航带同步淡出。 */
+  .plate__light {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    animation: ambHue 44s ease-in-out infinite;
+    -webkit-mask-image:
+      radial-gradient(ellipse 17% 34% at 49% 30.5%, rgba(0, 0, 0, .45) 40%, rgba(0, 0, 0, .75) 74%, #000 100%),
+      linear-gradient(180deg, transparent 3.5%, #000 11%);
+    mask-image:
+      radial-gradient(ellipse 17% 34% at 49% 30.5%, rgba(0, 0, 0, .45) 40%, rgba(0, 0, 0, .75) 74%, #000 100%),
+      linear-gradient(180deg, transparent 3.5%, #000 11%);
+    -webkit-mask-composite: source-in;
+            mask-composite: intersect;
+  }
+
+  /* 画框暗角：左右两侧微沉 + 底部舞台聚光，纵深与通透并存 */
+  .plate__grade {
+    background:
+      radial-gradient(58% 42% at 50% 84%, rgba(255, 240, 214, .05), transparent 74%),
+      radial-gradient(118% 92% at 50% 42%, transparent 60%, rgba(18, 12, 36, .20) 100%),
+      linear-gradient(90deg, rgba(20, 14, 40, .13), transparent 9% 91%, rgba(20, 14, 40, .13)),
+      linear-gradient(180deg, rgba(20, 14, 40, .055), transparent 13% 81%, rgba(14, 10, 28, .13) 100%);
+  }
+
+  .hall__vignette {
+    background:
+      radial-gradient(120% 96% at 50% 46%, transparent 55%, rgba(12, 8, 26, .5) 100%);
+  }
+}
+
+/* 云雾收敛：月亮与拱廊更通透，不再被奶雾糊住 */
+.scene__clouds--far { opacity: .17; }
+.scene__clouds--near { opacity: .12; }
+
+/* 极缓的「镜头呼吸」：整块画板同缩，所有对位关系不变 */
+.plate {
+  animation: plateBreath 34s ease-in-out infinite alternate;
+}
+@keyframes plateBreath {
+  from { transform: scale(1); }
+  50%  { transform: scale(1.008); }
+  to   { transform: scale(1.013); }
+}
+
+/* ══ 3 · 宫殿入口 ═════════════════════════════════════════════ */
+/* 五空间专属色：拱顶宝石、悬停辉光、门内景各自一个记忆点 */
+.portal[data-space="tarot"]   { --pa:#CDBAF4; --pg:rgba(206,186,255,.5); }
+.portal[data-space="post"]    { --pa:#F2DCA8; --pg:rgba(255,236,200,.5); }
+.portal[data-space="cottage"] { --pa:#F4C892; --pg:rgba(255,214,166,.5); }
+.portal[data-space="archive"] { --pa:#A9C9F2; --pg:rgba(190,214,255,.5); }
+.portal[data-space="daily"]   { --pa:#F6E9D2; --pg:rgba(255,244,224,.5); }
+
+/* 拱框：常驻鎏金渐变勾出「宫殿门洞」，悬停时点亮 */
+.portal__arch {
+  position: absolute;
+  inset: -1.5% -4% -2%;
+  border-radius: 6cqw 6cqw 1.2cqw 1.2cqw;
+  pointer-events: none;
+  z-index: 1;
+}
+/* 鎏金描边：border-box 金属渐变 + mask 只留环带 —— 抛光金属的光泽 */
+.portal__arch::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(168deg,
+    rgba(255, 248, 226, .96) 0%,
+    rgba(226, 196, 142, .42) 20%,
+    rgba(255, 246, 220, .95) 44%,
+    rgba(206, 180, 140, .40) 63%,
+    rgba(255, 240, 206, .9) 84%,
+    rgba(214, 188, 150, .5) 100%) border-box;
+  -webkit-mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) padding-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  filter: drop-shadow(0 0 1.6cqw rgba(255, 236, 200, .16));
+}
+/* 内缘受光：门洞上沿被月光照亮的一道窄高光 */
+.portal__arch::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 1.4px 1px rgba(255, 248, 230, .34),
+    inset 0 0 2.4cqw rgba(255, 240, 214, .07);
+  transition: box-shadow .55s var(--ease);
+}
+.portal:hover .portal__arch::after,
+.portal:focus-visible .portal__arch::after {
+  box-shadow:
+    inset 0 1.4px 1px rgba(255, 250, 236, .5),
+    inset 0 0 3cqw var(--pg);
+}
+.portal:hover .portal__arch::before,
+.portal:focus-visible .portal__arch::before {
+  background: linear-gradient(168deg,
+    rgba(255, 251, 236, 1) 0%,
+    rgba(240, 210, 156, .62) 20%,
+    rgba(255, 248, 226, .98) 44%,
+    rgba(220, 194, 152, .6) 63%,
+    rgba(255, 244, 214, .96) 84%,
+    rgba(226, 200, 162, .66) 100%) border-box;
+  filter: drop-shadow(0 0 2.4cqw rgba(255, 238, 204, .3));
+}
+
+/* 拱顶宝石：门楣正中一枚菱形宝石，五空间各呈其色 */
+.portal__key {
+  position: absolute;
+  left: 50%;
+  top: -.55cqw;
+  width: 1.12cqw;
+  height: 1.12cqw;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: .16cqw;
+  background: linear-gradient(140deg, #FFF8E6, var(--pa, #E9D2A6) 58%, #8E76B2);
+  box-shadow:
+    0 0 1.5cqw var(--pg),
+    inset 0 0 0 1px rgba(255, 250, 238, .4);
+  transition: box-shadow .55s var(--ease), transform .55s var(--ease);
+}
+.portal:hover .portal__key,
+.portal:focus-visible .portal__key {
+  transform: translateX(-50%) rotate(45deg) scale(1.14);
+  box-shadow:
+    0 0 2.4cqw var(--pg),
+    0 0 .7cqw rgba(255, 252, 244, .8),
+    inset 0 0 0 1px rgba(255, 250, 238, .55);
+}
+
+/* 门内景：悬停时一抹专属色的微光从门洞深处透出 */
+.portal__scene { transition: filter .5s var(--ease), opacity .5s var(--ease), box-shadow .55s var(--ease); }
+.portal:hover .portal__scene,
+.portal:focus-visible .portal__scene { box-shadow: inset 0 0 3.2cqw var(--pg); }
+
+/* 悬停浮起 */
+.portal:hover { transform: translateY(-.26cqw); }
+
+/* 英文名铭刻：空间气质的第一行小字 */
+.portal__en {
+  display: block;
+  font-style: normal;
+  font-family: var(--serif);
+  font-size: .58cqw;
+  line-height: 1;
+  letter-spacing: .3em;
+  text-indent: .3em;
+  color: rgba(244, 226, 190, .68);
+  text-shadow: 0 .05cqw .5cqw rgba(20, 14, 40, .6);
+  margin-bottom: .62cqw;
+}
+
+/* 铭牌文字对比微调 */
+.portal__label b { text-shadow: 0 .05cqw .12cqw rgba(22, 14, 38, .65), 0 .14cqw 1cqw rgba(16, 10, 30, .6); }
+
+/* ══ 4 · 月相 / 今日主题：取样色补丁 → 深紫玻璃铭牌 ═════════ */
+.lived::before {
+  background: linear-gradient(180deg, rgba(37, 28, 62, .78), rgba(25, 18, 46, .78));
+  border: 1px solid rgba(240, 222, 190, .30);
+  border-radius: .5cqw;
+  box-shadow:
+    0 .4cqw 1.5cqw rgba(8, 5, 20, .42),
+    inset 0 1px 0 rgba(255, 248, 232, .12);
+}
+.lived {
+  text-shadow: 0 .07cqw .55cqw rgba(10, 6, 22, .68);
+}
+.lived--theme::before {
+  width: 15.6cqw;
+  margin-left: -7.8cqw;
+  background: linear-gradient(180deg, rgba(42, 32, 68, .9), rgba(29, 21, 52, .9));
+  border: 1px solid rgba(240, 222, 190, .32);
+  border-radius: .4cqw;
+  -webkit-mask-image: none;
+          mask-image: none;
+  box-shadow:
+    0 .4cqw 1.5cqw rgba(8, 5, 20, .42),
+    inset 0 1px 0 rgba(255, 248, 232, .12);
+}
+
+/* 探索今日按钮的外圈：粉色的取样补丁退役，换成深紫柔光环，
+   让星轨玻璃水晶按钮从暗底里立起来 */
+.theme-go::before {
+  background: radial-gradient(ellipse 108% 150% at 50% 50%,
+    rgba(30, 22, 52, .72) 34%,
+    rgba(30, 22, 52, .5) 56%,
+    rgba(30, 22, 52, 0) 76%);
+}
+
+/* ══ 5 · 移动端：首屏、宫门入口与间距 ═══════════════════════ */
+@media (max-width: 900px) {
+  /* 手机端光层退场：拉伸光晕只会让首屏发糊，通透交给原画与动效层 */
+  .plate__light { display: none; }
+
+  /* 首屏加高：月环之门 + 品牌名一次读全 */
+  .plate { --hero: min(82vw, 56svh); }
+  .plate__art { object-position: 50% 13%; }
+
+  /* 底部过渡更柔：宫殿收进暗色，不生硬裁断 */
+  .plate__grade {
+    background: linear-gradient(180deg,
+      rgba(13, 9, 26, .14) 0,
+      rgba(13, 9, 26, .1) calc(var(--hero) * .2),
+      rgba(13, 9, 26, .18) calc(var(--hero) * .62),
+      rgba(13, 9, 26, .8) calc(var(--hero) * .92),
+      #0D0920 var(--hero),
+      #0D0920 100%);
+  }
+
+  .ui {
+    gap: 7.5vw;
+    padding: calc(var(--hero) - 17vw) 5vw calc(env(safe-area-inset-bottom, 0px) + 34vw);
+  }
+
+  /* ── 宫门入口：不再是矩形卡片，是五扇带原画的小宫门 ── */
+  .portals { gap: 4.6vw; }
+  .portal {
+    min-height: 56vw;
+    padding: 4.6vw 4.6vw 5vw;
+    border-radius: 50% 50% 4.4vw 4.4vw / 32% 32% 4.4vw 4.4vw;
+    border: 1.4px solid transparent;
+    background:
+      linear-gradient(180deg, rgba(48, 38, 78, .62), rgba(19, 13, 38, .92)) padding-box,
+      linear-gradient(168deg,
+        rgba(255, 248, 226, .9) 0%,
+        rgba(226, 196, 142, .4) 20%,
+        rgba(255, 246, 220, .9) 44%,
+        rgba(206, 180, 140, .38) 63%,
+        rgba(255, 240, 206, .86) 84%,
+        rgba(214, 188, 150, .48) 100%) border-box;
+    backdrop-filter: none;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 250, 240, .16),
+      0 2.4vw 6vw rgba(6, 4, 16, .45);
+  }
+  .portal__ring { inset: 0; border-radius: inherit; }
+
+  /* 拱框与宝石在移动端同语言（鎏金渐变环带） */
+  .portal__arch { inset: 0; border-radius: inherit; }
+  .portal__arch::before {
+    padding: 1.2px;
+    background: linear-gradient(168deg,
+      rgba(255, 248, 226, .92) 0%,
+      rgba(226, 196, 142, .42) 20%,
+      rgba(255, 246, 220, .92) 44%,
+      rgba(206, 180, 140, .4) 63%,
+      rgba(255, 240, 206, .88) 84%,
+      rgba(214, 188, 150, .5) 100%) border-box;
+  }
+  .portal__arch::after {
+    box-shadow: inset 0 1.2px 1px rgba(255, 248, 230, .3);
+  }
+  .portal__key { width: 3.2vw; height: 3.2vw; top: -1.4vw; border-radius: .5vw; }
+
+  /* 每扇门用「该空间自己的原画」，不再是旧图模糊裁块 */
+  .portal::after {
+    height: 64%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    opacity: .92;
+    -webkit-mask-image: linear-gradient(180deg, #000 34%, rgba(0, 0, 0, .4) 72%, transparent 100%);
+            mask-image: linear-gradient(180deg, #000 34%, rgba(0, 0, 0, .4) 72%, transparent 100%);
+  }
+  .portal[data-space="tarot"]::after {
+    background-image: url("../media/observatory-desktop.jpg");
+    background-position: 50% 36%;
+  }
+  .portal[data-space="post"]::after {
+    background-image: url("../media/post/portal-hall.jpg");
+    background-position: 50% 56%;
+  }
+  .portal[data-space="cottage"]::after {
+    background-image: url("../media/cottage/cottage-scene.jpg");
+    background-position: 50% 42%;
+  }
+  .portal[data-space="archive"]::after {
+    background-image: url("../media/ritual-hall.jpg");
+    background-position: 50% 40%;
+  }
+  .portal[data-space="daily"]::after {
+    background-image: url("../media/hall/moon-disc.png");
+    background-position: 50% 40%;
+  }
+  .portal::before {
+    height: 60%;
+    background: linear-gradient(180deg,
+      rgba(14, 10, 26, 0) 0%,
+      rgba(14, 10, 26, .5) 52%,
+      rgba(14, 10, 26, .9) 100%);
+  }
+
+  .portal__en { font-size: 2.35vw; letter-spacing: .26em; text-indent: .26em; margin-bottom: 1.2vw; }
+  .portal__label b { font-size: 4.6vw; margin-bottom: 1.4vw; }
+  .portal__label em { font-size: 3vw; }
+  .portal__go { width: 6.6vw; height: 6.6vw; margin-top: 2.2vw; }
+  .portal__go svg { width: 3.4vw; height: 3.4vw; }
+
+  /* 每日探索：通栏宫门 + 月心特写（只取月亮，不带烘焙文字带） */
+  .portal:last-child {
+    grid-column: span 2;
+    min-height: 34vw;
+    border-radius: 16vw 16vw 4.4vw 4.4vw / 9vw 9vw 4.4vw 4.4vw;
+  }
+  .portal:last-child .portal__arch { border-radius: inherit; }
+  .portal:last-child::after {
+    height: 78%;
+    background-size: auto 142%;
+    background-position: 49% 36%;
+    filter: saturate(1.18) contrast(1.08) brightness(1.18);
+  }
+  .portal:last-child .portal__label { justify-content: flex-end; }
+
+  /* 动态开关更收敛，不再压住月面 */
+  .motion-switch { opacity: .5; top: calc(env(safe-area-inset-top, 0px) + 8px); }
+  .motion-switch button { padding: 1.9vw 2.8vw; font-size: 2.7vw; }
+}
+
+/* 横屏移动端：保持宫门形制 */
+@media (max-width: 900px) and (orientation: landscape) {
+  .portal { min-height: 26vw; border-radius: 24vw 24vw 3vw 3vw / 15vw 15vw 3vw 3vw; }
+  .portal:last-child { min-height: 20vw; }
+}
+
+/* ══ 6 · 动态档位 ════════════════════════════════════════════ */
+html[data-motion="soft"] .mg__turn { animation-duration: 300s; }
+html[data-motion="soft"] .mg__core { animation-duration: 16s; }
+html[data-motion="reduced"] .mg__turn,
+html[data-motion="reduced"] .mg__core,
+html[data-motion="reduced"] .mg__glow,
+html[data-motion="reduced"] .plate { animation: none !important; }
+
+/* ══ 7 · 顶部导航：水晶长签（DOM 文字回到台前） ═══════════════ */
+@media (min-width: 901px) {
+  /* 原画里烘焙的五个词由一道柔影盖住，真正的字由长签承担 */
+  .nav__veil {
+    display: block;
+    inset: -1.5cqw -2.4cqw -1.3cqw;
+    border-radius: 2.2cqw;
+    background: radial-gradient(72% 190% at 50% 50%,
+      rgba(26, 16, 50, .70) 42%,
+      rgba(26, 16, 50, .36) 72%,
+      rgba(26, 16, 50, 0) 100%);
+    filter: blur(5px);
+  }
+  .nav a {
+    color: #FFF4E4 !important;
+    text-shadow: 0 1px .7cqw rgba(28, 13, 62, .7) !important;
+  }
+  .nav a.is-active { color: #FFF3D9 !important; }
+  .nav a:hover, .nav a:focus-visible { color: #FFFBF0 !important; }
+}

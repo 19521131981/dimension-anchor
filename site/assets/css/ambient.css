@@ -1,0 +1,537 @@
+/* ═══════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 全站环境动效层（ambient.css）v2
+   原则：
+   · 底图永远是原始 JPG，绝对锐利；视频只做 screen 混合的光层，
+     并让光层自身缓慢呼吸漂移，画面永远是"活"的。
+   · 动的元素多且符合主题逻辑：信笺飘、灯只变色、城堡有光环、
+     月亮旁光纹在动而月亮本体不动、水面有倒影、空气有浮尘。
+   · 所有动画缓慢、错拍，遵守 prefers-reduced-motion 与
+     大厅的 html[data-motion] 开关。
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 通用关键帧 ─────────────────────────────────────────────── */
+
+/* 全画面色相漂移：不对称、非匀速 */
+@keyframes ambHue {
+  0%   { filter: hue-rotate(0deg)   saturate(1);    }
+  14%  { filter: hue-rotate(7deg)   saturate(1.05); }
+  31%  { filter: hue-rotate(-6deg)  saturate(.97);  }
+  47%  { filter: hue-rotate(12deg)  saturate(1.09); }
+  63%  { filter: hue-rotate(3deg)   saturate(1.02); }
+  81%  { filter: hue-rotate(-10deg) saturate(.98);  }
+  100% { filter: hue-rotate(0deg)   saturate(1);    }
+}
+
+/* 光层视差呼吸：光场整体缓慢放大漂移，让"活气"肉眼可见 */
+@keyframes ambSwim {
+  0%   { transform: scale(1)    translate(0, 0); }
+  33%  { transform: scale(1.03) translate(-1.2%, .6%); }
+  66%  { transform: scale(1.05) translate(.8%, -1%); }
+  100% { transform: scale(1)    translate(0, 0); }
+}
+
+/* 轻浮动 */
+@keyframes ambFloat {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+@keyframes ambFloatSoft {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-3px); }
+}
+
+/* 吊灯：只变色，绝不移动 */
+@keyframes ambLampColor {
+  0%, 100% { background: rgba(255, 216, 158, .92); box-shadow: 0 0 24px 9px rgba(255, 216, 158, .5); }
+  27%      { background: rgba(196, 226, 255, .92); box-shadow: 0 0 26px 10px rgba(196, 226, 255, .52); }
+  55%      { background: rgba(226, 205, 255, .95); box-shadow: 0 0 28px 11px rgba(226, 205, 255, .55); }
+  79%      { background: rgba(255, 233, 196, .92); box-shadow: 0 0 24px 9px rgba(255, 233, 196, .5); }
+}
+@keyframes ambLampHalo {
+  0%, 100% { opacity: .38; transform: scale(.92); }
+  50%      { opacity: .8;  transform: scale(1.1); }
+}
+
+/* 城堡光环：细环从城堡身后缓缓扩散、消隐，再由下一道接管 */
+@keyframes ambHaloRing {
+  0%   { transform: scale(.7); opacity: 0; }
+  20%  { opacity: .85; }
+  100% { transform: scale(1.28); opacity: 0; }
+}
+
+/* 月亮光纹：细弧线环从月盘边缘荡开；月盘本体不动 */
+@keyframes ambMoonWave {
+  0%   { transform: scale(.84); opacity: 0; }
+  28%  { opacity: .8; }
+  100% { transform: scale(1.34); opacity: 0; }
+}
+
+/* 月光光轮：围绕月亮的柔光扇面缓慢旋转 */
+@keyframes ambRaySpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* 信笺飘动：从下往上缓缓升起，带一点倾斜与摇晃 */
+@keyframes ambLetterRise {
+  0%   { transform: translate(0, 30%) rotate(-6deg);  opacity: 0; }
+  14%  { opacity: .85; }
+  55%  { transform: translate(8%, -58%) rotate(4deg); opacity: .7; }
+  86%  { opacity: .45; }
+  100% { transform: translate(16%, -155%) rotate(9deg); opacity: 0; }
+}
+
+/* 浮尘：整片星尘缓升 + 明灭 */
+@keyframes ambDustDrift {
+  from { background-position: 0 0; }
+  to   { background-position: 620px 480px; }
+}
+@keyframes ambDustTwinkle {
+  0%, 100% { opacity: .38; }
+  46%      { opacity: .85; }
+}
+
+/* 水面倒影微光 */
+@keyframes ambSheen {
+  0%, 100% { opacity: .1;  transform: translateX(-2%) scaleY(1); }
+  50%      { opacity: .4;  transform: translateX(2%)  scaleY(1.12); }
+}
+
+/* 星核脉动 */
+@keyframes ambCore {
+  0%, 100% { opacity: .3;  transform: scale(.9); }
+  50%      { opacity: .75; transform: scale(1.12); }
+}
+
+/* ── 视频光层：screen 混合 + 自身缓慢游动 ───────────────────── */
+.amb-light {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  object-fit: cover;
+  mix-blend-mode: screen;
+  opacity: .55;
+  pointer-events: none;
+  animation: ambHue 44s ease-in-out infinite, ambSwim 26s ease-in-out infinite;
+}
+
+/* ── 浮尘层：所有环境场景共享 ───────────────────────────────── */
+.amb-dust {
+  position: absolute;
+  inset: -12% 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background-image:
+    radial-gradient(2px 2px at 6% 22%,   rgba(255,250,235,.95), transparent 65%),
+    radial-gradient(1.5px 1.5px at 19% 64%, rgba(255,244,214,.85), transparent 65%),
+    radial-gradient(2.4px 2.4px at 31% 38%, rgba(238,228,255,.9), transparent 65%),
+    radial-gradient(1.3px 1.3px at 42% 78%, rgba(255,250,235,.8), transparent 65%),
+    radial-gradient(2px 2px at 55% 12%,  rgba(255,238,206,.9), transparent 65%),
+    radial-gradient(1.4px 1.4px at 63% 55%, rgba(226,214,255,.85), transparent 65%),
+    radial-gradient(2.2px 2.2px at 74% 30%, rgba(255,250,235,.95), transparent 65%),
+    radial-gradient(1.2px 1.2px at 82% 70%, rgba(255,244,214,.8), transparent 65%),
+    radial-gradient(2px 2px at 91% 44%,  rgba(238,228,255,.9), transparent 65%),
+    radial-gradient(1.5px 1.5px at 12% 88%, rgba(255,250,235,.75), transparent 65%),
+    radial-gradient(1.8px 1.8px at 48% 90%, rgba(255,238,206,.8), transparent 65%),
+    radial-gradient(1.4px 1.4px at 96% 12%, rgba(226,214,255,.85), transparent 65%);
+  background-size: 620px 480px;
+  background-repeat: repeat;
+  opacity: .55;
+  animation: ambDustDrift 90s linear infinite, ambDustTwinkle 8s ease-in-out infinite;
+}
+
+/* ── 大厅 · 星轨大厅 ─────────────────────────────────────────── */
+
+/* 底图锐利 JPG + 整幅色相漂移 */
+.plate__art { animation: artIn 1.6s var(--ease) both, ambHue 46s ease-in-out 1.6s infinite; }
+
+/* 视频光层：与底图同一构图，screen 只透出光，自身缓慢游动 */
+.plate__light {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  object-fit: fill;
+  mix-blend-mode: screen;
+  opacity: .5;
+  pointer-events: none;
+  animation: ambHue 44s ease-in-out infinite, ambSwim 30s ease-in-out infinite;
+}
+
+/* 吊灯：上层拱廊的垂灯，只变色不移动 */
+.scene__lamp {
+  position: absolute;
+  top: 6.2%;
+  width: .72%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(255, 216, 158, .92);
+  box-shadow: 0 0 24px 9px rgba(255, 216, 158, .5);
+  mix-blend-mode: screen;
+  animation: ambLampColor 13s ease-in-out infinite;
+}
+.scene__lamp::after {
+  content: "";
+  position: absolute;
+  inset: -380% -560%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 232, 196, .4), transparent 66%);
+  mix-blend-mode: screen;
+  animation: ambLampHalo 13s ease-in-out infinite;
+}
+
+/* 城堡光环：细环从城堡尖顶身后缓缓荡开（加亮加粗）
+   定位按「左/上边缘」计算：宽 20% 的环高约 35.5%（画幅 1672×941） */
+.scene__halo {
+  position: absolute;
+  left: 42%;
+  top: 18.5%;
+  width: 20%;
+  aspect-ratio: 2.6 / 1;
+  border: 2px solid rgba(238, 226, 255, .8);
+  border-radius: 50%;
+  box-shadow: 0 0 30px rgba(220, 198, 255, .55), 0 0 70px rgba(220, 198, 255, .25),
+              inset 0 0 26px rgba(220, 198, 255, .35);
+  mix-blend-mode: screen;
+  transform: scale(.7);
+  opacity: 0;
+  animation: ambHaloRing 9.5s ease-out infinite;
+}
+.scene__halo--2 { left: 37.8%; top: 18.2%; width: 24.5%; animation-delay: -3.2s; animation-duration: 11.5s; }
+.scene__halo--3 { left: 44.5%; top: 17.9%; width: 17%;  animation-delay: -6.4s; animation-duration: 13s; }
+
+/* 月亮光纹：细弧环从月盘边缘一圈圈荡开，月盘本体保持不动
+   月心 (49.3%, 28.7%)；宽 23.6% 的圆高约 41.9%，故上边缘 = 28.7 - 21 ≈ 7.7% */
+.scene__moonwave {
+  position: absolute;
+  left: 37.5%;
+  top: 7.7%;
+  width: 23.6%;
+  aspect-ratio: 1;
+  margin: 0;
+  border-radius: 50%;
+  border: 2.5px solid rgba(255, 250, 236, .75);
+  box-shadow: 0 0 30px rgba(255, 246, 226, .45), inset 0 0 26px rgba(255, 246, 226, .3);
+  mix-blend-mode: screen;
+  transform: scale(.84);
+  opacity: 0;
+  animation: ambMoonWave 8.5s ease-out infinite;
+}
+.scene__moonwave--2 { animation-delay: -2.8s; border-color: rgba(230, 218, 255, .7); }
+.scene__moonwave--3 { animation-delay: -5.6s; border-color: rgba(255, 238, 212, .65); }
+.scene__moonwave--4 { animation-delay: -8.4s; animation-duration: 10.5s; border-color: rgba(238, 228, 255, .6); }
+
+/* 月光光轮：围绕月亮的柔光扇面缓慢旋转（光在动，月不动） */
+.scene__moonrays {
+  position: absolute;
+  left: 26.3%;
+  top: -12.2%;
+  width: 46%;
+  aspect-ratio: 1;
+  background: repeating-conic-gradient(from 0deg,
+    rgba(255, 246, 224, .12) 0deg 7deg,
+    transparent 7deg 30deg);
+  -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,.9) 26%, transparent 68%);
+  mask-image: radial-gradient(circle, rgba(0,0,0,.9) 26%, transparent 68%);
+  mix-blend-mode: screen;
+  opacity: .55;
+  pointer-events: none;
+  animation: ambRaySpin 110s linear infinite;
+}
+
+/* 水面倒影微光：地面镜面上一层缓慢呼吸的光带 */
+.scene__sheen {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 71%;
+  height: 15%;
+  background:
+    radial-gradient(60% 100% at 50% 50%, rgba(255, 244, 224, .5), transparent 70%);
+  mix-blend-mode: screen;
+  opacity: .12;
+  pointer-events: none;
+  animation: ambSheen 11s ease-in-out infinite;
+}
+
+/* 信笺：通讯局入口里升起的小信封（加大加亮） */
+.ps-mail__note {
+  position: absolute;
+  left: 32%;
+  bottom: 12%;
+  width: 17%;
+  aspect-ratio: 4 / 3;
+  opacity: 0;
+  animation: ambLetterRise 10.5s ease-in-out infinite;
+  filter: drop-shadow(0 0 9px rgba(255, 244, 214, .8));
+}
+.ps-mail__note svg { display: block; width: 100%; height: 100%; }
+.ps-mail__note--2 { left: 54%; bottom: 7%; width: 13%; animation-delay: -4.6s; animation-duration: 12.5s; }
+
+/* 大厅界面元素：月相卡 / 主题卡 / 五入口一起轻轻呼吸 */
+.card--moon  { animation: uiIn 1.5s var(--ease) .8s both, ambFloat 12s ease-in-out 2.4s infinite; }
+.card--theme { animation: uiIn 1.5s var(--ease) .9s both, ambFloatSoft 14s ease-in-out 2.7s infinite; }
+.portal      { animation: ambFloatSoft 16s ease-in-out infinite; }
+.portal:nth-child(2) { animation-delay: -3.1s; }
+.portal:nth-child(3) { animation-delay: -6.2s; }
+.portal:nth-child(4) { animation-delay: -9.3s; }
+.portal:nth-child(5) { animation-delay: -12.4s; }
+
+/* ── 观测站 ─────────────────────────────────────────────────── */
+.stage__art { animation: ambHue 48s ease-in-out infinite; }
+.stage__light {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  object-fit: cover;
+  object-position: 50% 46%;
+  mix-blend-mode: screen;
+  opacity: .5;
+  pointer-events: none;
+  animation: ambHue 44s ease-in-out infinite, ambSwim 28s ease-in-out infinite;
+}
+/* 星核脉动：水晶星核的光缓缓呼吸（核心约在 (52%, 39%)） */
+.stage__core {
+  position: absolute;
+  left: 47.5%;
+  top: 36%;
+  width: 9%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 240, 250, .75), rgba(214, 178, 255, .3) 46%, transparent 72%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: ambCore 6.5s ease-in-out infinite;
+}
+/* 观测站拱廊下的水晶吊灯：只变色 */
+.stage__lamp {
+  position: absolute;
+  width: 1.3%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(240, 226, 255, .95);
+  box-shadow: 0 0 22px 8px rgba(240, 226, 255, .48);
+  mix-blend-mode: screen;
+  animation: ambLampColor 15s ease-in-out infinite;
+}
+.stage__lamp::after {
+  content: "";
+  position: absolute;
+  inset: -320% -440%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 232, 255, .42), transparent 64%);
+  mix-blend-mode: screen;
+  animation: ambLampHalo 15s ease-in-out infinite;
+}
+@media (min-width: 761px) {
+  .stage__lamp--1 { left: 20.6%; top: 14.6%; animation-delay: -2s; }
+  .stage__lamp--2 { left: 29%;   top: 25.4%; animation-delay: -6.5s; }
+  .stage__lamp--3 { left: 84.6%; top: 8.9%;  animation-delay: -4.2s; }
+  .stage__lamp--4 { left: 91%;   top: 21.2%; animation-delay: -9.8s; }
+}
+
+/* ── 连接仪式（reading） ─────────────────────────────────────── */
+.rd__ambient { animation: ambHue 50s ease-in-out infinite; }
+body.rd .pane { animation: ambFloatSoft 15s ease-in-out infinite; }
+
+/* ── 星际通讯局（post / incoming / outgoing） ────────────────── */
+.scene__img { animation: sceneDrift 36s ease-in-out infinite alternate, ambHue 46s ease-in-out infinite; }
+.scene__light {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  object-fit: cover;
+  mix-blend-mode: screen;
+  opacity: .55;
+  pointer-events: none;
+  animation: sceneDrift 36s ease-in-out infinite alternate,
+             ambHue 44s ease-in-out infinite, ambSwim 30s ease-in-out infinite;
+}
+/* 场景里飘动的信笺 */
+.amb-letter {
+  position: fixed;
+  width: clamp(30px, 3.8vw, 52px);
+  aspect-ratio: 4 / 3;
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  animation: ambLetterRise 15s ease-in-out infinite;
+  filter: drop-shadow(0 0 12px rgba(255, 242, 210, .75));
+}
+.amb-letter svg { display: block; width: 100%; height: 100%; }
+.amb-letter--1 { left: 12%; top: 58%; }
+.amb-letter--2 { left: 74%; top: 46%; animation-delay: -5.3s; animation-duration: 18s; }
+.amb-letter--3 { left: 44%; top: 66%; width: clamp(22px, 2.8vw, 36px); animation-delay: -10.2s; animation-duration: 21s; }
+
+/* ── 解读结果（interpretation） ──────────────────────────────── */
+.itbg__img { animation: ambHue 48s ease-in-out infinite; }
+.itbg__light {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  object-fit: cover;
+  mix-blend-mode: screen;
+  opacity: .48;
+  pointer-events: none;
+  animation: ambHue 44s ease-in-out infinite, ambSwim 30s ease-in-out infinite;
+}
+body.it .panel { animation: ambFloatSoft 17s ease-in-out infinite; }
+
+/* ── 图鉴 / 牌库（tarot） ────────────────────────────────────── */
+.tamb {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  background: #0B0818;
+}
+.tamb video {
+  position: absolute;
+  inset: -3%;
+  width: 106%;
+  height: 106%;
+  object-fit: cover;
+  animation: ambHue 52s ease-in-out infinite, ambSwim 40s ease-in-out infinite;
+}
+.tamb::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(11, 8, 24, .1), transparent 60%),
+    linear-gradient(180deg, rgba(11, 8, 24, .38), rgba(11, 8, 24, .12) 36%, rgba(11, 8, 24, .46) 78%, rgba(11, 8, 24, .9) 100%);
+}
+body.tarot .hero { animation: ambFloatSoft 18s ease-in-out infinite; }
+body.tarot .grid > * { animation: ambFloatSoft 14s ease-in-out infinite; }
+body.tarot .grid > *:nth-child(5n+1) { animation-delay: -1.8s; }
+body.tarot .grid > *:nth-child(5n+2) { animation-delay: -4.2s; }
+body.tarot .grid > *:nth-child(5n+3) { animation-delay: -7.1s; }
+body.tarot .grid > *:nth-child(5n+4) { animation-delay: -9.6s; }
+body.tarot .grid > *:nth-child(5n+5) { animation-delay: -12.3s; }
+
+/* ── 通用信封图形 ───────────────────────────────────────────── */
+.amb-env-body  { fill: rgba(255, 252, 242, .95); }
+.amb-env-line  { fill: none; stroke: rgba(214, 190, 255, .95); stroke-width: 1.2; }
+
+/* ── 降级：减少动态 ───────────────────────────────────────────
+   统一由站内开关（html[data-motion]）控制，不再跟随系统偏好硬关：
+   系统开"减少动态"时默认降到柔和（动效继续、幅度不变），
+   只有用户在开关里明确选"减少"才全部停下。 */
+html[data-motion="reduced"] .amb-light,
+html[data-motion="reduced"] .plate__light,
+html[data-motion="reduced"] .stage__light,
+html[data-motion="reduced"] .scene__light,
+html[data-motion="reduced"] .scene__lamp,
+html[data-motion="reduced"] .scene__halo,
+html[data-motion="reduced"] .scene__moonwave,
+html[data-motion="reduced"] .scene__moonrays,
+html[data-motion="reduced"] .scene__sheen,
+html[data-motion="reduced"] .ps-mail__note,
+html[data-motion="reduced"] .amb-letter,
+html[data-motion="reduced"] .amb-dust,
+html[data-motion="reduced"] .stage__core,
+html[data-motion="reduced"] .card--moon,
+html[data-motion="reduced"] .card--theme,
+html[data-motion="reduced"] .portal,
+html[data-motion="reduced"] .plate__art,
+html[data-motion="reduced"] .stage__art {
+  animation: none !important;
+}
+html[data-motion="reduced"] .scene__halo,
+html[data-motion="reduced"] .scene__moonwave,
+html[data-motion="reduced"] .scene__moonrays,
+html[data-motion="reduced"] .scene__sheen,
+html[data-motion="reduced"] .ps-mail__note,
+html[data-motion="reduced"] .amb-letter,
+html[data-motion="reduced"] .amb-dust,
+html[data-motion="reduced"] .stage__core { opacity: 0 !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   流星雨 METEOR SHOWER
+   ------------------------------------------------------------------
+   全页覆盖层：fixed 铺满视口，pointer-events: none，永不挡点击。
+   每颗流星是一条拉长的光带 + 一个过曝的头；屏幕混合让它只在暗部
+   显形，落到明亮的宫殿墙上就自然消失，不会糊住画面。
+   参数（起点、飞行距离、时长、延迟）由 hall 的脚本随机写入。
+   ══════════════════════════════════════════════════════════════ */
+.meteor-field {
+  position: fixed;
+  inset: 0;
+  z-index: 24;
+  pointer-events: none;
+  overflow: hidden;
+  contain: strict;
+}
+
+.meteor {
+  position: absolute;
+  top: 0; left: 0;
+  height: var(--w, 1.4px);
+  width: var(--len, 130px);
+  border-radius: 999px;
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg,
+    rgba(255, 255, 252, 0) 0%,
+    rgba(255, 253, 244, .14) 8%,
+    rgba(238, 226, 255, .52) 40%,
+    rgba(255, 252, 244, .92) 82%,
+    #FFFFFF 100%);
+  filter: drop-shadow(0 0 5px rgba(214, 198, 255, .55));
+  mix-blend-mode: screen;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: meteorFall var(--dur, 4.4s) cubic-bezier(.34, .08, .52, .98) var(--delay, 0s) infinite;
+}
+
+/* 头部的一点过曝 */
+.meteor::after {
+  content: "";
+  position: absolute;
+  right: -1px; top: 50%;
+  width: 3px; height: 3px;
+  margin-top: -1.5px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow:
+    0 0 4px 1px rgba(255, 255, 252, .95),
+    0 0 12px 3px rgba(206, 190, 255, .55);
+}
+
+/* 只在 0—46% 飞行，其余时间是这颗流星的安静期 */
+@keyframes meteorFall {
+  0% {
+    opacity: 0;
+    transform: translate3d(var(--x1, 0px), var(--y1, 0px), 0) rotate(-28deg) scaleX(.32);
+  }
+  5% { opacity: 1; }
+  34% { opacity: .92; }
+  46%, 100% {
+    opacity: 0;
+    transform: translate3d(var(--x2, 200px), var(--y2, 200px), 0) rotate(-28deg) scaleX(1);
+  }
+}
+
+/* 柔和档：流星减半、飞得慢一点 */
+html[data-motion="soft"] .meteor { animation-duration: calc(var(--dur, 4.4s) * 1.5); opacity: 0; }
+html[data-motion="soft"] .meteor--half { display: none; }
+
+/* 明确选择「减少」时，一颗都不出现 */
+html[data-motion="reduced"] .meteor-field { display: none; }
+
+/* ── 手机上冻结整屏原画的慢推镜 ────────────────────────────────
+   底图是整幅位图，4.5% 的连续缩放会让它每帧重采样，小数像素被量化成
+   1px 跳格，观感就是「图片一跳一跳」。手机端底图保持像素对齐，
+   动感交给 .scene__light 视频光层、浮尘与光环。
+   必须放在本文件末尾：ambient.css 在 post.css 之后加载，
+   否则会被上面那条 .scene__img 的 animation 覆盖。 */
+@media (max-width: 900px) {
+  .scene__img {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+}

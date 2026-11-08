@@ -1,0 +1,489 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 五个空间入口的内部动态
+   ----------------------------------------------------------------------
+   入口里的画面是原画的一部分，不替换、不重绘。这一层只做两件事：
+
+     1. 在原有插画上叠「活起来」的光 —— 塔罗牌阵边缘的星图、信封边缘的
+        流光、小屋窗内的暖光与薄纱、书架上的书脊微光与翻页、罗盘旁的
+        流动星子。每个入口一套独立的节奏与配色倾向。
+     2. 点击时给每个入口不同的收束反馈（不是同一个动画换个颜色）。
+
+   所有元素都限制在入口自己的盒子里（overflow:hidden + border-radius
+   继承拱形），不遮挡铭牌文字，也不拦截点击（pointer-events:none）。
+   ══════════════════════════════════════════════════════════════════════ */
+
+.portal__scene {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  transition: filter .5s var(--ease), opacity .5s var(--ease);
+}
+
+/* ── 通用：柔光斑 ────────────────────────────────────────────── */
+.ps-glow {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* ══ P1 · 塔罗观测站 ══════════════════════════════════════════════
+   「极淡的旋转星图 + 偶尔浮现的一张牌」。星图用 SVG 画在牌阵背后，
+   转速极慢（110 秒一周），读起来像星象在挪而不是装饰在转。 */
+.ps-chart {
+  position: absolute;
+  left: 22%;
+  top: -1%;
+  width: 56%;
+  height: auto;
+  opacity: .44;
+  mix-blend-mode: screen;
+  animation: psChart 110s linear infinite;
+  transform-origin: 50% 50%;
+}
+.ps-chart circle,
+.ps-chart path,
+.ps-chart line { fill: none; stroke: #DCCDFF; stroke-width: 1; }
+.ps-chart .ps-chart__dots circle { fill: #FFF6E6; stroke: none; }
+/* 星图整体带一点辉光，否则在花哨的插画上完全看不见 */
+.ps-chart { filter: drop-shadow(0 0 3px rgba(214, 196, 255, .55)); }
+
+@keyframes psChart {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* 偶尔浮现的牌：只是一道描边，出现 4 秒左右就退回去 */
+.ps-card {
+  position: absolute;
+  left: 58%;
+  top: 9%;
+  width: 14%;
+  aspect-ratio: .62;
+  border-radius: 2px;
+  border: 1px solid rgba(232, 222, 255, .85);
+  box-shadow:
+    0 0 6px rgba(206, 186, 255, .55),
+    inset 0 0 10px rgba(206, 186, 255, .30);
+  opacity: 0;
+  transform: translateY(6%) rotate(11deg) scale(.94);
+  animation: psCard 44s cubic-bezier(.3, .1, .3, 1) infinite;
+}
+.ps-card::before {
+  content: "✦";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: .62em;
+  color: rgba(255, 248, 236, .9);
+  text-shadow: 0 0 6px rgba(220, 200, 255, .9);
+}
+
+@keyframes psCard {
+  0%, 82%  { opacity: 0; transform: translateY(8%) rotate(11deg) scale(.92); }
+  88%      { opacity: .78; transform: translateY(0) rotate(11deg) scale(1); }
+  93%      { opacity: .58; }
+  99%, 100% { opacity: 0; transform: translateY(-6%) rotate(11deg) scale(1); }
+}
+
+/* 拱顶内侧一层很淡的银紫边光，缓慢明灭 */
+.ps-tarot__edge {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 118%;
+  height: 52%;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(50% 50% at 50% 0%,
+    rgba(198, 178, 255, .34), rgba(176, 154, 236, .10) 52%, transparent 74%);
+  mix-blend-mode: screen;
+  opacity: .5;
+  animation: psTarotEdge 26s ease-in-out infinite;
+}
+@keyframes psTarotEdge {
+  0%, 100% { opacity: .34; }
+  50%      { opacity: .62; }
+}
+
+/* ══ P2 · 星际通讯局 ══════════════════════════════════════════════
+   信封边缘的一道流光 + 封口微微掀起（一条细光抬起 7°，再落回）。 */
+.ps-mail__light {
+  position: absolute;
+  left: 38%;
+  top: 18.5%;
+  width: 24%;
+  height: 10%;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.ps-mail__light::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 42%;
+  background: linear-gradient(100deg,
+    transparent, rgba(255, 252, 244, .92) 45%, transparent);
+  mix-blend-mode: screen;
+  filter: blur(1px);
+  animation: psMailSweep 19s cubic-bezier(.4, 0, .5, 1) infinite;
+}
+@keyframes psMailSweep {
+  0%, 74%   { transform: translateX(-120%); opacity: 0; }
+  78%       { opacity: .85; }
+  90%       { opacity: .6; }
+  96%, 100% { transform: translateX(280%); opacity: 0; }
+}
+
+/* 信封封口：一条贴着原画信封上缘的细光，缓慢抬起再落回 */
+.ps-mail__flap {
+  position: absolute;
+  left: 40.5%;
+  top: 19.4%;
+  width: 19%;
+  height: 1px;
+  transform-origin: 50% 100%;
+  background: linear-gradient(90deg,
+    transparent, rgba(255, 252, 244, .9) 22%, rgba(255, 248, 232, .95) 50%,
+    rgba(255, 252, 244, .9) 78%, transparent);
+  box-shadow: 0 0 6px rgba(255, 246, 226, .7);
+  opacity: .5;
+  animation: psMailFlap 26s cubic-bezier(.36, .1, .3, 1) infinite;
+}
+@keyframes psMailFlap {
+  0%, 58%  { transform: rotate(0deg) translateY(0); opacity: .35; }
+  66%      { transform: rotate(-7deg) translateY(-2%); opacity: .85; }
+  74%      { transform: rotate(-3deg) translateY(-1%); opacity: .55; }
+  84%, 100% { transform: rotate(0deg) translateY(0); opacity: .35; }
+}
+
+/* 通讯局特有的冷白偏青的一点点氛围光 */
+.ps-mail__air {
+  position: absolute;
+  left: 50%;
+  top: 8%;
+  width: 86%;
+  height: 40%;
+  transform: translateX(-50%);
+  background: radial-gradient(50% 50% at 50% 40%,
+    rgba(226, 236, 255, .26), transparent 72%);
+  mix-blend-mode: screen;
+  animation: psMailAir 23s ease-in-out infinite;
+}
+@keyframes psMailAir {
+  0%, 100% { opacity: .42; }
+  52%      { opacity: .72; }
+}
+
+/* 未读来信提示：极小的香槟金点，用户看过即可消（不常驻红点） */
+.ps-badge {
+  position: absolute;
+  left: 76%;
+  top: 6%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #FFF6E0 0%, #F0D9A8 48%, rgba(240, 217, 168, 0) 72%);
+  box-shadow: 0 0 8px rgba(255, 238, 200, .9);
+  opacity: 0;
+  transition: opacity .6s var(--ease);
+}
+.ps-badge.is-on { opacity: .95; animation: psBadge 4.6s ease-in-out infinite; }
+@keyframes psBadge {
+  0%, 100% { transform: scale(1); opacity: .85; }
+  50%      { transform: scale(1.28); opacity: 1; }
+}
+
+/* ══ P3 · 我们的小屋 ══════════════════════════════════════════════
+   全厅唯一偏暖的入口：窗内的香槟金灯光缓慢变化，门口两层薄纱轻摆。 */
+.ps-cottage__warm {
+  position: absolute;
+  left: 50%;
+  top: 19%;
+  width: 44%;
+  height: 30%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(50% 50% at 50% 55%,
+    rgba(255, 236, 198, .78), rgba(255, 220, 168, .30) 44%, transparent 72%);
+  mix-blend-mode: screen;
+  opacity: .42;
+  animation: psWarm 17s ease-in-out infinite;
+}
+@keyframes psWarm {
+  0%, 100% { opacity: .48; transform: translate(-50%, -50%) scale(.98); }
+  38%      { opacity: .74; transform: translate(-50%, -50%) scale(1.03); }
+  63%      { opacity: .56; transform: translate(-50%, -50%) scale(1); }
+  81%      { opacity: .78; transform: translate(-50%, -50%) scale(1.02); }
+}
+
+/* 薄纱 / 窗帘：两块极淡的竖向渐变，以顶部为轴轻摆 ±.8° */
+.ps-cottage__veil {
+  position: absolute;
+  top: 6%;
+  width: 9%;
+  height: 30%;
+  transform-origin: 50% 0;
+  background: linear-gradient(180deg,
+    rgba(255, 250, 238, .55), rgba(255, 244, 224, .22) 60%, transparent);
+  filter: blur(1.6px);
+  mix-blend-mode: screen;
+  opacity: .62;
+  animation: psVeil 14s ease-in-out infinite alternate;
+}
+.ps-cottage__veil--l { left: 36.5%; }
+.ps-cottage__veil--r { right: 36.5%; animation-duration: 17s; animation-delay: -5s; }
+@keyframes psVeil {
+  from { transform: rotate(-.9deg) translateX(-.4%); opacity: .48; }
+  to   { transform: rotate(1deg) translateX(.5%); opacity: .72; }
+}
+
+/* ══ P4 · 星轨档案馆 ══════════════════════════════════════════════
+   书脊依次短暂发亮（不同相位），偶尔一页纸轻轻翻动。 */
+.ps-book {
+  position: absolute;
+  width: 2.2%;
+  border-radius: 1px;
+  background: linear-gradient(180deg,
+    rgba(255, 250, 238, 0), rgba(255, 250, 238, .85) 30%,
+    rgba(255, 244, 224, .55) 72%, rgba(255, 250, 238, 0));
+  mix-blend-mode: screen;
+  filter: blur(.5px);
+  opacity: 0;
+  animation: psBook 21s ease-in-out infinite;
+}
+@keyframes psBook {
+  0%, 100% { opacity: 0; }
+  4%       { opacity: .85; }
+  8%       { opacity: .30; }
+  12%      { opacity: 0; }
+}
+
+/* 翻页：一张极薄的纸片，从中缝掀起 16°，再落下 */
+.ps-page {
+  position: absolute;
+  left: 52%;
+  top: 12.5%;
+  width: 11%;
+  height: 9%;
+  transform-origin: 0% 100%;
+  border-radius: 0 2px 2px 0;
+  background: linear-gradient(100deg,
+    rgba(255, 253, 246, .96), rgba(246, 238, 255, .72) 62%, rgba(255, 253, 246, .34));
+  box-shadow: 0 1px 6px rgba(24, 16, 44, .25);
+  opacity: 0;
+  animation: psPage 37s cubic-bezier(.4, .05, .3, 1) infinite;
+}
+@keyframes psPage {
+  0%, 78%   { opacity: 0; transform: rotate(0deg) skewY(0deg) scaleX(1); }
+  80%       { opacity: .85; transform: rotate(0deg) skewY(0deg) scaleX(1); }
+  86%       { opacity: .92; transform: rotate(-13deg) skewY(-6deg) scaleX(.94); }
+  92%       { opacity: .40; transform: rotate(-16deg) skewY(-8deg) scaleX(.9); }
+  96%, 100% { opacity: 0;   transform: rotate(-16deg) skewY(-8deg) scaleX(.9); }
+}
+
+/* ══ P5 · 每日探索 ══════════════════════════════════════════════
+   一颗小星在拱内缓慢绕行，身后留一道极短的光迹；每日主题更新时
+   （一天一次）拱沿会掠过一道柔和的光。 */
+.ps-star {
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  color: #FFF8E8;
+  filter: drop-shadow(0 0 6px rgba(255, 244, 214, .9));
+  animation: psStarPath 46s linear infinite;
+}
+.ps-star svg { display: block; width: 100%; height: 100%; }
+
+@keyframes psStarPath {
+  0%   { transform: translate(-150%, -30%) scale(.8);  opacity: 0; }
+  8%   { opacity: .9; }
+  25%  { transform: translate(-40%, -110%) scale(1);  opacity: .8; }
+  50%  { transform: translate(150%, 20%) scale(.85); opacity: .95; }
+  75%  { transform: translate(30%, 130%) scale(.7);  opacity: .6; }
+  92%  { opacity: .2; }
+  100% { transform: translate(-150%, -30%) scale(.8); opacity: 0; }
+}
+
+/* 星迹：一条随时间延展又消失的细线，跟着星走，不新增粒子 */
+.ps-star__trail {
+  position: absolute;
+  left: 50%;
+  top: 26%;
+  width: 34%;
+  height: 22%;
+  margin-left: -17%;
+  margin-top: -11%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 246, 222, .22);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  transform: rotate(-18deg);
+  opacity: .55;
+  animation: psTrail 46s linear infinite;
+}
+@keyframes psTrail {
+  0%, 100% { opacity: .12; transform: rotate(-18deg) scale(.9); }
+  40%      { opacity: .5;  transform: rotate(-8deg) scale(1.02); }
+  70%      { opacity: .3;  transform: rotate(4deg) scale(.98); }
+}
+
+/* 每日更新时拱沿的一次掠过（一天一次，由 JS 加类） */
+.portal__sweep {
+  position: absolute;
+  inset: -2% -6% -3%;
+  border-radius: 6cqw 6cqw 1.2cqw 1.2cqw;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(180deg,
+    rgba(255, 246, 226, 0) 0%, rgba(255, 248, 232, .55) 46%, rgba(255, 246, 226, 0) 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 62%);
+          mask-image: linear-gradient(180deg, #000 0%, #000 30%, transparent 62%);
+  mix-blend-mode: screen;
+}
+.portal.is-daily-new .portal__sweep { animation: psEdgeSweep 3.2s cubic-bezier(.3, .1, .3, 1) 1; }
+@keyframes psEdgeSweep {
+  0%   { opacity: 0; transform: translateX(-38%); }
+  30%  { opacity: .55; }
+  100% { opacity: 0; transform: translateX(38%); }
+}
+
+/* ══ 点击反馈：五个入口各不相同 ══════════════════════════════════
+   .portal__flash 由 JS 注入，这里按空间给不同的形状与落点。 */
+.portal[data-space="tarot"] .portal__flash {
+  left: 33%;
+  top: 25%;
+  width: 11%;
+  background:
+    radial-gradient(circle, rgba(255, 252, 246, .95) 0%, rgba(214, 190, 255, .60) 30%,
+                    rgba(180, 152, 246, .22) 56%, transparent 76%);
+}
+.portal[data-space="post"] .portal__flash {
+  left: 50%;
+  top: 24%;
+  width: 9%;
+  background:
+    radial-gradient(circle, rgba(255, 253, 246, .95) 0%, rgba(224, 232, 255, .55) 34%,
+                    rgba(206, 218, 255, .18) 58%, transparent 76%);
+}
+.portal[data-space="cottage"] .portal__flash {
+  left: 50%;
+  top: 21%;
+  width: 16%;
+  background:
+    radial-gradient(circle, rgba(255, 248, 230, .95) 0%, rgba(255, 226, 170, .58) 30%,
+                    rgba(246, 208, 160, .22) 56%, transparent 76%);
+}
+.portal[data-space="archive"] .portal__flash {
+  left: 50%;
+  top: 17%;
+  width: 10%;
+  background:
+    radial-gradient(circle, rgba(255, 253, 244, .95) 0%, rgba(238, 228, 255, .55) 32%,
+                    rgba(206, 190, 246, .20) 58%, transparent 76%);
+}
+.portal[data-space="daily"] .portal__flash {
+  left: 50%;
+  top: 28%;
+  width: 10%;
+  background:
+    radial-gradient(circle, rgba(255, 253, 244, 1) 0%, rgba(255, 240, 206, .62) 26%,
+                    rgba(226, 214, 255, .24) 54%, transparent 76%);
+}
+
+/* 各空间不同的扩散方向：塔罗是一枚旋转的星芒，通讯局是横向流光，
+   小屋是暖光团，档案馆是一次竖向翻页，每日探索是四角星爆。 */
+.portal[data-space="tarot"].is-charging .portal__flash { animation-name: fxTarot; }
+.portal[data-space="post"].is-charging .portal__flash { animation-name: fxPost; }
+.portal[data-space="cottage"].is-charging .portal__flash { animation-name: fxCottage; }
+.portal[data-space="archive"].is-charging .portal__flash { animation-name: fxArchive; }
+.portal[data-space="daily"].is-charging .portal__flash { animation-name: fxDaily; }
+
+@keyframes fxTarot {
+  0%   { opacity: 0; transform: translate(-50%, -50%) rotate(-24deg) scale(.2); }
+  26%  { opacity: .95; }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(38deg) scale(2.3); }
+}
+@keyframes fxPost {
+  0%   { opacity: 0; transform: translate(-180%, -50%) scale(.4, .8); }
+  30%  { opacity: .9; }
+  100% { opacity: 0; transform: translate(180%, -50%) scale(1.4, .7); }
+}
+@keyframes fxCottage {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.3); }
+  34%  { opacity: .9; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); }
+}
+@keyframes fxArchive {
+  0%   { opacity: 0; transform: translate(-50%, -140%) scale(.9, .4); }
+  40%  { opacity: .85; }
+  100% { opacity: 0; transform: translate(-50%, 120%) scale(1, 1.6); }
+}
+@keyframes fxDaily {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(0deg); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.1) rotate(45deg); }
+}
+
+/* 点击时入口内部短暂提亮 */
+.portal.is-charging .portal__scene { animation: psBright 900ms ease-out 1; }
+@keyframes psBright {
+  0%   { filter: brightness(1); }
+  22%  { filter: brightness(1.22); }
+  100% { filter: brightness(1); }
+}
+
+/* ══ 动态档位 ══════════════════════════════════════════════════════ */
+html[data-motion="soft"] .ps-chart        { animation-duration: 190s; }
+html[data-motion="soft"] .ps-star         { animation-duration: 78s; }
+html[data-motion="soft"] .ps-star__trail  { animation-duration: 78s; }
+html[data-motion="soft"] .ps-card         { animation-duration: 76s; }
+html[data-motion="soft"] .ps-page         { animation-duration: 64s; }
+
+html[data-motion="reduced"] .ps-chart,
+html[data-motion="reduced"] .ps-card,
+html[data-motion="reduced"] .ps-tarot__edge,
+html[data-motion="reduced"] .ps-mail__light::before,
+html[data-motion="reduced"] .ps-mail__flap,
+html[data-motion="reduced"] .ps-mail__air,
+html[data-motion="reduced"] .ps-cottage__warm,
+html[data-motion="reduced"] .ps-cottage__veil,
+html[data-motion="reduced"] .ps-book,
+html[data-motion="reduced"] .ps-page,
+html[data-motion="reduced"] .ps-star,
+html[data-motion="reduced"] .ps-star__trail,
+html[data-motion="reduced"] .ps-badge,
+html[data-motion="reduced"] .portal__sweep { animation: none !important; }
+
+html[data-motion="reduced"] .ps-card { opacity: .30; }
+html[data-motion="reduced"] .ps-star { opacity: .55; }
+html[data-motion="reduced"] .ps-page { opacity: 0; }
+
+html:not([data-motion="full"]) .ps-chart, html:not([data-motion="full"]) .ps-card, html:not([data-motion="full"]) .ps-tarot__edge, html:not([data-motion="full"]) .ps-mail__light::before, html:not([data-motion="full"]) .ps-mail__flap, html:not([data-motion="full"]) .ps-mail__air, html:not([data-motion="full"]) .ps-cottage__warm, html:not([data-motion="full"]) .ps-cottage__veil, html:not([data-motion="full"]) .ps-book, html:not([data-motion="full"]) .ps-page, html:not([data-motion="full"]) .ps-star, html:not([data-motion="full"]) .ps-star__trail, html:not([data-motion="full"]) .ps-badge{ animation: none !important; }
+
+/* ══ 手机端：卡片里插画只占上 54%，动态收在插画内 ══════════════════
+   手机上入口是一张卡片，拱门插画是卡片顶部的一条（::after，z-index 0），
+   所以这一层要抬到插画之上、铭牌之下。 */
+@media (max-width: 900px) {
+  .portal::after { z-index: 0; }
+  .portal::before { z-index: 2; }
+  .portal__scene { z-index: 1; }
+  .portal__label { z-index: 3; }
+
+  .ps-chart { left: 22%; top: 0; width: 56%; }
+  .ps-card { left: 60%; top: 6%; width: 11%; }
+  .ps-mail__light { left: 40%; top: 15%; width: 20%; height: 7%; }
+  .ps-mail__flap { left: 42%; top: 15.6%; width: 16%; }
+  .ps-cottage__warm { top: 14%; width: 40%; height: 22%; }
+  .ps-cottage__veil { top: 2%; height: 20%; }
+  .ps-page { top: 8%; height: 7%; }
+  .ps-star, .ps-star__trail { top: 18%; }
+  .portal__sweep { border-radius: 3vw; inset: 0; }
+}

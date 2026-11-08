@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#171017" />
+<link rel="icon" href="data:,">
+<title>我们的小屋 · DIMENSION ANCHOR</title>
+<meta name="description" content="我们的小屋：壁炉边收藏每一段时光——最近的信、未读的牵挂与时光印记。" />
+<link rel="preload" as="image" href="assets/media/cottage/cottage-scene.jpg" />
+<link rel="stylesheet" href="assets/css/post.css?v=20261108d" />
+<link rel="stylesheet" href="assets/css/cottage.css" />
+</head>
+<body class="ct">
+
+<div class="scene" aria-hidden="true">
+  <img class="scene__img" src="assets/media/cottage/cottage-scene.jpg" alt="" />
+  <div class="scene__veil"></div>
+  <div class="hearth" aria-hidden="true">
+    <i class="hearth__glow"></i>
+    <i class="hearth__glow hearth__glow--far"></i>
+  </div>
+</div>
+
+<header class="nav">
+  <a class="brand" href="hall-motion.html" aria-label="返回星轨大厅">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+      <path d="M37.8 9.6a23 23 0 1 0 0 44.8 19.4 19.4 0 1 1 0-44.8Z" fill="currentColor" opacity=".9"/>
+      <path d="M43.6 32 45.6 37.6 51.2 39.6 45.6 41.6 43.6 47.2 41.6 41.6 36 39.6 41.6 37.6Z" fill="#FFF8E6" opacity=".9"/>
+    </svg>
+    <span>DIMENSION<br />ANCHOR</span>
+  </a>
+  <nav class="nav__links" aria-label="小屋">
+    <span class="here" aria-current="page">小屋</span>
+    <a href="post.html">通讯局</a>
+    <a href="incoming.html">收信站</a>
+  </nav>
+  <span class="nav__mode" id="modeChip" hidden><i class="dot"></i><span id="modeText"></span></span>
+</header>
+
+<main class="hall">
+  <section class="hall-hero">
+    <div class="hall-hero__hd">
+      <p class="eyebrow">OUR COTTAGE</p>
+      <h1>我们的小屋</h1>
+      <p class="hall-hero__lede">壁炉刚刚点起。这里收藏每一段时光——最近的信、没拆开的牵挂，和你们一起走过的印记。</p>
+    </div>
+
+    <section class="shelf" aria-label="时光架">
+      <div class="shelf__hd">
+        <h2>时光架</h2>
+        <span>SHELF OF MOMENTS</span>
+      </div>
+      <div class="shelf__row">
+        <button class="mem" type="button" id="memRecent" aria-label="最近的信"></button>
+        <button class="mem" type="button" id="memUnread" aria-label="未读的牵挂"></button>
+        <button class="mem" type="button" id="memStats" aria-label="时光印记"></button>
+      </div>
+      <div class="shelf__plank" aria-hidden="true"></div>
+    </section>
+
+    <div class="warmrow">
+      <a class="wbtn" href="outgoing.html" id="cotWrite"><i></i>去写一封信</a>
+      <a class="wbtn wbtn--quiet" href="incoming.html" id="cotRead"><i></i>去收信站</a>
+    </div>
+
+    <p class="cot-foot">THE FIRE IS KEPT FOR YOU · DIMENSION ANCHOR</p>
+  </section>
+</main>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/da-store.js"></script>
+<script src="assets/js/da-letter.js"></script>
+<script src="assets/js/da-cloud-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+<script src="assets/js/da-auth.js"></script>
+<script src="assets/js/da-mail.js"></script>
+<script src="assets/js/da-cottage.js"></script>
+<script>DA_COTTAGE.init();</script>
+</body>
+</html>

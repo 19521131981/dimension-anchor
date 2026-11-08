@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#131028" />
+<link rel="icon" href="data:,">
+<title>星际通讯局 · DIMENSION ANCHOR</title>
+<meta name="description" content="星际通讯局：收信厅收下来自角色的信，书写室寄出你写给 TA 的信。所有信件都留在你自己的档案里。" />
+<link rel="preload" as="image" href="assets/media/post/portal-hall.jpg" />
+<link rel="stylesheet" href="assets/css/post.css?v=20261108d" />
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261108d" />
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <img class="scene__img" src="assets/media/post/portal-hall.jpg" alt="" />
+  <video class="scene__light" autoplay muted loop playsinline preload="auto"
+         poster="assets/media/post/portal-hall.jpg" src="assets/media/post/portal-hall.mp4"></video>
+  <div class="amb-dust" aria-hidden="true"></div>
+  <div class="scene__veil"></div>
+</div>
+
+<!-- 飘动的信笺：与场景中已存在的信件同一逻辑 -->
+<span class="amb-letter amb-letter--1" aria-hidden="true">
+  <svg viewBox="0 0 40 30"><rect class="amb-env-body" x="1" y="1" width="38" height="28" rx="3"/><path class="amb-env-line" d="M2 4 20 18 38 4"/></svg>
+</span>
+<span class="amb-letter amb-letter--2" aria-hidden="true">
+  <svg viewBox="0 0 40 30"><rect class="amb-env-body" x="1" y="1" width="38" height="28" rx="3"/><path class="amb-env-line" d="M2 4 20 18 38 4"/></svg>
+</span>
+<span class="amb-letter amb-letter--3" aria-hidden="true">
+  <svg viewBox="0 0 40 30"><rect class="amb-env-body" x="1" y="1" width="38" height="28" rx="3"/><path class="amb-env-line" d="M2 4 20 18 38 4"/></svg>
+</span>
+
+<header class="nav">
+  <a class="brand" href="hall-motion.html" aria-label="返回星轨大厅">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+      <path d="M37.8 9.6a23 23 0 1 0 0 44.8 19.4 19.4 0 1 1 0-44.8Z" fill="currentColor" opacity=".9"/>
+      <path d="M43.6 32 45.6 37.6 51.2 39.6 45.6 41.6 43.6 47.2 41.6 41.6 36 39.6 41.6 37.6Z" fill="#FFF8E6" opacity=".9"/>
+    </svg>
+    <span>DIMENSION<br />ANCHOR</span>
+  </a>
+  <nav class="nav__links" aria-label="通讯局">
+    <span class="here" aria-current="page">通讯局</span>
+    <a href="incoming.html">收信站</a>
+    <a href="outgoing.html">寄信站</a>
+  </nav>
+  <span class="nav__mode" id="modeChip" hidden><i class="dot"></i><span id="modeText"></span></span>
+</header>
+
+<main class="hall">
+  <section class="hall-hero">
+    <div class="hall-hero__hd">
+      <p class="eyebrow">STELLAR POST OFFICE</p>
+      <h1>星际通讯局</h1>
+      <p class="hall-hero__lede">穿过两扇宫门：一侧是月光照亮的收信厅，一侧是烛光安静的书写室。所有信件都只留在你自己的档案里。</p>
+    </div>
+
+    <div class="gates">
+      <a class="gate gate--moon" href="incoming.html" id="gateIn">
+        <span class="gate__no">I</span>
+        <p class="gate__en">INCOMING LETTERS</p>
+        <h2 class="gate__title">来自星际的来信</h2>
+        <p class="gate__desc">今日星笺、未读与历史来信。信由角色依你们的档案、关系与最近的心意写成。</p>
+        <div class="gate__foot">
+          <span class="gate__cta">进入收信厅</span>
+          <span class="gate__stat" id="statIn"><b>—</b> 封来信</span>
+        </div>
+      </a>
+      <a class="gate" href="outgoing.html" id="gateOut">
+        <span class="gate__no">II</span>
+        <p class="gate__en">OUTGOING LETTERS</p>
+        <h2 class="gate__title">寄往星际的信</h2>
+        <p class="gate__desc">铺开信纸，挑选收信角色，把想说的话亲手写下来。可存草稿，确认后才算寄出。</p>
+        <div class="gate__foot">
+          <span class="gate__cta">进入书写室</span>
+          <span class="gate__stat" id="statOut"><b>—</b> 封寄出 · <b>—</b> 份草稿</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <div class="hall-lower">
+    <div class="hall-strip" id="todayStrip" hidden>
+      <span class="hall-strip__label">今日星笺</span>
+      <p class="hall-strip__text" id="todayText"></p>
+      <button class="btn" id="todayOpen" type="button">重新读这封信</button>
+    </div>
+  </div>
+</main>
+
+<footer class="pt-foot">
+  <span aria-hidden="true">✦</span> 每一封信，都有属于它的星辰。 <span aria-hidden="true">✦</span>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/da-store.js"></script>
+<script src="assets/js/da-letter.js"></script>
+<script src="assets/js/da-cloud-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+<script src="assets/js/da-auth.js"></script>
+<script src="assets/js/da-mail.js"></script>
+<script src="assets/js/hall-post.js"></script>
+</body>
+</html>

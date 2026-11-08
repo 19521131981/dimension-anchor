@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#2A2145" />
+<link rel="icon" href="data:,">
+<title>DIMENSION ANCHOR · 维度锚点 — 星轨大厅</title>
+<meta name="description" content="DIMENSION ANCHOR 维度锚点 · 月光幻想宇宙。星轨大厅：塔罗观测站、星际通讯局、我们的小屋、星轨档案馆、每日探索。" />
+<link rel="preload" as="image" href="assets/media/hall/hall-plate.jpg" />
+<link rel="stylesheet" href="assets/css/hall.css?v=20261108d" />
+<link rel="stylesheet" href="assets/css/hall-motion.css" />
+<link rel="stylesheet" href="assets/css/hall-scene.css" />
+<link rel="stylesheet" href="assets/css/hall-portals.css" />
+<link rel="stylesheet" href="assets/css/hall-hidden.css" />
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261108d" />
+<link rel="stylesheet" href="assets/css/hall-premium.css?v=20261108d" />
+</head>
+<body>
+
+<main class="hall" id="hall">
+
+  <!-- 背景延展：屏幕比例与原图不一致时，用同一张图虚化铺满，不做拉伸 -->
+  <div class="hall__ambient" aria-hidden="true"></div>
+  <div class="hall__vignette" aria-hidden="true"></div>
+
+  <div class="plate mx-enter" id="plate">
+
+    <!-- ── 视觉层：原创设计图 · 不裁切、不重绘 ── -->
+    <!-- ── 视觉层：原设计图。原水晶轨道被柔化成光晕（不是擦除），月亮、建筑、
+         文字、构图、色彩关系全部原样，以便矢量轨道成为轨道的主体 ── -->
+    <!-- ── 视觉层：锐利底图 JPG + screen 光层视频 ──
+         底图永远是原始设计图（绝对不糊），视频以 screen 混合叠在上方，
+         只透出光尘、流光与月面辉光，暗部全部透明，不给画面带来任何糊感 -->
+    <img class="plate__art" src="assets/media/hall/hall-plate.jpg"
+         alt="DIMENSION ANCHOR 星轨大厅：珍珠色拱廊环绕中央月环，月色笼罩宫殿尖顶，五道入口排在长廊尽头" />
+    <video class="plate__light" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+           poster="assets/media/hall/hall-plate.jpg"
+           src="assets/media/hall/hall-plate.mp4"></video>
+
+    <!-- ══ 共享渐变（不给元素本身占位，只供引用） ══ -->
+    <svg class="defs-sprite" width="0" height="0" aria-hidden="true" focusable="false"
+         style="position:absolute;overflow:hidden">
+      <defs>
+        <radialGradient id="hsAura">
+          <stop offset="0"   stop-color="#FFF8E6" stop-opacity=".80" />
+          <stop offset=".42" stop-color="#F4E2C0" stop-opacity=".26" />
+          <stop offset="1"   stop-color="#DCCBFF" stop-opacity="0" />
+        </radialGradient>
+        <linearGradient id="petalGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#FFFDF8" stop-opacity=".95" />
+          <stop offset=".58" stop-color="#F6E8F2" stop-opacity=".88" />
+          <stop offset="1"   stop-color="#DCC8EC" stop-opacity=".72" />
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         环境层：云雾 / 地面反射 / 水波 / 柱边月光 / 花枝呼吸光 / 能量线
+         全部是独立的透明层，原图不参与任何变换。
+         ══════════════════════════════════════════════════════════════ -->
+    <div class="scene" aria-hidden="true">
+      <div class="scene__clouds scene__clouds--far"></div>
+      <div class="scene__clouds scene__clouds--near"></div>
+
+      <div class="scene__floor"></div>
+      <div class="scene__ripple"></div>
+      <div class="scene__ripple scene__ripple--2"></div>
+
+      <!-- 柱边月光：x 取自原画柱身与拱间壁柱的实测位置 -->
+      <div class="scene__pillar" style="left:8.97%;animation-delay:-21s"></div>
+      <div class="scene__pillar" style="left:12.32%;animation-delay:-25s"></div>
+      <div class="scene__pillar" style="left:15.43%;animation-delay:-29s"></div>
+      <div class="scene__pillar" style="left:30.14%;animation-delay:-23s"></div>
+      <div class="scene__pillar" style="left:44.86%;animation-delay:-27s"></div>
+      <div class="scene__pillar" style="left:59.57%;animation-delay:-31s"></div>
+      <div class="scene__pillar" style="left:74.28%;animation-delay:-19s"></div>
+      <div class="scene__pillar" style="left:87.62%;animation-delay:-33s"></div>
+
+      <div class="scene__garden scene__garden--l"></div>
+      <div class="scene__garden scene__garden--r"></div>
+
+      <div class="scene__beam"></div>
+
+      <!-- 吊灯：上层拱廊的垂灯，逻辑是「灯只变色、绝不移动」 -->
+      <span class="scene__lamp" style="left:14.2%;animation-delay:-2.1s"></span>
+      <span class="scene__lamp" style="left:23.6%;animation-delay:-6.4s"></span>
+      <span class="scene__lamp" style="left:36.3%;animation-delay:-4.8s"></span>
+      <span class="scene__lamp" style="left:64.1%;animation-delay:-9.2s"></span>
+      <span class="scene__lamp" style="left:76.8%;animation-delay:-1.3s"></span>
+      <span class="scene__lamp" style="left:86.2%;animation-delay:-7.7s"></span>
+
+      <!-- 城堡光环：细环从城堡尖顶身后缓缓荡开 -->
+      <span class="scene__halo"></span>
+      <span class="scene__halo scene__halo--2"></span>
+      <span class="scene__halo scene__halo--3"></span>
+
+      <!-- 月亮光纹：细弧环从月盘边缘一圈圈荡开，月盘本体保持不动 -->
+      <span class="scene__moonwave"></span>
+      <span class="scene__moonwave scene__moonwave--2"></span>
+      <span class="scene__moonwave scene__moonwave--3"></span>
+      <span class="scene__moonwave scene__moonwave--4"></span>
+
+      <!-- 月光光轮：围绕月亮的柔光扇面缓慢旋转 -->
+      <span class="scene__moonrays"></span>
+
+      <!-- 水面倒影微光 -->
+      <span class="scene__sheen"></span>
+
+      <!-- 浮尘：整厅缓升的星尘 -->
+      <div class="amb-dust"></div>
+    </div>
+
+    <!-- ══ 独立矢量轨道 ══════════════════════════════════════════════
+         完全由 SVG 绘制，不截取原画的任何像素，不包含月亮、建筑或背景。
+         两条 path 都是 SVG 椭圆弧，圆心绕原图月亮的实际圆心 (824,270)、半径 197：
+           A 主环  cx 824 cy 290  长半轴 360  短半轴 150  倾角 -14°
+           B 副环  cx 812 cy 285  长半轴 290  短半轴 126  倾角  -6°
+         两条的倾角、长短轴、旋转方向、周期都不同，各自独立运行。
+
+         轨道由五层叠成，全部是矢量：
+           __halo / __halo--wide  外发光（宽描边堆光，不用 filter）
+           __base                 银紫色金属描边（渐变）
+           __core                 高光芯线
+           __facet                分段切面纹理 —— 沿路径流动 = 环体在转
+           __glint                一道较长的高光，与切面同向、更快
+           __spark                一个光点，沿同一条 path 运行
+
+         前后遮挡：同一条闭合 path 画两份 ——
+           · mask #orbBack  挖掉月盘（月后段）
+           · mask #orbFront 只保留月盘右侧（月前段，保留完整金属高光）
+         两份共享同一条 path 与同一组动画参数，所以轨迹连续、
+         运动完全同步，接缝处不会错位，也不会出现两条完整轨道
+         同时压在月亮上。
+         ════════════════════════════════════════════════════════════ -->
+    <!-- ══ 月环之门 · 主视觉强化层（纯矢量装饰，不参与交互） ══
+         · 品牌衬底：月面文字带后的一层深紫 multiply 椭圆 —— 不重排版、不产生
+           重影，只把亮月面压暗一档，让烘焙的青铜色品牌字自己浮出来
+         · 门环：与月盘同心的鎏金双环 + 缓转刻度环 + 四方位宝石，把「月亮 +
+           水晶穹顶 + 轨道 + 宫殿」读成一扇有纵深的月环之门
+         · 门楣饰线：维度锚点下方一道细金饰线，给品牌区一个收束的层次 -->
+    <svg class="moongate" viewBox="0 0 1672 941" preserveAspectRatio="xMidYMid meet"
+         aria-hidden="true" focusable="false">
+      <defs>
+        <!-- 月心回辉：柔紫罗兰 screen 光（月盘自带立体光，回辉只做衔接） -->
+        <radialGradient id="mgGlow">
+          <stop offset="0"   stop-color="#DCC8FF" stop-opacity=".17" />
+          <stop offset=".42" stop-color="#C9B2F2" stop-opacity=".10" />
+          <stop offset=".75" stop-color="#B9A2E8" stop-opacity=".04" />
+          <stop offset="1"   stop-color="#B9A2E8" stop-opacity="0" />
+        </radialGradient>
+        <!-- 星核光芒：月心极弱的一点星火 -->
+        <radialGradient id="mgCore">
+          <stop offset="0"   stop-color="#FFF6E2" stop-opacity=".5" />
+          <stop offset=".3"  stop-color="#EFE2FF" stop-opacity=".22" />
+          <stop offset=".7"  stop-color="#D9C6FF" stop-opacity=".07" />
+          <stop offset="1"   stop-color="#D9C6FF" stop-opacity="0" />
+        </radialGradient>
+        <!-- 鎏金门环 -->
+        <linearGradient id="mgGold" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#FFF6DC" stop-opacity=".30" />
+          <stop offset=".3"  stop-color="#FFEDB6" stop-opacity=".95" />
+          <stop offset=".48" stop-color="#FFF8E8" stop-opacity="1" />
+          <stop offset=".72" stop-color="#EFD9EC" stop-opacity=".62" />
+          <stop offset="1"   stop-color="#C9B2E6" stop-opacity=".34" />
+        </linearGradient>
+        <!-- 双轨道：月银环 + 香槟金环（沿短轴做金属明暗） -->
+        <linearGradient id="orbSilver" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#8E93B8" stop-opacity=".38" />
+          <stop offset=".42" stop-color="#F4F1FC" stop-opacity=".95" />
+          <stop offset=".62" stop-color="#D7D3EA" stop-opacity=".8" />
+          <stop offset="1"   stop-color="#7E82A6" stop-opacity=".3" />
+        </linearGradient>
+        <linearGradient id="orbAurum" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#B99B62" stop-opacity=".34" />
+          <stop offset=".42" stop-color="#FFEBC0" stop-opacity=".92" />
+          <stop offset=".62" stop-color="#EFD9A8" stop-opacity=".72" />
+          <stop offset="1"   stop-color="#A8895D" stop-opacity=".28" />
+        </linearGradient>
+        <!-- 外围光晕：薰衣草紫薄纱（不再是白色泛光） -->
+        <radialGradient id="mgHalo">
+          <stop offset="0"   stop-color="#DCD0F8" stop-opacity="0" />
+          <stop offset=".7"  stop-color="#CFC2EE" stop-opacity="0" />
+          <stop offset=".85" stop-color="#D6C6F4" stop-opacity=".13" />
+          <stop offset="1"   stop-color="#C4B2E8" stop-opacity="0" />
+        </radialGradient>
+        <!-- 品牌文字：香槟金渐变 -->
+        <linearGradient id="mgText" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0"   stop-color="#FFF4DA" />
+          <stop offset=".55" stop-color="#EED9AC" />
+          <stop offset="1"   stop-color="#C6AEDC" />
+        </linearGradient>
+        <filter id="mgTextShadow" x="-20%" y="-40%" width="140%" height="180%">
+          <feDropShadow dx="0" dy="1.6" stdDeviation="2" flood-color="#1B0F38" flood-opacity=".6" />
+        </filter>
+        <!-- 轨道前段遮罩：只显示下半弧（近观者一侧），上半弧从月亮背后绕过 -->
+        <mask id="mgFrontHalf">
+          <rect x="0" y="272" width="1672" height="669" fill="#fff" />
+        </mask>
+      </defs>
+
+      <!-- ══ 1 · 轨道后段：两道银金轨道的远端，画在月亮背后 ══ -->
+      <ellipse class="mg__orbit mg__orbit--silver" cx="824" cy="272" rx="332" ry="102"
+               transform="rotate(-14 824 272)" fill="none" stroke="url(#orbSilver)" stroke-width="3.4" />
+      <ellipse class="mg__orbit mg__orbit--gold" cx="824" cy="272" rx="298" ry="84"
+               transform="rotate(24 824 272)" fill="none" stroke="url(#orbAurum)" stroke-width="2.5" />
+
+      <!-- ══ 2 · 幻想月盘：真实月面纹理 + 珍珠虹彩 + 新月融合（羽化边缘） ══ -->
+      <image class="mg__moonimg" href="assets/media/hall/moon-disc.png"
+             x="616" y="62" width="416" height="416" />
+
+      <!-- ══ 3 · 月心回辉 + 微弱星核光芒 ══ -->
+      <circle class="mg__glow" cx="824" cy="272" r="200" fill="url(#mgGlow)" />
+      <g class="mg__core">
+        <circle cx="824" cy="268" r="52" fill="url(#mgCore)" />
+        <path d="M824 240v56M796 268h56" stroke="#FFF6E2" stroke-width="1.1" stroke-linecap="round" opacity=".5" />
+        <path d="M824 256v24M812 268h24" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" opacity=".85" />
+      </g>
+
+      <!-- ══ 4 · 轨道前段：近观者的下半弧，从月亮身前掠过 ══ -->
+      <g mask="url(#mgFrontHalf)">
+        <ellipse class="mg__orbit mg__orbit--silver" cx="824" cy="272" rx="332" ry="102"
+                 transform="rotate(-14 824 272)" fill="none" stroke="url(#orbSilver)" stroke-width="3.4" />
+        <ellipse class="mg__orbit mg__orbit--gold" cx="824" cy="272" rx="298" ry="84"
+                 transform="rotate(24 824 272)" fill="none" stroke="url(#orbAurum)" stroke-width="2.5" />
+      </g>
+
+      <!-- ══ 5 · 月环之门：薰衣草薄晕 + 鎏金双环 + 抛光高光 + 斜位宝石 ══ -->
+      <circle class="mg__halo" cx="824" cy="270" r="256" fill="url(#mgHalo)" />
+      <circle class="mg__under" cx="824" cy="270" r="218" />
+      <circle class="mg__ring mg__ring--outer" cx="824" cy="270" r="218" />
+      <circle class="mg__ring mg__ring--inner" cx="824" cy="270" r="206.5" />
+      <g class="mg__spec">
+        <path d="M 626 178 A 218 218 0 0 1 805 53" />
+        <path d="M 1022 362 A 218 218 0 0 1 843 487" />
+      </g>
+      <g class="mg__turn">
+        <circle class="mg__dash" cx="824" cy="270" r="229" />
+        <g class="mg__studs">
+          <g transform="translate(986 108)"><rect class="mg__stud" x="-4.6" y="-4.6" width="9.2" height="9.2" /></g>
+          <g transform="translate(986 432)"><rect class="mg__stud" x="-4.6" y="-4.6" width="9.2" height="9.2" /></g>
+          <g transform="translate(662 432)"><rect class="mg__stud" x="-4.6" y="-4.6" width="9.2" height="9.2" /></g>
+          <g transform="translate(662 108)"><rect class="mg__stud" x="-4.6" y="-4.6" width="9.2" height="9.2" /></g>
+        </g>
+      </g>
+
+      <!-- ══ 6 · 品牌文字：DOM 级渐变金字，不再依赖烘焙 ══ -->
+      <g class="mg__brand" filter="url(#mgTextShadow)">
+        <text class="mb__name" x="824" y="248" text-anchor="middle" letter-spacing="8">DIMENSION</text>
+        <text class="mb__name" x="824" y="294" text-anchor="middle" letter-spacing="12">ANCHOR</text>
+        <text class="mb__tag" x="824" y="322" text-anchor="middle" letter-spacing="3.2">THE ETHEREAL MOONLIGHT UNIVERSE</text>
+        <g class="mb__cn">
+          <line x1="718" y1="336.5" x2="754" y2="336.5" />
+          <line x1="894" y1="336.5" x2="930" y2="336.5" />
+          <text x="824" y="344" text-anchor="middle" letter-spacing="3">维度锚点</text>
+        </g>
+      </g>
+
+      <!-- 门楣饰线：品牌之下的收束 -->
+      <g class="mg__crest">
+        <line x1="746" y1="362" x2="902" y2="362" />
+        <rect class="mg__crest-gem" x="-3.2" y="-3.2" width="6.4" height="6.4"
+              transform="translate(824 362) rotate(45)" />
+        <circle cx="746" cy="362" r="1.6" />
+        <circle cx="902" cy="362" r="1.6" />
+      </g>
+    </svg>
+
+    <svg class="orbitsvg" viewBox="0 0 1672 941" preserveAspectRatio="xMidYMid meet"
+         aria-hidden="true" focusable="false">
+      <defs>
+        <!-- ══ 管身金属渐变：沿各自椭圆的短轴方向做明暗 ══
+             远端（背向观者、靠近月上缘）压暗，近端（靠近观者、月亮下缘）提亮。
+             中段刻意压到银灰紫而不是纯白 —— 留出高光余量，否则后面所有
+             高光、切面都叠在已经很白的管身上，什么也看不见。 -->
+        <linearGradient id="orbMetalA" gradientUnits="userSpaceOnUse" x1="788" y1="144" x2="860" y2="435">
+          <stop offset="0"   stop-color="#4A3D63" stop-opacity=".34" />
+          <stop offset=".16" stop-color="#7A6BA4" stop-opacity=".54" />
+          <stop offset=".34" stop-color="#A291C6" stop-opacity=".70" />
+          <stop offset=".50" stop-color="#C2B4E0" stop-opacity=".78" />
+          <stop offset=".64" stop-color="#E2D8F8" stop-opacity=".84" />
+          <stop offset=".76" stop-color="#CFC1EA" stop-opacity=".78" />
+          <stop offset=".90" stop-color="#A391C9" stop-opacity=".66" />
+          <stop offset="1"   stop-color="#DCD1F4" stop-opacity=".80" />
+        </linearGradient>
+        <linearGradient id="orbMetalB" gradientUnits="userSpaceOnUse" x1="832" y1="160" x2="792" y2="410">
+          <stop offset="0"   stop-color="#463A5C" stop-opacity=".30" />
+          <stop offset=".18" stop-color="#74669C" stop-opacity=".48" />
+          <stop offset=".38" stop-color="#9A8AC0" stop-opacity=".62" />
+          <stop offset=".56" stop-color="#BCAEDC" stop-opacity=".70" />
+          <stop offset=".70" stop-color="#DCD1F6" stop-opacity=".78" />
+          <stop offset=".84" stop-color="#9C8CC2" stop-opacity=".56" />
+          <stop offset="1"   stop-color="#CBBEEA" stop-opacity=".70" />
+        </linearGradient>
+
+        <!-- ══ 遮挡 mask ══
+             月前 / 月后是「同一条 path、同一组动画参数」画两份，各自被一个
+             mask 裁掉不需要的部分 —— 所以轨迹严格连续、运动严格同步，
+             接缝处不会出现错位或重影。
+
+             环进入月盘的两段（实测）：
+               A 环  上段 y 121–197 / 下段 y 397–455
+               B 环  上段 y 153–222 / 下段 y 370–417
+             两段之间 y≈270 一带是空的，所以「前 / 后」的分界线取 270，
+             切割线落在环体本身不存在的位置，视觉上不会有断口。 -->
+
+        <radialGradient id="moonCut" gradientUnits="userSpaceOnUse" cx="824" cy="270" r="200">
+          <stop offset="0"    stop-color="#000" />
+          <stop offset=".985" stop-color="#000" />
+          <stop offset="1"    stop-color="#fff" />
+        </radialGradient>
+        <mask id="orbBack" maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+          <rect width="1672" height="941" fill="#fff" />
+          <circle cx="824" cy="270" r="200" fill="url(#moonCut)" />
+        </mask>
+
+        <mask id="mDisc" maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+          <rect width="1672" height="941" fill="#000" />
+          <circle cx="824" cy="270" r="200" fill="#fff" />
+        </mask>
+
+        <mask id="mNearY" maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+          <rect x="0" y="270" width="1672" height="671" fill="#fff" />
+        </mask>
+        <mask id="mFarY" maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+          <rect x="0" y="0" width="1672" height="270" fill="#fff" />
+        </mask>
+
+        <!-- 浑天仪球体：青铜球在 x 753–903 / y 404–519 一带。
+             环从它后面绕过去（原画里晶带也是被球挡住的），
+             所以在这里做一块柔边遮罩把环收掉，边缘 18px 羽化。 -->
+        <radialGradient id="sphereFade" gradientUnits="userSpaceOnUse" cx="830" cy="462" r="96">
+          <stop offset="0"    stop-color="#000" />
+          <stop offset=".74"  stop-color="#000" />
+          <stop offset="1"    stop-color="#fff" />
+        </radialGradient>
+        <mask id="mSphere" maskUnits="userSpaceOnUse" x="0" y="0" width="1672" height="941">
+          <rect width="1672" height="941" fill="#fff" />
+          <ellipse cx="830" cy="462" rx="104" ry="92" fill="url(#sphereFade)" />
+        </mask>
+
+        <path id="orbPathA" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path id="orbPathB" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+      </defs>
+
+      <!-- ══════ B 副环（倾角 +9°，顺时针 25s，更扁）══════ -->
+      <g class="orb orb--b orb--back" mask="url(#orbBack)">
+        <g mask="url(#mSphere)">
+        <path class="orb__halo orb__halo--wide" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__halo" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__shade" transform="translate(0,2.4)" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__base" stroke="url(#orbMetalB)" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__inner" transform="translate(0,-1.1)" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <!-- 晶体段：远半圈窄而暗、近半圈宽而亮；明暗两层交替咬合 -->
+        <g mask="url(#mFarY)">
+          <path class="orb__facet orb__facet--dark orb__facet--far" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+          <path class="orb__facet orb__facet--lit orb__facet--far" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        </g>
+        <g mask="url(#mNearY)">
+          <path class="orb__facet orb__facet--dark orb__facet--near" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+          <path class="orb__facet orb__facet--lit orb__facet--near" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        </g>
+        <path class="orb__core" transform="translate(0,-2.6)" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__sheen orb__sheen--l1" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__sheen orb__sheen--l2" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__sheen orb__sheen--l3" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__sheen orb__sheen--l4" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__sheen orb__sheen--d1" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__sheen orb__sheen--d2" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__sheen orb__sheen--d3" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__glint orb__glint--tail" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__glint orb__glint--bloom" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__glint orb__glint--head" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__glint orb__glint--tail orb__glint--alt" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <path class="orb__glint orb__glint--head orb__glint--alt" pathLength="100" d="M1098.4 330.4 A290 126 9 1 1 525.6 239.6 A290 126 9 1 1 1098.4 330.4 Z" />
+        <circle class="orb__spark orb__spark--b" r="2.4" />
+        </g>
+      </g>
+
+      <!-- ══════ A 主环（倾角 -14°，逆时针 38s）══════ -->
+      <g class="orb orb--a orb--back" mask="url(#orbBack)">
+        <g mask="url(#mSphere)">
+        <path class="orb__halo orb__halo--wide" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__halo" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__shade" transform="translate(0,2.4)" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__base" stroke="url(#orbMetalA)" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__inner" transform="translate(0,-1.1)" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <!-- 晶体段：远半圈窄而暗、近半圈宽而亮；明暗两层交替咬合 -->
+        <g mask="url(#mFarY)">
+          <path class="orb__facet orb__facet--dark orb__facet--far" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__facet orb__facet--lit orb__facet--far" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        </g>
+        <g mask="url(#mNearY)">
+          <path class="orb__facet orb__facet--dark orb__facet--near" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__facet orb__facet--lit orb__facet--near" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        </g>
+        <path class="orb__core" transform="translate(0,-2.6)" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__sheen orb__sheen--l1" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__sheen orb__sheen--l2" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__sheen orb__sheen--l3" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__sheen orb__sheen--l4" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__sheen orb__sheen--d1" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__sheen orb__sheen--d2" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__sheen orb__sheen--d3" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__glint orb__glint--tail" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__glint orb__glint--bloom" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__glint orb__glint--head" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__glint orb__glint--tail orb__glint--alt" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <path class="orb__glint orb__glint--head orb__glint--alt" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+        <circle class="orb__spark orb__spark--a" r="3" />
+        </g>
+      </g>
+
+      <!-- ══════ A 主环 · 月前段 ══════
+           同一条 path、同一组动画，只把 mask 换成「月盘内 + 近半圈」，
+           于是同一根环在月面上是实压着的，出了月盘就接上后面的同一根环。 -->
+      <g class="orb orb--a orb--front" mask="url(#mDisc)">
+        <g mask="url(#mNearY)">
+          <g mask="url(#mSphere)">
+          <path class="orb__shade" transform="translate(0,3.4)" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__base" stroke="url(#orbMetalA)" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__inner" transform="translate(0,-1.3)" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__facet orb__facet--dark orb__facet--near" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__facet orb__facet--lit orb__facet--near" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__core" transform="translate(0,-2.8)" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__sheen orb__sheen--l1" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__sheen orb__sheen--l2" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__sheen orb__sheen--l3" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__sheen orb__sheen--l4" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__sheen orb__sheen--d1" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__sheen orb__sheen--d2" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__sheen orb__sheen--d3" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__glint orb__glint--tail" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          <path class="orb__glint orb__glint--head" pathLength="100" d="M1173.3 202.9 A360 150 -14 1 1 474.7 377.1 A360 150 -14 1 1 1173.3 202.9 Z" />
+          </g>
+        </g>
+      </g>
+    </svg>
+
+    <!-- 月亮命中区：单独一层 SVG，viewBox 与原图一致，
+         所以桌面 / 手机裁切下都严格贴着月盘（824,270 r197）。 -->
+    <svg class="moonhit" viewBox="0 0 1672 941" preserveAspectRatio="xMidYMid meet" focusable="false">
+      <circle class="moon-hit" cx="824" cy="270" r="197"
+              role="button" tabindex="0" aria-label="轻触月亮" />
+    </svg>
+
+    <!-- ══ 中央星盘 ══════════════════════════════════════════════════
+         中央浑天仪是原画的一部分，这里只加三层「机构在走」的矢量：
+           外环  贴在原画那圈水平环上，带刻度，64 秒一周
+           内环  绕过水晶球的子午环，带一段亮弧，88 秒反向一周
+           星核  球心的光，9.5 秒呼吸
+         外加一组依次亮起的指示点，和一道偶尔沿环走动的细光。
+         ══════════════════════════════════════════════════════════════ -->
+    <svg class="starplate" viewBox="0 0 1672 941" preserveAspectRatio="xMidYMid meet"
+         aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="spArcGrad" gradientUnits="userSpaceOnUse"
+                        x1="732" y1="392" x2="916" y2="520">
+          <stop offset="0"   stop-color="#FFF8E8" stop-opacity=".05" />
+          <stop offset=".42" stop-color="#F6EEFF" stop-opacity=".85" />
+          <stop offset="1"   stop-color="#D9C8FF" stop-opacity=".10" />
+        </linearGradient>
+        <radialGradient id="spCoreGrad">
+          <stop offset="0"   stop-color="#FFFDF6" stop-opacity=".85" />
+          <stop offset=".40" stop-color="#E8DEFF" stop-opacity=".40" />
+          <stop offset="1"   stop-color="#C6B2FF" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+
+      <g transform="translate(826 460)">
+        <!-- 外环：贴着原画那圈水平环的刻度带，64 秒走完一周 -->
+        <g transform="translate(0 20) rotate(-2)">
+          <g class="sp__outer">
+            <ellipse class="sp__ring sp__ring--ticks" rx="74" ry="22" />
+            <ellipse class="sp__sweep" rx="74" ry="22" />
+          </g>
+        </g>
+
+        <!-- 子午环：绕过水晶球的一条竖环 -->
+        <g class="sp__inner">
+          <ellipse class="sp__ring sp__ring--fine" rx="60" ry="56" transform="rotate(-14)" />
+          <ellipse class="sp__arc" rx="60" ry="56" transform="rotate(-14)" />
+        </g>
+
+        <circle class="sp__core" r="40" fill="url(#spCoreGrad)" />
+
+        <!-- 指示点：水平环上的六枚，依次短暂亮起（不随环旋转） -->
+        <g transform="translate(0 20) rotate(-2)" class="sp__dots">
+          <circle class="sp__dot" cx="74"  cy="0"    r="1.5" style="animation-delay:-1s" />
+          <circle class="sp__dot" cx="37"  cy="19"   r="1.3" style="animation-delay:-3.2s" />
+          <circle class="sp__dot" cx="-37" cy="19"   r="1.4" style="animation-delay:-5.4s" />
+          <circle class="sp__dot" cx="-74" cy="0"    r="1.3" style="animation-delay:-6.8s" />
+          <circle class="sp__dot" cx="-37" cy="-19"  r="1.5" style="animation-delay:-2.2s" />
+          <circle class="sp__dot" cx="37"  cy="-19"  r="1.2" style="animation-delay:-4.4s" />
+        </g>
+      </g>
+    </svg>
+
+    <!-- ── 月面呼吸与空气微动 ── -->
+    <div class="mx-skyglow" aria-hidden="true"></div>
+    <div class="mx-moon" aria-hidden="true"></div>
+    <div class="mx-moon mx-moon--cool" aria-hidden="true"></div>
+    <div class="mx-moon mx-moon--drift" aria-hidden="true"></div>
+    <div class="mx-haze" aria-hidden="true"></div>
+
+    <!-- 轻点月亮时的一次月面脉冲（独立一层，不干扰上面的呼吸） -->
+    <div class="mx-moon--pulse" aria-hidden="true"></div>
+
+    <!-- 花瓣：由 JS 按侧边调度生成，飘出画面即销毁 -->
+    <div class="petals" aria-hidden="true"></div>
+
+    <div class="plate__grade" aria-hidden="true"></div>
+
+    <!-- ── 交互层：全部为真实页面元素，按原图坐标对位 ── -->
+    <div class="ui">
+
+      <!-- A · 品牌 -->
+      <header class="bar">
+        <a class="logo" href="hall-motion.html" aria-label="DIMENSION ANCHOR · 返回星轨大厅">
+          <span class="logo__veil" aria-hidden="true"></span>
+          <svg class="logo__mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+            <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
+            <circle cx="32" cy="32" r="30.5" fill="none" stroke="currentColor" stroke-width=".7"
+                    stroke-dasharray="1 7" opacity=".5"/>
+            <path d="M32 5.5 33.4 15 32 18.4 30.6 15Z" fill="currentColor" opacity=".8"/>
+            <path d="M32 58.5 30.6 49 32 45.6 33.4 49Z" fill="currentColor" opacity=".8"/>
+            <path d="M37.8 9.6a23 23 0 1 0 0 44.8 19.4 19.4 0 1 1 0-44.8Z" fill="currentColor" opacity=".95"/>
+            <path d="M43.6 32 45.6 37.6 51.2 39.6 45.6 41.6 43.6 47.2 41.6 41.6 36 39.6 41.6 37.6Z"
+                  fill="#FFF8E6" opacity=".95"/>
+          </svg>
+          <span class="logo__word">DIMENSION<br />ANCHOR</span>
+        </a>
+
+        <!-- B · 导航 -->
+        <nav class="nav" aria-label="主导航">
+          <span class="nav__veil" aria-hidden="true"></span>
+          <a href="hall-motion.html" class="is-active" aria-current="page">首页</a>
+          <a href="#/tarot">塔罗</a>
+          <a href="#/post">来信</a>
+          <a href="#/cottage">小屋</a>
+          <a href="#/archive">档案</a>
+        </nav>
+
+        <button class="avatar" type="button" aria-label="个人空间">
+          <svg viewBox="0 0 40 40" aria-hidden="true" focusable="false">
+            <defs>
+              <radialGradient id="avG" cx=".4" cy=".34" r=".8">
+                <stop offset="0" stop-color="#FDF4FA"/><stop offset=".6" stop-color="#C9B4DA"/>
+                <stop offset="1" stop-color="#8A76A8"/>
+              </radialGradient>
+            </defs>
+            <circle cx="20" cy="20" r="19" fill="url(#avG)"/>
+            <circle cx="20" cy="16" r="6" fill="#FFFDF6" opacity=".85"/>
+            <path d="M8 34c1.8-6.6 6.2-9.6 12-9.6S30.2 27.4 32 34Z" fill="#FFFDF6" opacity=".8"/>
+          </svg>
+        </button>
+      </header>
+
+      <!-- C · 品牌标题：原图排版即主视觉，不重复覆盖；此处提供真实语义标题 -->
+      <h1 class="sr-only">DIMENSION ANCHOR · 维度锚点 — 星轨大厅</h1>
+
+      <div class="cards">
+
+        <!-- D · 今日月相（原图玻璃卡保留，只有会变的那一行换成真实文本） -->
+        <aside class="card card--moon" aria-labelledby="moonPhase">
+          <span class="moon-ico" aria-hidden="true">
+            <svg viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="34" fill="#2C2448" opacity=".92"/>
+              <path id="moonLit" d="" fill="#FFFCF2"/>
+              <circle cx="50" cy="50" r="34" fill="none" stroke="#FFFCF2" stroke-width="1.1" opacity=".55"/>
+            </svg>
+          </span>
+          <p class="lived lived--moon">
+            <strong id="moonPhase">亏凸月</strong><i>·</i><span id="moonPercent">64%</span>
+          </p>
+          <p class="sr-only" id="moonDetail">月面照亮 64%</p>
+        </aside>
+
+        <!-- E · 今日主题 + 探索入口 -->
+        <aside class="card card--theme" aria-labelledby="themeLine">
+          <p class="lived lived--theme" id="themeLine">在迷雾中，找到属于你的光</p>
+          <a class="theme-go" href="#/daily">
+            <span>探索今日</span>
+          </a>
+        </aside>
+
+      </div>
+
+      <!-- F · 五大空间入口 -->
+      <nav class="portals" aria-label="五大空间入口">
+
+        <a class="portal" href="#/tarot" data-space="tarot" aria-label="塔罗观测站 · 探索命运的指引">
+          <span class="portal__ring" aria-hidden="true"></span>
+          <span class="portal__arch" aria-hidden="true"><i class="portal__key"></i></span>
+          <span class="portal__scene" aria-hidden="true">
+            <svg class="ps-chart" viewBox="0 0 120 120" focusable="false">
+              <circle cx="60" cy="60" r="52" />
+              <circle cx="60" cy="60" r="38" />
+              <circle cx="60" cy="60" r="22" stroke-dasharray="1 6" />
+              <g class="ps-chart__dots">
+                <circle cx="60" cy="8" r="1.6" /><circle cx="106" cy="44" r="1.2" />
+                <circle cx="88" cy="100" r="1.4" /><circle cx="28" cy="92" r="1.2" />
+                <circle cx="14" cy="42" r="1.5" /><circle cx="74" cy="26" r="1" />
+              </g>
+              <line x1="60" y1="8" x2="106" y2="44" />
+              <line x1="106" y1="44" x2="88" y2="100" />
+              <line x1="28" y1="92" x2="14" y2="42" />
+            </svg>
+            <span class="ps-tarot__edge"></span>
+            <span class="ps-card"></span>
+          </span>
+          <span class="portal__label">
+            <i class="portal__en" aria-hidden="true">TAROT OBSERVATORY</i>
+            <b>塔罗观测站</b>
+            <em>探索命运的指引</em>
+            <i class="portal__go" aria-hidden="true">
+              <svg viewBox="0 0 16 16"><path d="M2 8h11M9 3.6 13.4 8 9 12.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </i>
+          </span>
+        </a>
+
+        <a class="portal" href="#/post" data-space="post" aria-label="星际通讯局 · 聆听来自星辰的信">
+          <span class="portal__ring" aria-hidden="true"></span>
+          <span class="portal__arch" aria-hidden="true"><i class="portal__key"></i></span>
+          <span class="portal__scene" aria-hidden="true">
+            <span class="ps-mail__air"></span>
+            <span class="ps-mail__flap"></span>
+            <span class="ps-mail__light"></span>
+            <!-- 信笺：小信封从入口里缓缓升起 -->
+            <span class="ps-mail__note">
+              <svg viewBox="0 0 40 30"><rect class="amb-env-body" x="1" y="1" width="38" height="28" rx="3"/><path class="amb-env-line" d="M2 4 20 18 38 4"/></svg>
+            </span>
+            <span class="ps-mail__note ps-mail__note--2">
+              <svg viewBox="0 0 40 30"><rect class="amb-env-body" x="1" y="1" width="38" height="28" rx="3"/><path class="amb-env-line" d="M2 4 20 18 38 4"/></svg>
+            </span>
+          </span>
+          <span class="portal__label">
+            <i class="portal__en" aria-hidden="true">STELLAR POSTAL BUREAU</i>
+            <b>星际通讯局</b>
+            <em>聆听来自星辰的信</em>
+            <i class="portal__go" aria-hidden="true">
+              <svg viewBox="0 0 16 16"><path d="M2 8h11M9 3.6 13.4 8 9 12.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </i>
+          </span>
+        </a>
+
+        <a class="portal" href="#/cottage" data-space="cottage" aria-label="我们的小屋 · 收藏每一段时光">
+          <span class="portal__ring" aria-hidden="true"></span>
+          <span class="portal__arch" aria-hidden="true"><i class="portal__key"></i></span>
+          <span class="portal__scene" aria-hidden="true">
+            <span class="ps-cottage__warm"></span>
+            <span class="ps-cottage__veil ps-cottage__veil--l"></span>
+            <span class="ps-cottage__veil ps-cottage__veil--r"></span>
+          </span>
+          <span class="portal__label">
+            <i class="portal__en" aria-hidden="true">OUR COTTAGE</i>
+            <b>我们的小屋</b>
+            <em>收藏每一段时光</em>
+            <i class="portal__go" aria-hidden="true">
+              <svg viewBox="0 0 16 16"><path d="M2 8h11M9 3.6 13.4 8 9 12.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </i>
+          </span>
+        </a>
+
+        <a class="portal" href="#/archive" data-space="archive" aria-label="星轨档案馆 · 珍藏所有的记忆">
+          <span class="portal__ring" aria-hidden="true"></span>
+          <span class="portal__arch" aria-hidden="true"><i class="portal__key"></i></span>
+          <span class="portal__scene" aria-hidden="true">
+            <span class="ps-book" style="left:21%;top:10%;height:10%;animation-delay:-2s"></span>
+            <span class="ps-book" style="left:25.5%;top:11%;height:8%;animation-delay:-9s"></span>
+            <span class="ps-book" style="left:70%;top:10.5%;height:9.5%;animation-delay:-14s"></span>
+            <span class="ps-book" style="left:75%;top:9.5%;height:7.5%;animation-delay:-5s"></span>
+            <span class="ps-page"></span>
+          </span>
+          <span class="portal__label">
+            <i class="portal__en" aria-hidden="true">STARTRACK ARCHIVE</i>
+            <b>星轨档案馆</b>
+            <em>珍藏所有的记忆</em>
+            <i class="portal__go" aria-hidden="true">
+              <svg viewBox="0 0 16 16"><path d="M2 8h11M9 3.6 13.4 8 9 12.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </i>
+          </span>
+        </a>
+
+        <a class="portal" href="#/daily" data-space="daily" aria-label="每日探索 · 开启今日的奇遇">
+          <span class="portal__ring" aria-hidden="true"></span>
+          <span class="portal__arch" aria-hidden="true"><i class="portal__key"></i></span>
+          <span class="portal__scene" aria-hidden="true">
+            <span class="ps-star__trail"></span>
+            <span class="ps-star">
+              <svg viewBox="0 0 24 24" focusable="false">
+                <path d="M12 2.5c.85 5.2 2.35 6.7 7.55 7.55-5.2.85-6.7 2.35-7.55 7.55-.85-5.2-2.35-6.7-7.55-7.55 5.2-.85 6.7-2.35 7.55-7.55Z"
+                      fill="currentColor" />
+                <circle cx="12" cy="10.05" r=".9" fill="#FFFFFF" />
+              </svg>
+            </span>
+          </span>
+          <span class="portal__label">
+            <i class="portal__en" aria-hidden="true">DAILY EXPEDITION</i>
+            <b>每日探索</b>
+            <em>开启今日的奇遇</em>
+            <i class="portal__go" aria-hidden="true">
+              <svg viewBox="0 0 16 16"><path d="M2 8h11M9 3.6 13.4 8 9 12.4" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </i>
+          </span>
+        </a>
+
+      </nav>
+
+      <!-- 页脚（移动端使用；桌面端保留原图装饰文字） -->
+      <footer class="foot">
+        <span>Every dimension holds a memory</span>
+      </footer>
+
+    </div><!-- /ui -->
+
+    <!-- ══ 隐藏星际讯息：星星落点容器 ══ -->
+    <div class="star-field" id="starField" aria-live="polite"></div>
+
+    <!-- 动态效果开关：完整 / 柔和 / 减少（默认跟随系统设置） -->
+    <div class="motion-switch" role="radiogroup" aria-label="动态效果">
+      <button type="button" role="radio" aria-checked="true" tabindex="0" data-level="full">完整</button>
+      <button type="button" role="radio" aria-checked="false" tabindex="-1" data-level="soft">柔和</button>
+      <button type="button" role="radio" aria-checked="false" tabindex="-1" data-level="reduced">减少</button>
+    </div>
+
+    <!-- ══ 隐藏星际讯息 · 信笺 ══ -->
+    <div class="star-letter" id="starLetter" hidden>
+      <div class="star-letter__scrim" data-letter-close></div>
+      <article class="star-letter__card" role="dialog" aria-modal="true"
+               aria-labelledby="letterTitle" aria-describedby="letterBody">
+        <button class="star-letter__x" type="button" data-letter-close aria-label="关闭">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.6 3.6 12.4 12.4M12.4 3.6 3.6 12.4"
+            fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </button>
+        <p class="star-letter__kicker">THE HIDDEN STAR</p>
+        <h2 class="star-letter__title" id="letterTitle">一封落在星轨上的短笺</h2>
+        <p class="star-letter__meta"><span id="letterKind">偶遇讯息</span> · <span id="letterDate"></span></p>
+        <div class="star-letter__rule"></div>
+        <p class="star-letter__body" id="letterBody"></p>
+        <p class="star-letter__note" id="letterNote"></p>
+        <div class="star-letter__actions">
+          <button class="sl-btn sl-btn--gold" type="button" id="letterSave">收藏这颗星</button>
+          <a class="sl-btn" href="#/post" id="letterGo" hidden>前往星际通讯局</a>
+          <button class="sl-btn sl-btn--ghost" type="button" data-letter-close>关闭</button>
+        </div>
+      </article>
+    </div>
+
+  </div><!-- /plate -->
+</main>
+
+<!-- 收藏成功的小反馈 -->
+<div class="hall-toast" id="hallToast" role="status" aria-live="polite"></div>
+
+<!-- 移动端任务栏：沿用大厅的玻璃 + 金线语言，桌面端不显示 -->
+<nav class="tabbar" aria-label="主导航">
+  <a href="hall-motion.html" class="is-active" aria-current="page">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.2" stroke="currentColor" stroke-width="1.2"/><circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="1.1"/><path d="M12 2.2v3M12 18.8v3M2.2 12h3M18.8 12h3" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+    <span>首页</span></a>
+  <a href="#/tarot">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6.4" y="4.2" width="11.2" height="15.6" rx="1.8" stroke="currentColor" stroke-width="1.2"/><path d="M12 9.2l1 2.1 2.3.3-1.7 1.6.5 2.3-2.1-1.2-2.1 1.2.5-2.3-1.7-1.6 2.3-.3z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>
+    <span>塔罗</span></a>
+  <a href="#/post">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.6" y="6.6" width="14.8" height="11" rx="1.8" stroke="currentColor" stroke-width="1.2"/><path d="M5.4 7.6 12 12.6l6.6-5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+    <span>来信</span></a>
+  <a href="#/cottage">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 11.4 12 5.6l7 5.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6.6 10.6v7.8h10.8v-7.8" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M10.4 18.4v-4.2a1.6 1.6 0 0 1 3.2 0v4.2" stroke="currentColor" stroke-width="1.1"/></svg>
+    <span>小屋</span></a>
+  <a href="#/archive">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.4 5.8h13.2M5.4 10.4h13.2M5.4 15h9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><circle cx="17.2" cy="16.4" r="1.4" stroke="currentColor" stroke-width="1"/></svg>
+    <span>档案</span></a>
+</nav>
+
+<!-- 空间入口：真实的页面态切换（hash 路由），非装饰 -->
+<div class="gate" id="gate" hidden>
+  <div class="gate__scrim" data-close></div>
+  <div class="gate__panel" role="dialog" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gateDesc">
+    <button class="gate__x" type="button" data-close aria-label="关闭">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+    </button>
+    <p class="gate__kicker">THE FIVE PORTALS</p>
+    <h2 class="gate__title" id="gateTitle">塔罗观测站</h2>
+    <p class="gate__en" id="gateEn">Tarot Observatory</p>
+    <p class="gate__desc" id="gateDesc">探索命运的指引</p>
+    <p class="gate__soon" id="gateSoon">星光正在汇聚 · 空间即将开启</p>
+    <div class="gate__actions">
+      <a class="gate__enter" id="gateEnter" href="post.html" hidden>进入</a>
+      <button class="gate__back" type="button" data-close>返回大厅</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ 流星雨覆盖层：铺满视口，不接收任何指针事件 ══ -->
+<div class="meteor-field" id="meteorField" aria-hidden="true"></div>
+
+<script>
+/* 流星雨：一次生成，之后全部交给 CSS 循环。
+   数量跟随动态档位：完整 14 / 柔和 6 / 明确减少 0。
+   起点与飞行向量按视口尺寸算一次，固定不随滚动移动。 */
+(function () {
+  var field = document.getElementById('meteorField');
+  if (!field) return;
+  var mode = document.documentElement.getAttribute('data-motion') || 'full';
+  if (mode === 'reduced') return;
+
+  var W = window.innerWidth, H = window.innerHeight;
+  var ANG = 28 * Math.PI / 180, ca = Math.cos(ANG), sa = Math.sin(ANG);
+  var n = mode === 'soft' ? 7 : (W < 760 ? 12 : 16);
+  var out = '';
+
+  for (var i = 0; i < n; i++) {
+    var len   = 92 + Math.random() * 180;
+    var dist  = 250 + Math.random() * 680;
+    var dur   = 3.1 + Math.random() * 3.7;
+    var delay = Math.random() * dur * 1.7;
+    var x1    = (Math.random() * 1.08 - 0.04) * W;
+    var y1    = (Math.random() * 0.74 - 0.28) * H;
+    var x2    = x1 - dist * ca;
+    var y2    = y1 + dist * sa;
+    out += '<span class="meteor" style="' +
+      '--len:' + len.toFixed(0) + 'px;--w:' + (0.9 + Math.random() * 1.2).toFixed(2) + 'px;' +
+      '--x1:' + x1.toFixed(0) + 'px;--y1:' + y1.toFixed(0) + 'px;' +
+      '--x2:' + x2.toFixed(0) + 'px;--y2:' + y2.toFixed(0) + 'px;' +
+      '--dur:' + dur.toFixed(2) + 's;--delay:' + delay.toFixed(2) + 's;"></span>';
+  }
+  field.innerHTML = out;
+})();
+</script>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/hall.js?v=20261107"></script>
+<!-- 本地档案层：收藏直接写进它已有的 favs 库，不另起一套 -->
+<script src="assets/js/da-store.js"></script>
+<!-- 动画调度中心 → 环境 → 入口 → 隐藏讯息 → 轨道细节 -->
+<script src="assets/js/hall-motion-core.js"></script>
+<script src="assets/js/hall-scene.js"></script>
+<script src="assets/js/hall-portals.js"></script>
+<script src="assets/js/hall-hidden.js"></script>
+<script src="assets/js/hall-motion.js"></script>
+
+<script>
+/* 只有明确选了"减少"才暂停视频；系统减少动态默认降到柔和，不停 */
+try { if (document.documentElement.dataset.motion === 'reduced') {
+  document.querySelectorAll('video').forEach(function (v) { v.pause(); });
+} } catch (e) {}
+</script>
+</body>
+</html>

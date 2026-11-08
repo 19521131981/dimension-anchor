@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0B0818" />
+<link rel="icon" href="data:,">
+<title>DIMENSION ANCHOR TAROT｜维度锚点塔罗 — 牌库</title>
+<meta name="description" content="维度锚点塔罗：78 张原创牌面，22 张大阿尔卡那与四个花色的 56 张小牌，含正逆位牌意、爱情、亲情、情绪与现实建议。" />
+<link rel="stylesheet" href="assets/css/tarot.css" />
+<link rel="stylesheet" href="assets/css/cards.css" />
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261108d" />
+</head>
+<body class="tarot">
+
+<!-- 环境背景：2K 星空视频，星星原地呼吸闪烁、银河缓流、色调持续漂移 -->
+<div class="tamb" aria-hidden="true">
+  <video autoplay muted loop playsinline preload="auto"
+         src="assets/media/tarot-ambient.mp4"></video>
+  <div class="amb-dust"></div>
+</div>
+
+<div class="veil" aria-hidden="true"></div>
+
+<header class="top">
+  <a class="brand" href="index.html" aria-label="返回星轨大厅">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+      <path d="M37.8 9.6a23 23 0 1 0 0 44.8 19.4 19.4 0 1 1 0-44.8Z" fill="currentColor" opacity=".9"/>
+      <path d="M43.6 32 45.6 37.6 51.2 39.6 45.6 41.6 43.6 47.2 41.6 41.6 36 39.6 41.6 37.6Z" fill="#FFF8E6" opacity=".9"/>
+    </svg>
+    <span>DIMENSION<br />ANCHOR</span>
+  </a>
+  <nav class="top__nav" aria-label="主导航">
+    <a href="index.html">首页</a>
+    <a href="tarot.html" class="is-active" aria-current="page">塔罗</a>
+    <a href="index.html#/post">来信</a>
+    <a href="index.html#/cottage">小屋</a>
+    <a href="index.html#/archive">档案</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <p class="hero__kicker">TAROT OBSERVATORY</p>
+  <h1>维度锚点塔罗</h1>
+  <p>七十八张原创牌面 · 二十二张大阿尔卡那 · 四个花色的五十六张小牌<br />
+     每一张都有自己的画面、自己的牌意、自己的位置</p>
+  <div class="hero__rule" aria-hidden="true"></div>
+</section>
+
+<div class="tools" role="group" aria-label="牌组筛选">
+  <button class="chip is-on" data-filter="all">全部 <span class="chip__n">78</span></button>
+  <button class="chip" data-filter="major">大阿尔卡那 <span class="chip__n">22</span></button>
+  <button class="chip" data-filter="cups">圣杯 <span class="chip__n">14</span></button>
+  <button class="chip" data-filter="wands">权杖 <span class="chip__n">14</span></button>
+  <button class="chip" data-filter="swords">宝剑 <span class="chip__n">14</span></button>
+  <button class="chip" data-filter="pentacles">星币 <span class="chip__n">14</span></button>
+  <button class="tools__draw" id="drawOne" type="button">抽 一 张</button>
+</div>
+
+<section class="backs" aria-labelledby="backsT">
+  <div class="backs__head">
+    <p class="backs__k">CARD BACKS</p>
+    <h2 id="backsT">五套牌背</h2>
+    <p class="backs__d">洗牌、盲抽、未翻开的牌阵，都以牌所属花色的牌背示人；翻开之后的才是牌面。</p>
+  </div>
+  <ul class="backs__row" id="backRow"></ul>
+</section>
+
+<main class="library">
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer class="foot">Every dimension holds a memory</footer>
+
+<!-- 牌面详情 -->
+<div class="drawer" id="drawer" hidden>
+  <div class="drawer__scrim" data-close></div>
+  <aside class="drawer__panel" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <button class="drawer__x" type="button" data-close aria-label="关闭">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="dc" id="dCard"></div>
+    <div class="dhead">
+      <p class="dhead__num" id="dNum"></p>
+      <h2 id="dTitle"></h2>
+      <p class="dhead__en" id="dEn"></p>
+      <div class="dhead__kw" id="dKw"></div>
+    </div>
+
+    <section class="dsec">
+      <p class="dsec__t">正位 · UPRIGHT</p>
+      <p id="dUp"></p>
+    </section>
+
+    <div class="drev">
+      <h4>逆位 · REVERSED</h4>
+      <p id="dRev"></p>
+    </div>
+
+    <div class="dtwo">
+      <div class="dbox"><h4>爱情与关系</h4><p id="dLove"></p></div>
+      <div class="dbox"><h4>友情与亲情</h4><p id="dKin"></p></div>
+      <div class="dbox"><h4>情绪与内在</h4><p id="dMood"></p></div>
+      <div class="dbox"><h4>现实建议</h4><p id="dAct"></p></div>
+    </div>
+
+    <section class="dsec">
+      <p class="dsec__t">牌面象征</p>
+      <p id="dSym"></p>
+    </section>
+  </aside>
+</div>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/tarot-deck.js"></script>
+<script src="assets/js/tarot-art.js"></script>
+<script src="assets/js/tarot-scenes.js"></script>
+<script src="assets/js/tarot-images.js"></script>
+<script src="assets/js/tarot-backs.js"></script>
+<script src="assets/js/da-card.js"></script>
+<script src="assets/js/tarot-gallery.js"></script>
+</body>
+</html>

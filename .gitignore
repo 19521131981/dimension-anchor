@@ -1,0 +1,17 @@
+# ── 绝不上传 ────────────────────────────────────────────────
+# 环境变量：含 DEEPSEEK_API_KEY 等密钥
+.env
+.env.*
+!.env.example
+
+# 会话缓存 / 工具内部文件（约 650MB）
+.workbuddy/
+*.genie
+
+# ── 常规忽略 ────────────────────────────────────────────────
+node_modules/
+.DS_Store
+*.log
+npm-debug.log*
+.vscode/
+.idea/

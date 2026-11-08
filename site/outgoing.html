@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#131028" />
+<link rel="icon" href="data:,">
+<title>寄往星际的信 · 寄信站｜DIMENSION ANCHOR</title>
+<meta name="description" content="寄信站：挑选收信角色，亲手写下你想说的话。可以保存草稿，确认封印后才寄出。" />
+<link rel="preload" as="image" href="assets/media/post/writing-room.jpg" />
+<link rel="stylesheet" href="assets/css/post.css?v=20261108d" />
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261108d" />
+</head>
+<body>
+
+<div class="scene scene--desk" aria-hidden="true">
+  <img class="scene__img" src="assets/media/post/writing-room.jpg" alt="" />
+  <video class="scene__light" autoplay muted loop playsinline preload="auto"
+         poster="assets/media/post/writing-room.jpg" src="assets/media/post/writing-room.mp4"></video>
+  <div class="amb-dust" aria-hidden="true"></div>
+  <div class="scene__veil"></div>
+</div>
+
+<!-- 飘动的信笺：书写室里，写好的信正轻轻飘起 -->
+<span class="amb-letter amb-letter--1" aria-hidden="true">
+  <svg viewBox="0 0 40 30"><rect class="amb-env-body" x="1" y="1" width="38" height="28" rx="3"/><path class="amb-env-line" d="M2 4 20 18 38 4"/></svg>
+</span>
+<span class="amb-letter amb-letter--2" aria-hidden="true">
+  <svg viewBox="0 0 40 30"><rect class="amb-env-body" x="1" y="1" width="38" height="28" rx="3"/><path class="amb-env-line" d="M2 4 20 18 38 4"/></svg>
+</span>
+
+<header class="nav">
+  <a class="brand" href="hall-motion.html" aria-label="返回星轨大厅">
+    <svg viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+      <path d="M37.8 9.6a23 23 0 1 0 0 44.8 19.4 19.4 0 1 1 0-44.8Z" fill="currentColor" opacity=".9"/>
+      <path d="M43.6 32 45.6 37.6 51.2 39.6 45.6 41.6 43.6 47.2 41.6 41.6 36 39.6 41.6 37.6Z" fill="#FFF8E6" opacity=".9"/>
+    </svg>
+    <span>DIMENSION<br />ANCHOR</span>
+  </a>
+  <nav class="nav__links" aria-label="通讯局">
+    <a href="post.html">通讯局</a>
+    <a href="incoming.html">收信站</a>
+    <span class="here" aria-current="page">寄信站</span>
+  </nav>
+  <span class="nav__mode" id="modeChip" hidden><i class="dot"></i><span id="modeText"></span></span>
+</header>
+
+<main>
+  <section class="sp-head" style="grid-template-columns:1fr">
+    <div>
+      <p class="eyebrow">OUTGOING LETTERS</p>
+      <h1>寄往星际的信</h1>
+      <p class="sp-head__lede">烛光落在石桌上，信纸摊开着。写下标题与正文，挑选收信的角色——可以先存成草稿，想清楚了再封印寄出。信件保存在你自己的档案里。</p>
+    </div>
+  </section>
+
+  <section class="sp-body">
+    <div class="reply-note" id="replyNote" hidden>
+      <span>正在回信给 <b id="replyWho"></b>，原文语境已带入。</span>
+      <button type="button" id="replyCancel">不复信，写新信</button>
+    </div>
+
+    <div class="out-grid">
+      <aside class="out-side">
+        <div class="out-side__hd">
+          <h2 id="sideTitle">草稿</h2>
+          <div class="chips" id="outTabs" style="margin-left:auto">
+            <button type="button" data-t="draft" class="is-on">草稿</button>
+            <button type="button" data-t="sent">已寄出</button>
+          </div>
+        </div>
+        <div class="out-list" id="outList"></div>
+      </aside>
+
+      <div class="compose">
+        <div class="compose__paper">
+          <img class="compose__corner compose__corner--tl" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
+          <img class="compose__corner compose__corner--tr" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
+          <img class="compose__corner compose__corner--bl" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
+          <img class="compose__corner compose__corner--br" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
+          <img class="compose__flourish" src="assets/media/post/flourish.png" alt="" aria-hidden="true" />
+          <div class="compose__row">
+            <label for="toChar">致</label>
+            <select id="toChar"></select>
+            <input id="toName" hidden maxlength="24" placeholder="TA 的名字或称呼" />
+          </div>
+          <div class="compose__row" style="border-bottom:1px solid rgba(120,92,196,.18)">
+            <label for="cTitle">主题</label>
+            <input id="cTitle" maxlength="30" placeholder="想一个只有你们懂的名字" />
+          </div>
+          <textarea class="compose__body" id="cBody" maxlength="4000"
+            placeholder="烛火很轻，纸很凉。把今晚想说的，慢慢写下来。"></textarea>
+          <div class="compose__foot">
+            <span class="compose__count" id="cCount">0 字</span>
+            <button class="btn btn--paper-quiet" type="button" id="cClear">清空</button>
+            <button class="btn btn--paper-quiet" type="button" id="cSave">存为草稿</button>
+            <button class="btn btn--plate" type="button" id="cSend">封印寄出</button>
+          </div>
+        </div>
+        <p class="hint" style="color:rgba(169,178,203,.75);font-size:11.5px;letter-spacing:.08em">
+          「寄出」指存入你自己的已寄信匣，作为这段关系的一部分收藏，不会发送到现实邮箱。
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- 寄出确认 -->
+<div class="dialog" id="dlg" hidden>
+  <div class="overlay__scrim" data-close></div>
+  <div class="dialog__box" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+    <button class="dialog__x" type="button" data-close aria-label="关闭">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>
+    </button>
+    <p class="dialog__step">SEAL &amp; SEND</p>
+    <h2 class="dialog__title" id="dlgTitle">确认寄出这封信？</h2>
+    <div class="confirm-view" id="dlgView"></div>
+    <div class="dialog__foot">
+      <button class="btn btn--quiet" type="button" data-close>继续编辑</button>
+      <button class="btn btn--plate" type="button" id="dlgSend">封印寄出</button>
+    </div>
+  </div>
+</div>
+
+<!-- 已寄出信件阅读 -->
+<div class="overlay" id="reader" hidden>
+  <div class="overlay__scrim" data-close></div>
+  <div class="overlay__stage">
+    <article class="paper" id="paper">
+      <img class="paper__corner paper__corner--tl" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
+      <img class="paper__corner paper__corner--tr" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
+      <img class="paper__corner paper__corner--bl" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
+      <img class="paper__corner paper__corner--br" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
+      <img class="paper__flourish" src="assets/media/post/flourish.png" alt="" aria-hidden="true" />
+      <p class="paper__kind" id="pKind"></p>
+      <h2 class="paper__title" id="pTitle"></h2>
+      <div class="paper__body" id="pBody"></div>
+      <p class="paper__meta" id="pMeta"></p>
+    </article>
+    <div class="reader__acts">
+      <button class="btn btn--quiet" id="actCopy" type="button">复制全文</button>
+      <button class="btn btn--quiet" id="actDel" type="button">删除</button>
+      <button class="btn" type="button" data-close>回到书写室</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/da-store.js"></script>
+<script src="assets/js/da-letter.js"></script>
+<script src="assets/js/da-cloud-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+<script src="assets/js/da-auth.js"></script>
+<script src="assets/js/da-mail.js"></script>
+<script src="assets/js/outgoing.js"></script>
+</body>
+</html>

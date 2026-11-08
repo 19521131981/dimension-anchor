@@ -1,0 +1,494 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 星轨大厅 · 环境与星盘层
+   ----------------------------------------------------------------------
+   这一层只放「光」和「空气」，不放任何新造的场景元素：
+
+     .scene__clouds--far / --near   远景两层云雾（方向相反、速度不同）
+     .scene__floor / __ripple       地面月光反射与偶发水波
+     .scene__pillar                 拱柱边缘掠过的月光
+     .scene__garden                 两侧花枝的呼吸光（不做形变，见验收说明）
+     .starplate                     中央浑天仪的星盘环、指示点、星核
+
+   所有层都是独立 DOM / SVG，原始背景图不参与任何变换。
+   动画只碰 transform / opacity。
+   ══════════════════════════════════════════════════════════════════════ */
+
+.scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ══ 远景云雾 · 第一层（更远、更淡、向左） ══════════════════════════
+   只落在远景带（26%–62%），两端渐隐，中间绕开月亮 —— 云团中心分别
+   在 10% / 24% / 76% / 92% 的横向位置，月亮所在的 38%–62% 没有云。 */
+.scene__clouds {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+.scene__clouds--far {
+  opacity: .26;
+  filter: blur(20px);
+  background:
+    radial-gradient(30% 13% at 10% 44%, rgba(214, 204, 248, .55), transparent 72%),
+    radial-gradient(24% 10% at 23% 49%, rgba(255, 246, 236, .48), transparent 74%),
+    radial-gradient(30% 12% at 77% 45%, rgba(212, 202, 248, .52), transparent 72%),
+    radial-gradient(22% 9%  at 92% 50%, rgba(255, 248, 238, .44), transparent 74%);
+  -webkit-mask-image: linear-gradient(180deg,
+    transparent 24%, #000 36%, #000 52%, transparent 60%);
+          mask-image: linear-gradient(180deg,
+    transparent 24%, #000 36%, #000 52%, transparent 60%);
+  animation: cloudDriftL 58s ease-in-out infinite alternate;
+}
+
+/* ══ 第二层（更近、更大、向右） ══ */
+.scene__clouds--near {
+  opacity: .20;
+  filter: blur(13px);
+  background:
+    radial-gradient(24% 11% at 16% 55%, rgba(255, 248, 240, .50), transparent 72%),
+    radial-gradient(28% 12% at 33% 59%, rgba(226, 216, 252, .46), transparent 72%),
+    radial-gradient(26% 11% at 68% 57%, rgba(255, 248, 240, .44), transparent 72%),
+    radial-gradient(22% 10% at 86% 61%, rgba(226, 216, 252, .40), transparent 72%);
+  -webkit-mask-image: linear-gradient(180deg,
+    transparent 34%, #000 44%, #000 58%, transparent 64%);
+          mask-image: linear-gradient(180deg,
+    transparent 34%, #000 44%, #000 58%, transparent 64%);
+  animation: cloudDriftR 79s ease-in-out infinite alternate;
+}
+
+@keyframes cloudDriftL {
+  from { transform: translate3d(-2.1%, 0, 0); }
+  to   { transform: translate3d(1.9%, -.5%, 0); }
+}
+@keyframes cloudDriftR {
+  from { transform: translate3d(2.3%, .4%, 0); }
+  to   { transform: translate3d(-1.7%, -.3%, 0); }
+}
+
+/* ══ 地面反射 ══════════════════════════════════════════════════════
+   原始地面纹理完整保留，这里只叠一层加法光：中央最亮，向两侧铺开，
+   整体亮度以 19 秒为周期缓慢起伏，另有 22 秒的横向扫光。 */
+.scene__floor {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  opacity: .40;
+  background:
+    radial-gradient(30% 9% at 50% 93%, rgba(255, 251, 244, .46), transparent 72%),
+    radial-gradient(17% 6% at 33% 96%, rgba(226, 216, 255, .28), transparent 74%),
+    radial-gradient(17% 6% at 67% 96%, rgba(226, 216, 255, .28), transparent 74%);
+  filter: blur(9px);
+  -webkit-mask-image: linear-gradient(180deg, transparent 78%, #000 87%, #000 100%);
+          mask-image: linear-gradient(180deg, transparent 78%, #000 87%, #000 100%);
+  animation: floorBreathe 19s ease-in-out infinite;
+}
+
+.scene__floor::after {
+  content: "";
+  position: absolute;
+  left: -35%;
+  right: -35%;
+  top: 86%;
+  bottom: -8%;
+  background: linear-gradient(102deg,
+    transparent 8%, rgba(255, 252, 244, .30) 34%,
+    rgba(255, 248, 236, .16) 46%, transparent 62%);
+  filter: blur(22px);
+  animation: floorSweep 22s linear infinite;
+}
+
+@keyframes floorBreathe {
+  0%, 100% { opacity: .32; transform: translate3d(0, 0, 0); }
+  48%      { opacity: .46; transform: translate3d(0, -.35%, 0); }
+}
+@keyframes floorSweep {
+  0%   { transform: translate3d(-9%, 0, 0); opacity: .38; }
+  50%  { opacity: .75; }
+  100% { transform: translate3d(9%, 0, 0); opacity: .38; }
+}
+
+/* 偶发水波：只在反射层上出现，不扭曲建筑与入口（没有 filter 位移） */
+.scene__ripple {
+  position: absolute;
+  left: 50%;
+  top: 93.5%;
+  width: 46%;
+  height: 7%;
+  transform: translate(-50%, -50%) scale(.14);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 252, 244, .58);
+  box-shadow: 0 0 18px rgba(226, 216, 255, .32);
+  opacity: 0;
+  will-change: transform, opacity;
+}
+.scene__ripple--2 { width: 34%; height: 5%; border-color: rgba(255, 248, 232, .32); }
+.scene__ripple.is-on { animation: rippleOut 5.6s cubic-bezier(.2, .68, .3, 1) 1 both; }
+.scene__ripple--2.is-on { animation-duration: 4.4s; animation-delay: .5s; }
+
+@keyframes rippleOut {
+  0%   { opacity: 0;   transform: translate(-50%, -50%) scale(.12); }
+  10%  { opacity: .78; }
+  55%  { opacity: .30; }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(1.35); }
+}
+
+/* ══ 拱柱边缘的月光 ════════════════════════════════════════════════
+   一根 2–3px 宽的竖向柔光，从柱脚缓缓上移到柱顶，单次约 4 秒，
+   每根柱子错开 5–9 秒；34 秒一轮，不会连成灯带。 */
+.scene__pillar {
+  position: absolute;
+  top: 21%;
+  width: .19%;
+  height: 32%;
+  background: linear-gradient(180deg,
+    transparent 0%, rgba(255, 252, 244, .00) 18%,
+    rgba(255, 252, 244, .85) 46%, rgba(255, 246, 228, .55) 64%,
+    transparent 100%);
+  mix-blend-mode: screen;
+  filter: blur(1.3px);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: pillarSweep 34s cubic-bezier(.42, 0, .5, 1) infinite;
+}
+
+@keyframes pillarSweep {
+  0%, 63%  { opacity: 0;   transform: translate3d(0, 22%, 0); }
+  67%      { opacity: .55; }
+  72%      { opacity: .46; }
+  79%      { opacity: 0;   transform: translate3d(0, -16%, 0); }
+  100%     { opacity: 0;   transform: translate3d(0, -16%, 0); }
+}
+
+/* ══ 两侧花枝的呼吸光 ══════════════════════════════════════════════
+   说明：花枝与原画背景是同一张位图，没有独立 alpha 素材，无法在不留下
+   重影的前提下做形变。这里改为在花枝簇上叠一层极慢的月光呼吸，
+   让这一带「活」起来，同时不做任何几何变换（详见验收说明）。 */
+.scene__garden {
+  position: absolute;
+  top: 30%;
+  height: 52%;
+  width: 15%;
+  mix-blend-mode: screen;
+  opacity: .18;
+  background:
+    radial-gradient(46% 34% at 52% 38%, rgba(255, 250, 240, .95), transparent 72%),
+    radial-gradient(34% 26% at 40% 68%, rgba(240, 226, 255, .7), transparent 74%);
+  filter: blur(15px);
+  will-change: transform, opacity;
+  animation: gardenBreath 23s ease-in-out infinite;
+}
+.scene__garden--l { left: -3%; }
+.scene__garden--r { right: -3%; animation-duration: 29s; animation-delay: -11s; }
+
+@keyframes gardenBreath {
+  0%, 100% { opacity: .15;  transform: translate3d(0, 0, 0) scale(1); }
+  42%      { opacity: .30;  transform: translate3d(.3%, -.5%, 0) scale(1.015); }
+  70%      { opacity: .19;  transform: translate3d(-.2%, .3%, 0) scale(1.005); }
+}
+
+/* ══ 月 → 星盘的能量呼应 ════════════════════════════════════════════
+   一道极细的银白光线从月亮下缘垂到星盘，两侧有轻微辉光；
+   只有触发时才 opacity 上升，平时完全不可见。 */
+.scene__beam {
+  position: absolute;
+  left: 48.2%;
+  top: 31.5%;
+  width: 3.2%;
+  height: 17%;
+  opacity: 0;
+  background: radial-gradient(48% 60% at 50% 50%,
+    rgba(255, 252, 244, .85), rgba(226, 214, 255, .30) 46%, transparent 76%);
+  filter: blur(3px);
+  mix-blend-mode: screen;
+}
+.scene__beam::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  bottom: 4%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg,
+    transparent, rgba(255, 253, 248, .95) 22%, rgba(255, 253, 248, .7) 70%, transparent);
+  box-shadow: 0 0 8px rgba(255, 250, 238, .7);
+}
+.scene__beam.is-on { animation: beamPulse 8.4s cubic-bezier(.3, .1, .3, 1) both; }
+
+@keyframes beamPulse {
+  0%   { opacity: 0; }
+  16%  { opacity: .55; }
+  42%  { opacity: .85; }
+  62%  { opacity: .62; }
+  100% { opacity: 0; }
+}
+
+/* ══ 花瓣（前景，独立元素，飘出画面即销毁） ═══════════════════════ */
+.petals {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  overflow: hidden;
+}
+.petal {
+  position: absolute;
+  width: 9px;
+  height: 7px;
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: petalFall var(--dur, 17s) cubic-bezier(.36, .12, .56, .86) forwards;
+}
+.petal svg { display: block; width: 100%; height: 100%; }
+
+@keyframes petalFall {
+  0%   { opacity: 0;   transform: translate3d(0, 0, 0) rotate(0deg); }
+  9%   { opacity: .82; }
+  46%  { opacity: .70; transform: translate3d(calc(var(--dx, 40px) * .62), calc(var(--dy, 260px) * .48), 0)
+                        rotate(calc(var(--rot, 200deg) * .45)); }
+  86%  { opacity: .40; }
+  100% { opacity: 0;   transform: translate3d(var(--dx, 40px), var(--dy, 260px), 0)
+                        rotate(var(--rot, 200deg)); }
+}
+
+/* ══ 中央星盘 ══════════════════════════════════════════════════════
+   中央浑天仪是原画的一部分，这里只补三层「机构在走」的矢量：
+     外环  贴在原画那圈水平环上，带刻度，64 秒一周
+     内环  绕过水晶球的一条子午环，带一段亮弧，88 秒反向一周
+     星核  球体内部的光，9.5 秒呼吸
+   另有一组指示点依次亮起，和一道偶尔沿环走动的细光。
+   ══════════════════════════════════════════════════════════════════ */
+.starplate {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.sp__ring,
+.sp__arc,
+.sp__sweep { fill: none; stroke-linecap: round; }
+
+.sp__ring--ticks {
+  stroke: rgba(238, 230, 255, .62);
+  stroke-width: 1.1;
+  stroke-dasharray: .9 8.4;
+  opacity: .30;
+}
+.sp__ring--fine {
+  stroke: rgba(246, 240, 255, .55);
+  stroke-width: .8;
+  stroke-dasharray: 26 74;
+  opacity: .26;
+}
+.sp__arc {
+  stroke: url(#spArcGrad);
+  stroke-width: 2.4;
+  stroke-dasharray: 13 87;
+  opacity: .55;
+}
+.sp__sweep {
+  stroke: rgba(255, 252, 244, .85);
+  stroke-width: 1.2;
+  stroke-dasharray: 16 84;
+  opacity: 0;
+  animation: spSweep 26s linear infinite;
+}
+.sp__dot {
+  fill: #FFFAF0;
+  opacity: .12;
+  animation: spDot 9s ease-in-out infinite;
+}
+.sp__core {
+  opacity: .12;
+  animation: spCore 9.5s ease-in-out infinite;
+}
+
+.sp__outer { animation: spSpin 64s linear infinite; transform-origin: 0 0; }
+.sp__inner { animation: spSpinR 88s linear infinite; transform-origin: 0 0; }
+.sp__arcs  { animation: spSpin 88s linear infinite; transform-origin: 0 0; }
+
+@keyframes spSpin  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes spSpinR { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
+
+@keyframes spSweep {
+  0%   { stroke-dashoffset: 0;   opacity: 0; }
+  6%   { opacity: .30; }
+  30%  { opacity: .18; }
+  38%  { opacity: 0; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
+}
+
+@keyframes spDot {
+  0%, 62%, 100% { opacity: .10; }
+  70%           { opacity: .85; }
+  78%           { opacity: .22; }
+}
+
+@keyframes spCore {
+  0%, 100% { opacity: .10; }
+  46%      { opacity: .20; }
+}
+
+/* 点击月亮 / 星盘呼应时的短促增亮 */
+.starplate.is-pulsing .sp__core { animation: spCoreTap 2.6s ease-out 1; }
+@keyframes spCoreTap {
+  0%   { opacity: .12; }
+  18%  { opacity: .42; }
+  52%  { opacity: .26; }
+  100% { opacity: .12; }
+}
+
+/* ══ 月亮点击热区 ══════════════════════════════════════════════════
+   单独一层 SVG，与轨道同一个 viewBox；所以桌面端与手机端的裁切盒不同、
+   月亮的屏幕坐标不同，热区也永远贴着月盘。填充透明、只负责命中；
+   悬停 / 聚焦时出现一圈极淡的银边。 */
+.moonhit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+  overflow: visible;
+}
+.moon-hit {
+  fill: transparent;
+  stroke: rgba(255, 248, 232, 0);
+  stroke-width: 1.2;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: stroke .55s var(--ease);
+}
+.moon-hit:hover,
+.moon-hit:focus-visible { stroke: rgba(255, 248, 232, .34); }
+.moonhit:focus,
+.moonhit:focus-visible,
+.moon-hit:focus,
+.moon-hit:focus-visible { outline: none; }
+
+/* 点击时的月面脉冲（独立一层，不干扰原有呼吸） */
+.mx-moon--pulse {
+  position: absolute;
+  left: 49.28%;
+  top: 28.69%;
+  width: 23.56%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+  mix-blend-mode: screen;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(255, 253, 246, .90) 0%, rgba(236, 226, 255, .38) 46%, transparent 74%);
+}
+.plate.is-moon-tap .mx-moon--pulse { animation: moonTap 2.4s ease-out 1; }
+@keyframes moonTap {
+  0%   { opacity: 0; }
+  14%  { opacity: .34; }
+  46%  { opacity: .18; }
+  100% { opacity: 0; }
+}
+
+/* 点击月亮时，双轨道错开的一次呼吸：整层短促提亮，
+   不改变各自的自转速度（改 duration 会让动画跳帧）。 */
+.plate.is-moon-tap .orbitsvg { animation: orbitPulse 2.4s ease-out 1; }
+@keyframes orbitPulse {
+  0%   { filter: brightness(1); }
+  18%  { filter: brightness(1.28); }
+  46%  { filter: brightness(1.08); }
+  100% { filter: brightness(1); }
+}
+.plate.is-moon-tap .orb--b { animation: orbitLag 2.4s ease-out 1; }
+@keyframes orbitLag {
+  0%, 14% { opacity: .82; }
+  40%     { opacity: 1; }
+  100%    { opacity: 1; }
+}
+
+/* ══ 鼠标视差 ══════════════════════════════════════════════════════
+   用独立的 translate 属性叠在各自的 transform 动画之上，互不覆盖。
+   幅度：远景 2.6px、近景 5px、花枝光 7px、花瓣 3px。
+   原画本身不动 —— 月亮与五个入口在屏幕上坐标恒定，不产生晃动感。 */
+.scene__clouds--far   { translate: calc(var(--px, 0) * 2.6px) calc(var(--py, 0) * 1.8px); }
+.scene__clouds--near  { translate: calc(var(--px, 0) * 5px)   calc(var(--py, 0) * 3.2px); }
+.scene__garden        { translate: calc(var(--px, 0) * 7px)   calc(var(--py, 0) * 4px); }
+.petals               { translate: calc(var(--px, 0) * 3px)   calc(var(--py, 0) * 2px); }
+
+html[data-motion="reduced"] .scene__clouds,
+html[data-motion="reduced"] .scene__garden,
+html[data-motion="reduced"] .petals { translate: none !important; }
+
+/* ══ 动态档位 ══════════════════════════════════════════════════════
+   full    完整：全部动态
+   soft    柔和：云雾 / 地面 / 花瓣减慢，取消视差
+   reduced 减少：只保留静态光形与必要的状态反馈
+   ══════════════════════════════════════════════════════════════════ */
+html[data-motion="soft"] .scene__clouds--far   { animation-duration: 104s; }
+html[data-motion="soft"] .scene__clouds--near  { animation-duration: 132s; }
+html[data-motion="soft"] .scene__floor         { animation-duration: 34s; }
+html[data-motion="soft"] .scene__floor::after  { animation-duration: 40s; }
+html[data-motion="soft"] .scene__garden        { animation-duration: 40s; }
+html[data-motion="soft"] .sp__outer             { animation-duration: 106s; }
+html[data-motion="soft"] .sp__inner             { animation-duration: 148s; }
+html[data-motion="soft"] .scene__pillar        { animation-duration: 60s; }
+
+html[data-motion="reduced"] .scene__clouds,
+html[data-motion="reduced"] .scene__floor,
+html[data-motion="reduced"] .scene__floor::after,
+html[data-motion="reduced"] .scene__garden,
+html[data-motion="reduced"] .scene__pillar,
+html[data-motion="reduced"] .scene__beam,
+html[data-motion="reduced"] .sp__outer,
+html[data-motion="reduced"] .sp__inner,
+html[data-motion="reduced"] .sp__arcs,
+html[data-motion="reduced"] .sp__sweep,
+html[data-motion="reduced"] .sp__dot,
+html[data-motion="reduced"] .sp__core,
+html[data-motion="reduced"] .mx-moon--pulse {
+  animation: none !important;
+}
+
+html[data-motion="reduced"] .scene__pillar,
+html[data-motion="reduced"] .petals { display: none; }
+html[data-motion="reduced"] .scene__clouds { opacity: .13; }
+html[data-motion="reduced"] .sp__core { opacity: .16; }
+html[data-motion="reduced"] .sp__ring--ticks { opacity: .22; }
+
+/* 系统级减少动态：除非用户主动选了「完整动态」，否则按减少处理 */
+html:not([data-motion="full"]) .scene__clouds, html:not([data-motion="full"]) .scene__floor, html:not([data-motion="full"]) .scene__floor::after, html:not([data-motion="full"]) .scene__garden, html:not([data-motion="full"]) .scene__pillar, html:not([data-motion="full"]) .scene__beam, html:not([data-motion="full"]) .sp__outer, html:not([data-motion="full"]) .sp__inner, html:not([data-motion="full"]) .sp__arcs, html:not([data-motion="full"]) .sp__sweep, html:not([data-motion="full"]) .sp__dot, html:not([data-motion="full"]) .sp__core{ animation: none !important; }
+html:not([data-motion="full"]) .petals{ display: none; }
+
+/* ══ 手机端：按 hero 裁切盒重定位（与 .orbitsvg 同一几何） ═════════
+   手机上原图只露出上 2/3，月亮随之落在裁切盒里；星盘在裁切线以下，
+   因此整层隐藏，避免出现在错误的坐标上。 */
+@media (max-width: 900px) {
+  .starplate { display: none; }
+
+  /* 与 .orbitsvg 完全相同的裁切盒，否则月亮热区会与月盘错位 */
+  .moonhit {
+    left: -55.7%;
+    top: calc((var(--hero) - 119.3cqw) * 0.146);
+    right: auto;
+    bottom: auto;
+    width: 212%;
+    height: 119.3cqw;
+  }
+  .scene__floor,
+  .scene__floor::after { top: auto; height: var(--hero); }
+  .scene__pillar { display: none; }
+  .scene__beam { display: none; }
+  .scene__clouds--far,
+  .scene__clouds--near { inset: 0 0 auto; height: var(--hero); }
+  .petals { z-index: 3; }
+}

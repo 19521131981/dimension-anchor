@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DIMENSION ANCHOR｜卡牌视觉规范 · 标准牌样</title>
+<link rel="stylesheet" href="assets/css/cards.css" />
+<style>
+  :root{
+    --gold:#C9A268; --gold-l:#F0DDB4; --ink:#F3ECDF;
+    --serif: "Cormorant Garamond", "Songti SC", "STSong", serif;
+    --sans: "PingFang SC", -apple-system, "Helvetica Neue", sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; padding:48px 40px 80px;
+    background:
+      radial-gradient(70% 50% at 50% 0%, rgba(120,92,196,.28), transparent 70%),
+      radial-gradient(60% 60% at 50% 110%, rgba(30,14,58,.8), transparent 70%),
+      url("assets/media/ritual-hall.jpg") center 46%/cover no-repeat fixed,
+      #1A1030;
+    color:var(--ink); font-family:var(--sans);
+  }
+  body::before{
+    content:""; position:fixed; inset:0; pointer-events:none;
+    background:linear-gradient(180deg, rgba(16,8,34,.72), rgba(14,7,30,.55) 40%, rgba(10,5,24,.82));
+  }
+  .wrap{position:relative; max-width:1180px; margin:0 auto}
+  .hd{text-align:center; margin-bottom:46px}
+  .hd__k{font-size:10px; letter-spacing:.44em; color:#C9A268; margin:0 0 12px}
+  .hd h1{
+    font-family:var(--serif); font-weight:400; font-size:34px; letter-spacing:.18em;
+    margin:0 0 12px; color:#FBF3E2;
+    text-shadow:0 2px 22px rgba(0,0,0,.6);
+  }
+  .hd p{font-size:12px; letter-spacing:.14em; color:rgba(240,232,248,.62); margin:0}
+  .rule{
+    width:280px; height:1px; margin:22px auto 0;
+    background:linear-gradient(90deg,transparent,#C9A268 32%,#F6E7C2 50%,#C9A268 68%,transparent);
+  }
+
+  .row{display:flex; gap:56px; justify-content:center; align-items:flex-start; margin-bottom:64px; flex-wrap:wrap}
+  .cell{text-align:center}
+  .cap{
+    margin-top:22px; font-size:10px; letter-spacing:.34em; color:rgba(201,162,104,.9);
+  }
+  .cap span{display:block; margin-top:6px; letter-spacing:.12em; color:rgba(236,226,246,.5); font-size:9.5px}
+
+  .sec{margin:0 0 64px}
+  .sec__t{
+    font-size:10px; letter-spacing:.4em; color:#C9A268; margin:0 0 26px;
+    display:flex; align-items:center; gap:14px;
+  }
+  .sec__t::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, rgba(201,162,104,.5), transparent)}
+  .sizes{display:flex; gap:38px; align-items:flex-end; flex-wrap:wrap}
+  .states{display:flex; gap:34px; flex-wrap:wrap; align-items:flex-start}
+  .note{font-size:11px; line-height:2; color:rgba(236,228,246,.55); letter-spacing:.06em; max-width:640px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hd">
+    <p class="hd__k">DIMENSION ANCHOR · TAROT CARD SYSTEM</p>
+    <h1>牌 面 规 范</h1>
+    <p>同一套外框 · 同一套金环 · 同一套翻转 —— 全站不会出现第二种卡牌</p>
+    <div class="rule"></div>
+  </header>
+
+  <div class="row" id="heroRow"></div>
+
+  <section class="sec">
+    <p class="sec__t">尺 寸 档 位</p>
+    <div class="sizes" id="sizeRow"></div>
+  </section>
+
+  <section class="sec">
+    <p class="sec__t">状 态</p>
+    <div class="states" id="stateRow"></div>
+  </section>
+
+  <section class="sec">
+    <p class="sec__t">牌 阵 展 示</p>
+    <div class="states" id="spreadRow"></div>
+  </section>
+
+  <p class="note">
+    卡牌由四层构成：香槟金完整外轮廓 → 沿四边连续流动的高光轨 → 四角宝石与星芒 →
+    克制的金色外发光。牌面艺术、顶部圆章、底部铭牌、四角藤蔓由牌面 SVG 本身绘制，
+    78 张各自独立，不共用同一张图。
+  </p>
+</div>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/tarot-deck.js"></script>
+<script src="assets/js/tarot-art.js"></script>
+<script src="assets/js/tarot-scenes.js"></script>
+<script src="assets/js/tarot-images.js"></script>
+<script src="assets/js/tarot-backs.js"></script>
+<script src="assets/js/da-card.js"></script>
+<script>
+(function () {
+  var D = window.DA_TAROT, C = window.DA_CARD;
+
+  function cell(html, t, s) {
+    return '<div class="cell">' + html +
+      '<p class="cap">' + t + (s ? '<span>' + s + '</span>' : '') + '</p></div>';
+  }
+
+  /* 主样：正面 21 世界 / 背面 */
+  var major = D.byId('m21') || D.all[21];
+  var c1 = C.front(major, { w: 268, live: true });
+  var c2 = C.backOnly({ w: 268, live: true });
+  document.getElementById('heroRow').innerHTML =
+    cell(c1, '正 面 · FRONT', '香槟金外轮廓 + 流动光轨 + 四角宝石') +
+    cell(c2, '背 面 · BACK', '月环之门 · 皇家紫与宝石蓝');
+
+  /* 尺寸 */
+  var sizes = [72, 96, 132, 200];
+  var sCard = D.byId('c14') || D.all[40];
+  document.getElementById('sizeRow').innerHTML = sizes.map(function (w) {
+    return cell(C.front(sCard, { w: w, live: true }), w + ' PX', '');
+  }).join('');
+
+  /* 状态 */
+  var st = D.byId('s12') || D.all[60];
+  document.getElementById('stateRow').innerHTML =
+    cell(C.front(st, { w: 168, live: true }), '默 认', '缓慢流光') +
+    cell(C.front(st, { w: 168, on: true }), '选 中', '前突 + 星芒') +
+    cell(C.flip(st, { w: 168 }), '翻 开 后', '3D 翻转 · 正面') +
+    cell(C.flip(st, { w: 168, cls: 'is-flipped' }), '未 翻 开', '牌背 + 金环');
+
+  /* 牌阵 */
+  var keys = ['m00', 'm06', 'm10', 'c14'];
+  document.getElementById('spreadRow').innerHTML = keys.map(function (k) {
+    return cell(C.front(D.byId(k), { w: 140, live: true }), D.byId(k).cn, D.byId(k).en);
+  }).join('');
+})();
+</script>
+</body>
+</html>

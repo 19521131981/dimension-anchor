@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>解读结果 · 塔罗观测站 — DIMENSION ANCHOR</title>
+<meta name="description" content="DIMENSION ANCHOR 塔罗观测站解读结果：左侧本次星轨，右侧六章解读，可收藏、复制与连续追问。">
+<link rel="stylesheet" href="assets/css/observatory.css?v=20261108d">
+<link rel="stylesheet" href="assets/css/interpret.css?v=20261107">
+<link rel="stylesheet" href="assets/css/cards.css">
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261108d">
+</head>
+<body class="it">
+
+<div class="itbg" aria-hidden="true">
+  <div class="itbg__img"></div>
+  <video class="itbg__light" autoplay muted loop playsinline preload="auto"
+         poster="assets/media/ritual-hall.jpg" src="assets/media/ritual-hall.mp4"></video>
+  <div class="amb-dust" aria-hidden="true"></div>
+  <div class="itbg__veil"></div>
+  <div class="itbg__spark"></div>
+</div>
+
+<header class="top">
+  <a class="brand" href="index.html">
+    <span class="brand__moon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M15.4 3.6a8.4 8.4 0 1 0 5 13.4 6.9 6.9 0 1 1-5-13.4z" fill="currentColor" opacity=".92"/>
+        <circle cx="17.4" cy="6.2" r="1" fill="currentColor"/>
+      </svg>
+    </span>
+    <span class="brand__t"><span>DIMENSION</span><span>ANCHOR</span></span>
+  </a>
+
+  <nav class="crumb" aria-label="位置">
+    <span class="crumb__sep">›</span>
+    <a href="observatory.html">塔罗观测站</a>
+    <span class="crumb__sep">›</span>
+    <b>解读结果</b>
+  </nav>
+
+  <div class="topacts">
+    <button class="pill" id="soundBtn" type="button" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+        <path d="M15.6 9.2a4 4 0 0 1 0 5.6" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/>
+      </svg>
+      <span>音效</span>
+    </button>
+    <a class="pill" href="observatory.html">
+      <span class="pill__avatar" aria-hidden="true">◐</span>
+      <span>我的观测档案</span>
+    </a>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 空态 -->
+  <section class="empty" id="empty" hidden>
+    <p class="empty__mark">✦</p>
+    <h2 class="empty__t">还没有可以被解读的牌阵</h2>
+    <p class="empty__d">
+      这一页只读取你上一次真实完成的牌阵。现在本地没有存档，
+      所以这里不展示任何示例内容——示例会让页面看起来很完整，但它不是你的牌。
+    </p>
+    <div class="empty__acts">
+      <a class="act act--primary" href="reading.html">去做一次连接仪式</a>
+      <a class="act" href="observatory.html">回到观测站</a>
+    </div>
+  </section>
+
+  <div class="split" id="split" hidden>
+
+    <!-- ══ 左：本次星轨 ══ -->
+    <section class="panel panel--left" aria-label="本次星轨">
+      <div class="panel__frame" aria-hidden="true"></div>
+      <span class="panel__star" aria-hidden="true">✦</span>
+
+      <header class="lp-head">
+        <div class="lp-orn" aria-hidden="true">
+          <span class="lp-orn__line"></span><span class="lp-orn__dot">✦</span><span class="lp-orn__line"></span>
+        </div>
+        <h1 class="lp-t">本次星轨</h1>
+        <p class="lp-sub" id="lpSub">星辰指引 · 深层回响</p>
+      </header>
+
+      <div class="grid" id="cardGrid"></div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="notebar" id="noteBar"></div>
+
+      <div class="lp-acts">
+        <button class="act" id="favBtn" type="button">
+          <span class="act__ic" aria-hidden="true">✦</span><span id="favTxt">收藏本次解读</span>
+        </button>
+        <button class="act" id="copyBtn" type="button">
+          <span class="act__ic" aria-hidden="true">⧉</span><span>复制解读内容</span>
+        </button>
+        <button class="act act--primary" id="askBtn" type="button">
+          <span class="act__ic" aria-hidden="true">✦</span><span>继续追问</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══ 右：AI 解读 ══ -->
+    <section class="panel panel--right" aria-label="解读内容">
+      <div class="panel__frame" aria-hidden="true"></div>
+      <span class="panel__star" aria-hidden="true">✦</span>
+
+      <div class="tabbar">
+        <div class="tabs" id="tabs" role="tablist"></div>
+        <button class="src" id="srcBtn" type="button" title="查看解读来源说明">
+          <span class="src__dot" aria-hidden="true"></span>本地推演
+        </button>
+      </div>
+
+      <div class="rbody" id="rbody">
+        <article class="hero" id="hero"></article>
+        <div class="rows" id="rows"></div>
+        <div class="tail" id="tail"></div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- 继续追问 -->
+<div class="ask" id="ask" hidden>
+  <div class="ask__scrim" data-close="1"></div>
+  <div class="ask__box" role="dialog" aria-modal="true" aria-labelledby="askT">
+    <header class="ask__head">
+      <h3 class="ask__t" id="askT">继续追问</h3>
+      <span class="ask__src">AI 接口未接通 · 本地引擎按牌面字段回应</span>
+      <button class="ask__x" id="askClose" type="button" aria-label="关闭">✕</button>
+    </header>
+    <div class="ask__thread" id="thread" aria-live="polite">
+      <p class="ask__hint">这一问会带上本次牌阵与前面所有的解读。每问一次可以多抽一张补充牌。</p>
+    </div>
+    <div class="ask__bar">
+      <input class="ask__input" id="askInput" type="text"
+             placeholder="例如：那我现在该先做什么？" autocomplete="off">
+      <button class="ask__send" id="sendBtn" type="button">发送</button>
+    </div>
+    <div class="ask__foot">
+      <button class="ask__supp" id="suppBtn" type="button"><span aria-hidden="true">✦</span> 抽一张补充牌</button>
+      <span class="ask__note" id="suppInfo">每问一次只能抽一张，补充牌会真实落进牌阵。</span>
+    </div>
+  </div>
+</div>
+
+<!-- 牌面详情 -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__scrim" data-close="1"></div>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <button class="modal__close" id="mClose" type="button" aria-label="关闭">✕</button>
+    <div class="modal__art" id="mArt"></div>
+    <div class="modal__body" id="mBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/tarot-deck.js"></script>
+<script src="assets/js/tarot-art.js"></script>
+<script src="assets/js/tarot-scenes.js"></script>
+<script src="assets/js/tarot-images.js"></script>
+<script src="assets/js/da-card.js"></script>
+<script src="assets/js/tarot-spreads.js"></script>
+<script src="assets/js/tarot-engine.js"></script>
+<script src="assets/js/tarot-sound.js"></script>
+<script src="assets/js/tarot-reading.js"></script>
+<script src="assets/js/da-store.js"></script>
+<script src="assets/js/da-ai.js"></script>
+<script src="assets/js/interpret.js"></script>
+</body>
+</html>

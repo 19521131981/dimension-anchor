@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DIMENSION ANCHOR · 维度锚点 — 星轨大厅</title>
+<meta name="description" content="维度锚点 · 星轨大厅：沉浸在月光与轨道之间的大厅，五座空间入口与隐藏的星际讯息。" />
+<meta name="theme-color" content="#1B1330" />
+<!-- 分享链接落在根地址时直接进入动态版大厅；查询参数（sharecode）与 hash 一并带走 -->
+<script>
+(function () {
+  location.replace('hall-motion.html' + (location.search || '') + (location.hash || ''));
+})();
+</script>
+<style>
+  html, body { margin: 0; height: 100%; background: #1B1330; color: #EFE7DC;
+    font-family: "PingFang SC", -apple-system, sans-serif; }
+  .boot { position: fixed; inset: 0; display: grid; place-content: center; text-align: center; gap: 10px; }
+  .boot small { opacity: .55; letter-spacing: .32em; font-size: 10px; }
+  .boot a { color: inherit; }
+</style>
+</head>
+<body>
+  <div class="boot">
+    <small>DIMENSION ANCHOR</small>
+    <div>正在进入星轨大厅…</div>
+    <noscript><a href="hall-motion.html">若未自动跳转，请点此进入</a></noscript>
+  </div>
+</body>
+</html>

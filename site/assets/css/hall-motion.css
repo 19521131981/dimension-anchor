@@ -1,0 +1,544 @@
+/* ══════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — STARTRACK HALL / MOTION DEMO
+   在原设计图之上只做「光」的层：双轨道、月面呼吸、空气微动。
+   不放任何新装饰、不改原布局、不动入口组件。
+
+   轨道为纯 SVG 矢量（.orbitsvg），不截取原画任何像素。
+   ══════════════════════════════════════════════════════════════ */
+
+.hall { overflow-x: clip; }
+
+/* ══ 独立矢量轨道 ═══════════════════════════════════════════════
+   两条环都是 SVG 椭圆，几何绕原图月亮的实际圆心 (824, 270)、
+   半径 197 定位。没有任何截图、没有把背景或月亮放进素材。
+
+   一根轨道由 6 层同路径描边叠成，读起来才是一根「管子」而不是一条线：
+     ① halo--wide / halo   外溢光（宽、极淡）—— 堆光，不用 filter
+     ② shade               下缘暗边（下移 2.4px）—— 管子的厚度
+     ③ base                管身本体（沿短轴的银紫金属渐变）
+     ④ core                上缘镜面线（上移 1.35px）—— 管子的高光棱
+     ⑤ facet--far / --near 晶体分段：远半圈窄而暗、近半圈宽而亮，
+                           段沿环走动 = 环体在转
+     ⑥ glint 组            流星状流动高光（拖尾 + 头部 + 头部辉光）
+
+   前后遮挡：同一条 path、同一组动画参数画两份，各自被一个 mask 裁掉
+   不需要的部分 —— 所以轨迹严格连续、运动严格同步，接缝不会错位。
+     · #orbBack   挖掉月盘（r200，3px 羽化）→ 月后段，环从月亮背后过
+     · #mDisc ∧ #mNearY  只留「月盘内 + 近半圈」→ 月前段，环压在月亮前面
+   ═══════════════════════════════════════════════════════════════ */
+.orbitsvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* ① 外溢光：几层更宽的半透明描边，比 filter / drop-shadow 便宜得多 */
+.orb__halo {
+  fill: none;
+  stroke: #D9C6FF;
+  stroke-width: 15;
+  stroke-linecap: round;
+  opacity: .10;
+}
+.orb__halo--wide { stroke-width: 36; opacity: .045; }
+.orb--b .orb__halo { stroke-width: 11; opacity: .08; }
+.orb--b .orb__halo--wide { stroke-width: 26; opacity: .035; }
+
+/* ② 下缘暗边：让轨道成为一根有厚度的柱子，而不是一条线 */
+.orb__shade {
+  fill: none;
+  stroke: #1F1730;
+  stroke-width: 6.4;
+  stroke-linecap: round;
+  opacity: .30;
+}
+.orb--b .orb__shade { stroke-width: 4.8; opacity: .22; }
+
+/* ③ 管身本体：银紫金属渐变，沿各自椭圆的短轴明暗（远端暗、近端亮） */
+.orb__base {
+  fill: none;
+  stroke-width: 4.6;
+  stroke-linecap: round;
+}
+.orb--b .orb__base { stroke-width: 3.4; }
+
+/* ④a 柱面亮带：管身中段偏上的一层浅高光，宽度约为管身一半。
+   没有它，加粗后的管身会变成一根扁平的色带。 */
+.orb__inner {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 2.3;
+  stroke-linecap: round;
+  opacity: .22;
+}
+.orb--b .orb__inner { stroke-width: 1.6; opacity: .24; }
+
+/* ④ 上缘镜面线：一根上移 2.4px 的白色细线，形成柱面高光 */
+.orb__core {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  opacity: .95;
+}
+.orb--b .orb__core { stroke-width: 1.0; opacity: .78; }
+
+/* ⑤ 晶体分段 —— 环体的物质本身，这一层才是「环在转」的主体。
+   环不是一根光滑的管子，而是一圈晶体段拼起来的：段与段之间有一道暗缝。
+   这些段沿椭圆走动，看到的就是环体在自转。
+
+   明暗两层交替咬合，拼成一条不间断的环（不会变成虚线）：
+     --lit   亮段  3.0 / 2.0（百分比弧长）→ 一圈约 20 段
+     --dark  暗缝  2.0 / 3.0，整体相位偏移 3.0，正好填满亮段之间的空档
+   两层同周期、同方向、同起点，所以整圈图案是刚性的 ——
+   像一件实体在转，而不是一道光在环上游走。
+
+   远近差异（空间感的来源）：
+     远半圈（绕到月亮后面）段面窄、暗（1.4px / .45）；
+     近半圈（朝向观者）段面宽、亮（2.8px / .95）。
+     同一段从远侧走到近侧会变宽变亮。 */
+.orb__facet {
+  fill: none;
+  stroke-linecap: butt;
+}
+.orb__facet--lit { stroke: #FFFFFF; stroke-dasharray: 3.0 2.0; }
+.orb__facet--dark { stroke: #4B3D6E; stroke-dasharray: 2.0 3.0; }
+
+.orb__facet--lit.orb__facet--near  { stroke-width: 2.8; opacity: .95; }
+.orb__facet--dark.orb__facet--near { stroke-width: 3.4; opacity: .52; }
+.orb__facet--lit.orb__facet--far   { stroke-width: 1.4; opacity: .45; }
+.orb__facet--dark.orb__facet--far  { stroke-width: 2.2; opacity: .34; }
+
+.orb--a .orb__facet--lit  { animation: orbFlowA  30s linear infinite; }
+.orb--a .orb__facet--dark { animation: orbFlowA2 30s linear infinite; }
+
+.orb--b .orb__facet--lit  { stroke-dasharray: 2.4 1.6; animation: orbFlowB  20s linear infinite; }
+.orb--b .orb__facet--dark { stroke-dasharray: 1.6 2.4; animation: orbFlowB2 20s linear infinite; }
+
+/* ⑥ 流动高光：拖尾 + 头部 + 头部辉光，三者同一组 keyframes，
+   靠 dasharray 的前导「0 16」把头部推到拖尾前端 —— 一颗带尾巴的流星。
+   （pathLength=100，所以这里所有数字都是环周长百分比） */
+.orb__glint {
+  fill: none;
+  stroke: #E4D4FF;
+  stroke-width: 3.0;
+  stroke-linecap: round;
+  stroke-dasharray: 9 91;
+  opacity: .40;
+}
+.orb__glint--head {
+  stroke: #FFFFFF;
+  stroke-width: 5.2;
+  stroke-dasharray: 0 9 1.6 89.4;
+  opacity: 1;
+}
+.orb__glint--bloom {
+  stroke: #DDC8FF;
+  stroke-width: 17;
+  stroke-dasharray: 0 8.6 3.4 88;
+  opacity: .30;
+}
+/* 第二颗错相的星：环上始终有余韵，不是单点绕圈 */
+.orb__glint--alt { opacity: .30; stroke-dasharray: 4 96; animation-delay: -15s !important; }
+.orb__glint--head.orb__glint--alt { opacity: .60; stroke-dasharray: 0 5 1.3 93.7; }
+
+.orb--b .orb__glint { stroke-width: 2.3; stroke-dasharray: 7 93; opacity: .36; }
+.orb--b .orb__glint--head { stroke-width: 4.0; stroke-dasharray: 0 7 1.3 91.7; }
+.orb--b .orb__glint--bloom { stroke-width: 13; stroke-dasharray: 0 6.6 2.8 90.6; opacity: .26; }
+.orb--b .orb__glint--alt { animation-delay: -10s !important; }
+.orb--b .orb__glint--head.orb__glint--alt { stroke-dasharray: 0 4 1.1 94.9; }
+
+/* 两条轨道方向相反、周期不同，各自独立：
+     A 逆时针 30s／圈   B 顺时针 20s／圈
+   path 的绘制方向在屏幕上是顺时针，所以
+     dashoffset 递增 = 逆向流动 = 逆时针；dashoffset 递减 = 顺时针。 */
+.orb--a .orb__glint { animation: orbFlowA 30s linear infinite; }
+.orb--b .orb__glint { animation: orbFlowB 20s linear infinite; }
+
+@keyframes orbFlowA {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: 100; }
+}
+@keyframes orbFlowB {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -100; }
+}
+
+/* 暗缝层的相位比亮段错开半个周期（2.0 / 1.7 = 亮段长度），
+   两层正好咬合成一条不间断的环。 */
+@keyframes orbFlowA2 {
+  from { stroke-dashoffset: 3.0; }
+  to   { stroke-dashoffset: 103.0; }
+}
+@keyframes orbFlowB2 {
+  from { stroke-dashoffset: -2.4; }
+  to   { stroke-dashoffset: -102.4; }
+}
+
+/* 月前段：更硬、更清 —— 不要外发光，管身略粗，上缘高光更亮，
+   下缘阴影加重（在亮月面上压出一道接触阴影，纵深才立得住） */
+.orb--front .orb__core { opacity: .98; stroke-width: 1.5; }
+.orb--front .orb__inner { opacity: .38; }
+.orb--front .orb__shade { opacity: .44; }
+.orb--front .orb__facet--near { opacity: .72; }
+/* 月面上的一道接触阴影：环压过月面时，环的下缘要在月亮上留一道暗痕，
+   否则会像贴纸。这一层比月后段的阴影更实、更宽一点。 */
+.orb--front .orb__shade { stroke-width: 7.2; }
+
+/* 沿路径移动的微弱光点。路径由 JS 从 SVG 里的同一条 path 取，
+   保证光点与描边严丝合缝地走在同一条线上。 */
+.orb__spark {
+  fill: #FFFDF6;
+  offset-rotate: 0deg;
+  offset-distance: 0%;
+  opacity: .95;
+}
+.orb--b .orb__spark { opacity: .8; }
+
+.orb__spark--a { animation: orbSparkA 30s linear infinite; }
+.orb__spark--b { animation: orbSparkB 20s linear infinite; }
+@keyframes orbSparkA {
+  from { offset-distance: 100%; }
+  to   { offset-distance: 0%; }
+}
+@keyframes orbSparkB {
+  from { offset-distance: 0%; }
+  to   { offset-distance: 100%; }
+}
+
+/* ── 月面内部呼吸（原图月亮不动，只让内部光缓一点） ───────── */
+.mx-moon {
+  position: absolute;
+  left: 49.28%;
+  top: 28.69%;
+  width: 23.56%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(1);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+  mix-blend-mode: screen;
+  opacity: .10;
+  background:
+    radial-gradient(circle at 44% 40%,
+      rgba(255, 253, 244, .70) 0%,
+      rgba(250, 236, 255, .34) 42%,
+      rgba(224, 208, 255, 0) 72%);
+  -webkit-mask-image: radial-gradient(circle, #000 52%, rgba(0,0,0,.55) 68%, transparent 82%);
+          mask-image: radial-gradient(circle, #000 52%, rgba(0,0,0,.55) 68%, transparent 82%);
+  animation: mxBreath 17s ease-in-out infinite;
+}
+
+/* 月面偏另一侧的冷光，错相，制造极轻的折射变化 */
+.mx-moon--cool {
+  left: 51.1%;
+  top: 30.2%;
+  width: 20%;
+  background:
+    radial-gradient(circle at 60% 58%,
+      rgba(232, 224, 255, .55) 0%,
+      rgba(206, 196, 255, .22) 46%,
+      rgba(206, 196, 255, 0) 74%);
+  animation-duration: 23s;
+  animation-delay: -8s;
+  opacity: .06;
+}
+
+@keyframes mxBreath {
+  0%, 100% { opacity: .085; transform: translate(-50%, -50%) scale(1); }
+  46%      { opacity: .155; transform: translate(-50%, -50%) scale(1.018); }
+}
+
+/* 月盘内部的一小片光在极小的范围里游移：
+   让「内部折射光在变」而不只是整体变亮。 */
+.mx-moon--drift {
+  left: 49.7%;
+  top: 29.3%;
+  width: 13.5%;
+  opacity: .05;
+  background: radial-gradient(circle at 50% 50%,
+    rgba(255, 251, 240, .90) 0%,
+    rgba(255, 242, 222, .34) 44%,
+    rgba(246, 234, 255, 0) 76%);
+  animation: mxDriftLight 31s ease-in-out infinite;
+}
+@keyframes mxDriftLight {
+  0%, 100% { opacity: .032; transform: translate(-50%, -50%) translate(-14%, -18%) scale(1); }
+  28%      { opacity: .058; transform: translate(-50%, -50%) translate(9%, -24%) scale(1.06); }
+  55%      { opacity: .042; transform: translate(-50%, -50%) translate(20%, 6%) scale(1.02); }
+  78%      { opacity: .060; transform: translate(-50%, -50%) translate(-6%, 20%) scale(1.05); }
+}
+
+/* ── 环境：原有雾气的一点点流动 ───────────────────────────── */
+.mx-haze {
+  position: absolute;
+  inset: 18% -12% 6% -12%;
+  z-index: 4;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: .05;
+  background:
+    radial-gradient(42% 26% at 26% 62%, rgba(226, 214, 255, .85), transparent 72%),
+    radial-gradient(36% 22% at 71% 66%, rgba(255, 242, 224, .7), transparent 74%);
+  filter: blur(18px);
+  will-change: transform;
+  animation: mxDrift 54s ease-in-out infinite alternate;
+}
+
+@keyframes mxDrift {
+  from { transform: translate3d(-1.4%, 0, 0); }
+  to   { transform: translate3d(1.6%, -.6%, 0); }
+}
+
+/* 远景星光：只做极缓的整体明暗，不新增星点 */
+.mx-skyglow {
+  position: absolute;
+  inset: 0 0 46% 0;
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: .03;
+  background: radial-gradient(52% 40% at 50% 34%, rgba(210, 200, 255, .8), transparent 74%);
+  animation: mxSky 38s ease-in-out infinite;
+}
+@keyframes mxSky {
+  0%, 100% { opacity: .018; }
+  50%      { opacity: .046; }
+}
+
+/* ── 入口交互：只在原热区上加克制的光反馈 ─────────────────── */
+.portal__flash {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: 8%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(.2);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle,
+    rgba(255, 250, 235, .95) 0%,
+    rgba(255, 236, 200, .55) 26%,
+    rgba(226, 208, 255, .22) 52%,
+    rgba(226, 208, 255, 0) 74%);
+  mix-blend-mode: screen;
+}
+.portal.is-charging .portal__flash {
+  animation: mxFlash 900ms cubic-bezier(.16, .84, .3, 1) forwards;
+}
+.portal.is-charging .portal__ring {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 240, 210, .72),
+    inset 0 -2cqw 5cqw rgba(255, 238, 206, .26),
+    0 0 6cqw rgba(255, 240, 212, .34);
+}
+@keyframes mxFlash {
+  0%   { opacity: 0;  transform: translate(-50%, -50%) scale(.18); }
+  22%  { opacity: .95; transform: translate(-50%, -50%) scale(.62); }
+  100% { opacity: 0;  transform: translate(-50%, -50%) scale(1.85); }
+}
+
+/* 悬停时沿入口拱顶走一道极细的边光 */
+.portal__ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(180deg,
+    rgba(255, 246, 226, .55) 0%,
+    rgba(255, 246, 226, .12) 22%,
+    transparent 46%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 62%);
+          mask-image: linear-gradient(180deg, #000 0%, #000 34%, transparent 62%);
+  transition: opacity .6s var(--ease);
+}
+.portal:hover .portal__ring::after,
+.portal:focus-visible .portal__ring::after { opacity: .75; }
+
+/* ── 入场：极轻的浮现，只动 opacity ───────────────────────── */
+.plate__art,
+.orbitsvg { transition: opacity 1.5s cubic-bezier(.2, .8, .3, 1); }
+
+.mx-enter .plate__art,
+.mx-enter .orbitsvg { opacity: 0; }
+
+/* ── 暂停（离屏 / 后台 / 减少动态） ───────────────────────── */
+.mx-paused *,
+.mx-paused *::before,
+.mx-paused *::after { animation-play-state: paused !important; }
+
+html[data-motion="reduced"] .orb__facet, html[data-motion="reduced"] .orb__glint, html[data-motion="reduced"] .orb__spark, html[data-motion="reduced"] .orb__sheen, html[data-motion="reduced"] .mx-moon, html[data-motion="reduced"] .mx-moon--cool, html[data-motion="reduced"] .mx-haze, html[data-motion="reduced"] .mx-skyglow, html[data-motion="reduced"] .portal__flash{ animation: none !important; }
+html[data-motion="reduced"] .plate__art, html[data-motion="reduced"] .orbitsvg{ transition: none !important; }
+html[data-motion="reduced"] /* 减少动态时：轨道停在原位，只留一段静止的柔和高光，不做环绕 */
+  .orb__facet{ opacity: .14; }
+html[data-motion="reduced"] .orb__glint{ stroke-dashoffset: -34; opacity: .38; }
+html[data-motion="reduced"] .orb__glint--head{ opacity: .8; }
+html[data-motion="reduced"] .orb__glint--bloom{ opacity: .10; }
+html[data-motion="reduced"] .orb__glint--alt{ display: none; }
+html[data-motion="reduced"] .orb__spark{ display: none; }
+html[data-motion="reduced"] .mx-moon{ opacity: .17; }
+html[data-motion="reduced"] .mx-moon--drift{ display: none; }
+html[data-motion="reduced"] .mx-haze, html[data-motion="reduced"] .mx-skyglow{ opacity: .04; }
+
+/* ══ 用户主动选择「减少动态」 ═══════════════════════════════════════
+   与系统级 prefers-reduced-motion 同等处理：轨道停在原位，只留一段
+   静止的柔和高光；月亮与空气层保持静态光形。 */
+html[data-motion="reduced"] .orb__facet,
+html[data-motion="reduced"] .orb__glint,
+html[data-motion="reduced"] .orb__spark,
+html[data-motion="reduced"] .orb__sheen,
+html[data-motion="reduced"] .mx-moon,
+html[data-motion="reduced"] .mx-moon--cool,
+html[data-motion="reduced"] .mx-moon--drift,
+html[data-motion="reduced"] .mx-haze,
+html[data-motion="reduced"] .mx-skyglow { animation: none !important; }
+
+html[data-motion="reduced"] .orb__facet { opacity: .14; }
+html[data-motion="reduced"] .orb__glint { stroke-dashoffset: -34; opacity: .38; }
+html[data-motion="reduced"] .orb__glint--head { opacity: .8; }
+html[data-motion="reduced"] .orb__glint--bloom { opacity: .10; }
+html[data-motion="reduced"] .orb__glint--alt { display: none; }
+html[data-motion="reduced"] .orb__spark { display: none; }
+html[data-motion="reduced"] .plate__art,
+html[data-motion="reduced"] .orbitsvg { transition: none !important; }
+
+/* 手机端：小屏上光泽略收，避免过亮 */
+@media (max-width: 760px) {
+  .orb__glint { opacity: .34; }
+  .orb__glint--bloom { opacity: .12; }
+  .orb__glint--alt { opacity: .15; }
+  .orb__halo { opacity: .09; }
+}
+
+/* ── 与 hall.css 的移动端英雄裁切保持同一几何 ─────────────────
+   原图在 <=900px 时被裁成 left:-55.7% / width:212% / height:var(--hero)
+   并对 1672×941 做 cover（宽度受限），所以轨道层必须用同一盒子，
+   否则椭圆会与月亮错位。
+   ─────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .orbitsvg {
+    left: -55.7%;
+    top: calc((var(--hero) - 119.3cqw) * 0.146);
+    right: auto;
+    bottom: auto;
+    width: 212%;
+    height: 119.3cqw;
+  }
+}
+
+/* ══ 与原画烘焙元素的像素级对位（仅 Demo 层）═══════════════════════
+   原画本身已经画了页头：月牙标 + 字标、五个导航词、头像照片与箭头。
+   DOM 这边是真实可交互的副本，两套东西一旦错位就会「重影」。
+
+   实测（1672×941，1:1 渲染）：
+     导航文字  DOM 比原画左 2px、上 3px   → 位移 +2px / +3px
+     头像      DOM 圆 44.3px、圆心 (1593, 46)，
+               原画圆 39px、圆心 (1576, 49.5)  → 偏右 17px、偏上 3.5px，
+               还盖住了原画的展开箭头
+   头像改为「透明热区」：图形交给原画里的照片本身，按钮只负责命中与
+   悬停光环，不再叠一个占位小人像。
+   ═══════════════════════════════════════════════════════════════ */
+/* 导航：原画的五个词本身就是设计好的排版，DOM 这一份只做「热区 + 交互反馈」，
+   文字不重复渲染就不会有第二种字重、也不会有任何重影。
+   悬停时给一道很淡的金色晕开与下划线，反馈仍然清楚。 */
+/* 仅在桌面端生效：手机端页头是另一套布局（grid + 隐藏 .nav），
+   原画的头像与导航也不在那个裁切范围里。 */
+@media (min-width: 901px) {
+  .nav__veil { display: none; }
+
+  .nav a {
+    color: transparent;
+    text-shadow: none;
+  }
+  .nav a::before {
+    content: "";
+    position: absolute;
+    inset: -.55cqw -.9cqw;
+    border-radius: .9cqw;
+    background: radial-gradient(60% 70% at 50% 55%, rgba(255, 240, 210, .30), transparent 72%);
+    opacity: 0;
+    transition: opacity .45s var(--ease);
+    pointer-events: none;
+  }
+  .nav a:hover { color: transparent; text-shadow: none; }
+  .nav a:hover::before,
+  .nav a:focus-visible::before { opacity: 1; }
+  .nav a.is-active { color: transparent; }
+
+  .avatar {
+    position: absolute;
+    left: 93.09cqw;                          /* 1556.5px */
+    top: 1.794cqw;                           /* 30px */
+    width: 2.332cqw;                         /* 39px */
+    height: 2.332cqw;
+    overflow: visible;
+    background: transparent;
+    box-shadow: 0 0 0 1px rgba(255, 246, 228, 0);
+  }
+  .avatar svg { opacity: 0; }
+  .avatar:hover,
+  .avatar:focus-visible {
+    transform: none;
+    box-shadow:
+      0 0 0 1px rgba(255, 246, 228, .78),
+      0 0 2.6cqw rgba(255, 238, 208, .38);
+  }
+}
+
+
+/* ══ 扫掠镀膜：让「环在转」一眼可辨 ═══════════════════════════════
+   晶体段与流动高光都只是细线上的变化，在 1672px 的构图里只有约 1% 的
+   像素在动，肉眼几乎看不出。真正能读出转动的是整条环的明暗分布绕着环
+   走 —— 像抛光的金属被一道光扫过。
+
+   用几条同路径、低透明度的长 dash 叠成一条「软边亮带」，再在对面叠一条
+   软边暗带（相位错开半圈）。它们与环体同向、同步，所以不是独立的光效，
+   而是环面本身在转的读数。每层透明度都只有 4–8%，叠起来是一条很淡的
+   渐变，不会变成一条生硬的白条。 */
+.orb__sheen {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-linecap: round;
+  stroke-width: 5.6;
+}
+.orb--b .orb__sheen { stroke-width: 4.0; }
+
+.orb__sheen--l1 { stroke-dasharray: 46 54; opacity: .062; }
+.orb__sheen--l2 { stroke-dasharray: 30 70; opacity: .076; }
+.orb__sheen--l3 { stroke-dasharray: 17 83; opacity: .090; }
+.orb__sheen--l4 { stroke-dasharray: 8  92; opacity: .105; }
+
+.orb__sheen[class*="--d"] { stroke: #241B3C; }
+.orb__sheen--d1 { stroke-dasharray: 46 54; opacity: .062; }
+.orb__sheen--d2 { stroke-dasharray: 30 70; opacity: .076; }
+.orb__sheen--d3 { stroke-dasharray: 17 83; opacity: .090; }
+
+.orb--a .orb__sheen { animation: orbFlowA 30s linear infinite; }
+.orb--b .orb__sheen { animation: orbFlowB 20s linear infinite; }
+/* 暗带永远在亮带的正对面：错开半个周长 */
+.orb--a .orb__sheen[class*="--d"] { animation-delay: -15s; }
+.orb--b .orb__sheen[class*="--d"] { animation-delay: -10s; }
+
+/* ══ 调色层收敛 ═══════════════════════════════════════════════════
+   原 hall.css 的 .plate__grade 在顶部压了 12% 的暗、底部 18%，
+   实测让画面顶部比原画暗 6.1%、底部暗 4.4%。这层暗角最初是为了
+   在亮天空上压住导航（当时导航是 DOM 文字，需要对比度）。
+   现在导航直接沿用原画的字，不再需要这层压暗，所以把它收敛到
+   只保留一点点画框感：顶部 −3%、底部 −2.5%，其余留给原画本身。
+   ═══════════════════════════════════════════════════════════════ */
+.plate__grade {
+  background:
+    radial-gradient(46% 30% at 50% 26%, rgba(255, 248, 236, .06), transparent 72%),
+    linear-gradient(180deg,
+      rgba(20, 14, 40, .055) 0%,
+      transparent 13%,
+      transparent 82%,
+      rgba(16, 11, 32, .085) 100%);
+}
