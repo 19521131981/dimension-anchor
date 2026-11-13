@@ -18,3 +18,4 @@ npm-debug.log*
 
 # 本地运行时数据（用户生成内容，不进代码仓库）
 data/
+.vercel
