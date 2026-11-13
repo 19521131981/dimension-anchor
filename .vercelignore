@@ -1,0 +1,8 @@
+demo/
+data/
+.git
+.gitignore
+.workbuddy/
+*.genie
+*.log
+.DS_Store
