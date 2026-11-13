@@ -15,3 +15,6 @@ node_modules/
 npm-debug.log*
 .vscode/
 .idea/
+
+# 本地运行时数据（用户生成内容，不进代码仓库）
+data/
