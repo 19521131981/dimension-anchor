@@ -19,3 +19,8 @@ npm-debug.log*
 # 本地运行时数据（用户生成内容，不进代码仓库）
 data/
 .vercel
+
+# 本地开发用的 Node 后端副本（线上是纯静态站）。
+# 不排除的话，Vercel 的 Git 构建会把它当成函数入口接管根路由，静态文件全部 404。
+server.js
+site/server.js
