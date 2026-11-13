@@ -1,0 +1,88 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 通行证弹窗（独立样式层）
+   ----------------------------------------------------------------------
+   DA_AUTH 会动态插入 .dialog.auth-dlg 这一整套结构。这里把它需要的样式
+   从 premium.css 里独立出来，任何要接入通行证的页面（首页星轨大厅、
+   小屋、通讯局、解读页、管理端）直接引这一份即可，不必引整张 premium.css，
+   也就不会把「权益面板」的样式带到无关页面上。
+
+   视觉：浅底深字 + 香槟金强调，与全站珍珠白 / 雾紫 / 月银 / 香槟金一致。
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --pm-paper: #FCFAF7;
+  --pm-paper-2: #F3ECF6;
+  --pm-ink: #51465F;
+  --pm-ink-strong: #49345F;
+  --pm-gold: #8A6733;
+  --pm-line: rgba(73, 52, 95, .18);
+  --pm-gold-line: rgba(190, 154, 96, .42);
+  --pm-dark: #241637;
+  --pm-dark-2: #362251;
+  --pm-on-dark: #FBF7FF;
+  --pm-on-dark-2: #E9DFF6;
+}
+
+/* ══ 通行证（DA_AUTH 动态插入的弹窗）════════════════════════════════ */
+.dialog { position: fixed; inset: 0; z-index: 130; display: flex; align-items: center; justify-content: center; padding: 18px; }
+.dialog[hidden] { display: none !important; }
+.overlay__scrim { position: absolute; inset: 0; background: rgba(20, 12, 36, .72); backdrop-filter: blur(5px); }
+.dialog__box {
+  position: relative; width: min(430px, 100%); max-height: 92svh; overflow: auto;
+  padding: 26px 24px 22px; border-radius: 18px;
+  border: 1px solid var(--pm-gold-line);
+  background: linear-gradient(178deg, var(--pm-paper), var(--pm-paper-2));
+  color: var(--pm-ink) !important;
+  box-shadow: 0 32px 80px -30px rgba(12, 6, 28, .85);
+}
+.dialog__x { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px;
+  border: 1px solid var(--pm-line); border-radius: 50%; background: #FFFDF9;
+  color: var(--pm-ink) !important; cursor: pointer; }
+.dialog__step { margin: 0 0 4px; font-size: 14px !important; letter-spacing: .16em;
+  font-weight: 600 !important; color: var(--pm-gold) !important; }
+.dialog__title { margin: 0 0 14px; font-size: 26px !important; line-height: 1.45 !important;
+  font-weight: 600 !important; color: var(--pm-ink-strong) !important; }
+.dialog__box p, .dialog__box label, .dialog__box span, .dialog__box b,
+.dialog__box div, .dialog__box li { color: var(--pm-ink) !important; }
+.dialog__foot { display: flex; gap: 10px; margin-top: 20px; }
+.auth__tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.auth__tab { flex: 1; min-height: 42px; border: 1px solid var(--pm-line); border-radius: 10px;
+  background: #FFFDF9; color: var(--pm-ink) !important; font-size: 15px !important;
+  font-weight: 500 !important; cursor: pointer; }
+.auth__tab.is-on { border-color: var(--pm-gold); background: #F3ECF6; color: var(--pm-ink-strong) !important; font-weight: 600 !important; }
+.auth__lead { margin: 0 0 14px; font-size: 17px !important; line-height: 1.8 !important; }
+.auth__err { margin: 10px 0; font-size: 15px !important; color: #9B3A4A !important; font-weight: 500 !important; }
+.auth__note, .hint { font-size: 14px !important; color: var(--pm-ink) !important; }
+.auth__resend { border: 0; background: none; padding: 0; text-decoration: underline;
+  color: var(--pm-gold) !important; font-size: 14px !important; cursor: pointer; }
+.field { margin: 0 0 12px; }
+.field label { display: block; margin-bottom: 6px; font-size: 14px !important; font-weight: 600 !important; }
+.field input { width: 100%; box-sizing: border-box; padding: 11px 13px; min-height: 48px;
+  border: 1px solid var(--pm-gold-line); border-radius: 10px; background: #FFFDF9;
+  color: var(--pm-ink) !important; font-size: 17px !important; }
+.btn { flex: 1; min-height: 46px; border-radius: 10px; font-size: 16px !important;
+  font-weight: 600 !important; cursor: pointer; }
+.btn--quiet { border: 1px solid var(--pm-line); background: #FFFDF9; color: var(--pm-ink) !important; }
+.btn--plate { border: 1px solid var(--pm-gold-line);
+  background: linear-gradient(180deg, #FFFDF7, #EFE5F8); color: var(--pm-ink-strong) !important; }
+
+/* 通行证弹窗的强调色收尾：统一深色规则会盖掉 kicker 与错误提示的强调色，
+   这里用同等优先级、后写生效的方式把它们还原。 */
+.dialog__box .dialog__step { color: var(--pm-gold) !important; }
+.dialog__box .auth__err { color: #9B3A4A !important; }
+.dialog__box .auth__tab { font-size: 16px !important; }
+.dialog__box .field input { font-size: 18px !important; }
+
+/* ══ 星轨大厅的头像账号入口 ═══════════════════════════════════════
+   头像按钮本身就是账号入口：未登录点开是通行证登录，
+   已登录点开是账号面板。已登录时右下角亮一颗香槟金状态点。 */
+.avatar { position: relative; cursor: pointer; }
+.avatar__dot {
+  position: absolute; right: -1px; bottom: -1px;
+  width: 11px; height: 11px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFF3D0, #D8B978 58%, #8A6733);
+  border: 1.5px solid rgba(16, 8, 36, .82);
+  box-shadow: 0 2px 8px rgba(4, 2, 14, .6);
+  pointer-events: none;
+}
+.avatar__dot[hidden] { display: none; }

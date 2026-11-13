@@ -1840,3 +1840,8 @@ body.rd[data-step="board"] .reveal-list span.is-rev {
   background-repeat: no-repeat;
   background-size: 100% 100%;
 }
+
+/* ══ 实时传讯模式：跳过连接与牌阵，只保留 洗牌→抽牌→翻牌 ══ */
+body[data-mode="relay"] .steps li:nth-child(1),
+body[data-mode="relay"] .steps li:nth-child(2) { display: none; }
+body[data-mode="relay"] .rd-top__back span { letter-spacing: .18em; }

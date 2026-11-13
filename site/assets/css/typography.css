@@ -1,0 +1,485 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 全站文字视觉规范 / Typography System  v20261108e
+   ----------------------------------------------------------------------
+   只处理文字视觉：字号、颜色、字重、行高、字体、段落间距、背景对比度。
+   不改动任何功能与业务逻辑；星空生图、外框、牌面、动效全部保留。
+   · 浅色纸面（解读 / 羊皮纸档案卡）→ 正文 #51465F，重点 #49345F
+   · 深色星空区（导航 / 封面 / 深紫弹窗）→ 珍珠白 #FBF7FF + 月银雾紫
+   ══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --da-ink:        #51465F;  /* 正文 · 深紫灰 */
+  --da-ink-strong: #49345F;  /* 重要内容 · 深紫 */
+  --da-ink-soft:   #62556F;  /* 辅助文字 · 浅底上仍清晰 */
+  --da-gold:       #8A6733;  /* 香槟金 · 浅底可读版 */
+  --da-on-dark:    #FBF7FF;  /* 深底正文 · 珍珠白 */
+  --da-on-dark-2:  #E9DFF6;  /* 深底辅助 · 月银雾紫 */
+  --da-gold-light: #F0D9A8;  /* 香槟金 · 深底版 */
+
+  --da-paper:      #FCFAF7;
+  --da-paper-2:    #F3ECF6;
+  --da-line:       rgba(73, 52, 95, .18);
+  --da-gold-line:  rgba(190, 154, 96, .42);
+
+  --da-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+             "Noto Sans CJK SC", "Source Han Sans SC", -apple-system,
+             BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  --da-serif: "Songti SC", "STSong", "Noto Serif CJK SC",
+              "Source Han Serif SC", "SimSun", Georgia, serif;
+
+  --da-body: 18px;
+  --da-lh: 1.8;
+}
+
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--da-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  line-height: var(--da-lh);
+}
+
+/* ══ 1. 全局正文基线：18px / 1.8 / 清晰中文字体 / 防 iOS 自动缩放 ══ */
+body p, body li, body dd, body dt, body blockquote, body label,
+body textarea,
+body input:not([type="range"]):not([type="checkbox"]):not([type="radio"]) {
+  font-family: var(--da-sans);
+  font-size: var(--da-body) !important;
+  line-height: var(--da-lh) !important;
+  font-weight: 400;
+  letter-spacing: .012em;
+}
+body input:not([type="range"]), body textarea { min-height: 44px; }
+
+/* 合理行长：长文区域大约 32–36 个汉字一行 */
+.rbody .hero, .arp, .drawer__panel, .letter__body { max-width: 40em; }
+
+/* ══ 2. 辅助文字：不低于 14px，字重 500，行高 1.8 ═══════════════════ */
+.panel__kicker, .daily__kicker, .daily__date, .daily__en,
+.daily__moon, .daily__two div, .daily__streak, .dcard__hint,
+.mode__en, .mode__go, .stage__foot-note, .minor__item, .tbtn,
+.crumb, .crumb a, .pill, .stat, .src, .tab, .act, .act__ic,
+.cell__cn, .cell__en, .lp-sub,
+.hero__t i, .hero .kv em, .hero .kv span, .hero .note,
+.hero .li2 b, .hero .chips span, .row__ch, .tail__cap,
+.ask__src, .ask__x, .ask__send, .ask__note, .ask__supp,
+.th__who, .th__tag, .th__supp b, .th__supp b span,
+.m-sub, .m-chips span, .m-sec h4, .toast,
+.field__label, .field__hint, .path__go,
+.fan__hint, .statusbar__pill, .chip__n, .hd__kicker, .steps,
+.slots__n, .guide__meta,
+.rl-kicker, .rl-top__name, .rl-entry__sub, .rl-char__sub, .rl-char__go,
+.rl-cta__d, .rl-entry__note, .rl-jcard__tag, .rl-judge__hint,
+.rl-msg__time, .rl-jbtn b, .rl-jbtn span, .rl-name__d,
+.rl-chat__state, .rl-chat__err, .rl-info h3, .rl-info .rl-info__k,
+.rl-info .rl-info__go, .rl-toast,
+.ar-kicker, .ar-top__name, .ar-locked__d, .ar-lockbar, .ar-btn,
+.ar-wall-of__sub, .ar-card__kind, .ar-card__rel, .ar-card__sec,
+.ar-card__times, .ar-card__go, .ar-foot, .ar-toast,
+.arp__kind, .arp__sec, .arp__sec b,
+.hero__kicker, .chip, .dhead__num, .dhead__kw, .dsec__t,
+.drev h4, .backs__k, .backs__n, .backs__c, .foot,
+.nav__links a, .daily__dl dt, .obs-foot {
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+  font-weight: 500 !important;
+}
+
+/* 说明性长文（不是装饰标签）保持 18px 正文字号 */
+.panel__desc, .mode__desc, .daily__line, .daily__keys li,
+.hero ul li, .hero .kv div, .hero .li2 span, .m-sec p, .m-pos,
+.empty__d, .ask__hint, .arp__txt, .arp__quote, .arp__li,
+.dbox p, .drev p, .rl-lede, .rl-entry__note, .rl-info .rl-info__v,
+.ar-lede, .ar-locked__d, .ar-card__trait, .ar-card__quotes li,
+.gate__desc, .sp-head__lede, .hd__desc, .rc__d, .path__d,
+.spread-card__d, .ready__d, .backs__d, .daily__full p,
+.daily__dl dd, .hall-strip__text, .daily-card__sub {
+  font-size: var(--da-body) !important;
+  font-weight: 400 !important;
+  line-height: var(--da-lh) !important;
+  letter-spacing: .012em;
+}
+
+/* ══ 3. 标题层级：主标题 26–30 / 章节 21–23 / 二级 18–20 ═════════════ */
+body h1, .panel__title, .daily__title, .rl-title, .ar-title,
+.gate__title, .hd__title, .stitle__h {
+  font-size: clamp(26px, 3vw, 30px) !important;
+  line-height: 1.45 !important;
+  font-weight: 600 !important;
+}
+body h2, body h3,
+.hero__t, .row__t, .ask__t, .daily__name, .mode__name,
+.rl-judge__title, .rl-name__t, .rl-chat__meta b,
+.ar-locked__t, .ar-card__name, .arp__name, .m-title, .empty__t,
+.rc__t, .path__t, .spread-card__t, .ready__t, .guide__name,
+.dhead__en, .lp-t {
+  font-size: clamp(21px, 2.2vw, 23px) !important;
+  line-height: 1.5 !important;
+  font-weight: 600 !important;
+}
+body h4,
+.hero .h, .m-sec h4, .hero .li2 b, .dsec__t,
+.ar-wall-of__sub, .rl-char__name, .rl-cta__t {
+  font-size: clamp(18px, 1.9vw, 20px) !important;
+  line-height: 1.6 !important;
+  font-weight: 600 !important;
+}
+body h1, body h2, body h3, body h4,
+.hero__t, .row__t, .ask__t, .daily__name, .mode__name,
+.rl-title, .ar-title, .m-title, .empty__t, .tail__cap {
+  font-family: var(--da-serif);
+}
+
+/* ══ 4. 深色星空区：保留品牌配色，但把低对比浅灰提亮 ═══════════════ */
+.panel { --ink: #FBF7FF; --ink-2: #E9DFF6; --ink-3: #D2C2EA; }
+body.rl {
+  --rl-ink: #FBF7FF; --rl-ink-2: #E9DFF6; --rl-ink-3: #D2C2EA;
+  --rl-gold: #F0D9A8; --rl-gold-2: #DCC094;
+}
+body.ar {
+  --ar-ink: #FBF7FF; --ar-ink-2: #E9DFF6; --ar-ink-3: #D2C2EA;
+  --ar-gold: #F0D9A8; --ar-gold-2: #DCC094;
+}
+
+/* 深色区里原本半透明的小字，改为不透明的珍珠白 / 月银 */
+.panel__desc, .mode__desc, .mode__en, .daily__line.is-muted,
+.daily__en, .daily__keys li, .daily__streak, .dcard__hint,
+.daily__moon, .daily__two div, .daily__more, .daily__link,
+.daily__full p, .daily__dl dt, .daily__dl dd,
+.minor__item, .stage__foot-note, .obs-foot,
+.rl-lede, .rl-kicker, .rl-entry__sub, .rl-char__sub, .rl-char__go,
+.rl-cta__d, .rl-entry__note, .rl-judge__hint, .rl-msg__time,
+.rl-jbtn span, .rl-name__d, .rl-chat__state, .rl-chat__err,
+.rl-info .rl-info__v,
+.ar-lede, .ar-kicker, .ar-locked__d, .ar-wall-of__sub,
+.ar-foot, .arp__txt, .arp__quote, .arp__li,
+.gate__desc, .sp-head__lede, .hd__desc, .rc__d, .path__d,
+.spread-card__d, .ready__d, .guide__meta, .backs__d,
+.dbox p, .drev p, .dsec__t, .drev h4, .hall-strip__text,
+.daily-card__sub, .field__hint, .fan__hint {
+  color: var(--da-on-dark) !important;
+  opacity: 1 !important;
+}
+.hero__kicker, .hero__rule, .backs__k, .backs__n, .backs__c,
+.top__nav a, .brand span, .nav__links a, .foot {
+  color: var(--da-on-dark-2) !important;
+  opacity: 1 !important;
+}
+
+/* 提示条（toast）的显隐只由 .is-on 决定。
+   之前把 .rl-toast / .ar-toast 放进上面那条 opacity:1 !important 的名单里，
+   导致空内容的提示条常驻成一条深紫色小胶囊（档案室页脚、传讯输入栏上方）。
+   这里改成：默认彻底隐藏（不渲染、不接收指针），有内容且 .is-on 时才显示。 */
+.rl-toast, .ar-toast {
+  color: var(--da-on-dark) !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.rl-toast.is-on, .ar-toast.is-on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.rl-toast:empty, .ar-toast:empty { display: none !important; }
+.panel__title, .daily__title, .daily__name, .mode__name,
+.rl-title, .ar-title, .arp__name, .rl-judge__title {
+  color: #FFFDF7 !important;
+}
+.panel__kicker, .daily__kicker, .daily__date, .mode__en,
+.rl-kicker, .ar-kicker, .ar-card__kind, .arp__kind,
+.rl-info .rl-info__k, .dhead__num {
+  color: var(--da-gold-light) !important;
+  font-weight: 600 !important;
+}
+.rl-msg__bub, .rl-chat__input {
+  font-size: var(--da-body) !important;
+  line-height: var(--da-lh) !important;
+  font-weight: 400 !important;
+  color: var(--da-on-dark) !important;
+}
+.rl-msg__bub { max-width: 86% !important; }
+.rl-chat__input::placeholder { color: #B9A9D4 !important; opacity: 1; }
+.ar-pop__frame .arp__txt,
+.ar-pop__frame .arp__quote,
+.ar-pop__frame .arp__li,
+.ar-pop__frame .arp__rel,
+.ar-pop__frame .ar-pop__x {
+  color: var(--da-on-dark) !important;
+  text-shadow: none !important;
+}
+.ar-pop__frame .arp__txt em { color: #C7B4E4 !important; }
+.ar-pop__frame .arp__name {
+  color: #FFF6E4 !important;
+  text-shadow: none !important;
+}
+
+/* ══ 5. 羊皮纸档案卡：浅底必须深字（禁止浅底白字）════════════════════ */
+.ar-card__in { color: var(--da-ink) !important; }
+.ar-card__name, .ar-card__rel, .ar-card__trait,
+.ar-card__quotes li, .ar-card__times, .ar-card__go {
+  color: var(--da-ink) !important;
+  opacity: 1 !important;
+}
+.ar-card__name { color: var(--da-ink-strong) !important; }
+/* 档案卡上的两个小节标题：原来是 --da-gold（亮金），
+   压在羊皮纸的深色花纹上等于隐形。改成更深的暗金棕，
+   在纸面浅底与花纹交界处都读得出来。 */
+.ar-card__kind, .ar-card__sec {
+  color: #5E4526 !important;
+  font-weight: 600 !important;
+}
+.ar-card__quotes li::before,
+.ar-card__quotes li::after { color: var(--da-gold) !important; }
+/* 金色生图按钮：深棕重字；深紫 ghost 按钮：珍珠白重字 */
+.ar-btn span {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  color: #33230C !important;
+  text-shadow: none !important;
+  letter-spacing: .1em !important;
+}
+.ar-btn--ghost span {
+  color: var(--da-on-dark) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+}
+
+/* ══ 6. 纸面阅读层：六章节 / TA想对你说 / AI追问 / 弹窗 / 牌意 / 历史 ══ */
+body.it .rbody,
+body.it .ask__box,
+body.it .modal__box,
+body.it .empty,
+.drawer__panel,
+.letter__body,
+.hist__paper {
+  background:
+    linear-gradient(178deg, var(--da-paper) 0%, #FAF6F9 48%, var(--da-paper-2) 100%) !important;
+  color: var(--da-ink) !important;
+  text-shadow: none !important;
+  border-color: var(--da-gold-line) !important;
+  box-shadow:
+    inset 0 0 0 1px var(--da-line),
+    0 24px 60px -34px rgba(28, 16, 52, .6) !important;
+}
+body.it .rbody { padding: 22px 24px 28px; border-radius: 12px; }
+body.it .ask__box, body.it .modal__box, body.it .empty { border-radius: 16px; }
+body.it .ask__thread { background: transparent !important; box-shadow: none !important; }
+
+/* 纸面内文字统一深紫灰 */
+body.it .rbody p, body.it .rbody li, body.it .rbody dd,
+body.it .rbody dt, body.it .rbody span, body.it .rbody div,
+body.it .ask__box p, body.it .ask__box span, body.it .ask__box div,
+body.it .modal__box p, body.it .modal__box span, body.it .modal__box div,
+body.it .empty p,
+.drawer__panel p, .drawer__panel li, .drawer__panel span,
+.letter__body p, .hist__paper p {
+  color: var(--da-ink) !important;
+  text-shadow: none !important;
+}
+body.it .rbody p,
+body.it .rbody li,
+body.it .ask__box p,
+body.it .modal__box p,
+.drawer__panel p,
+.letter__body p,
+.hist__paper p {
+  margin-bottom: 1.05em;
+  text-align: left;
+}
+body.it .rbody p:last-child,
+body.it .ask__box p:last-child,
+body.it .modal__box p:last-child { margin-bottom: 0; }
+body.it .rbody strong, body.it .rbody b,
+body.it .ask__box b, body.it .modal__box b,
+.drawer__panel b, .letter__body b, .hist__paper b {
+  color: var(--da-ink-strong) !important;
+  font-weight: 600 !important;
+}
+
+/* 六章正文 / 注释 / 标题 */
+body.it .hero p, body.it .hero ul li, body.it .hero .kv div,
+body.it .hero .li2 span, body.it .hero .note, body.it .tail p,
+body.it .m-sec p, body.it .empty__d, body.it .ask__hint {
+  color: var(--da-ink) !important;
+  font-size: var(--da-body) !important;
+  line-height: var(--da-lh) !important;
+}
+body.it .hero__t, body.it .hero .h, body.it .row__t,
+body.it .ask__t, body.it .m-title, body.it .m-sec h4,
+body.it .empty__t, body.it .tail__cap {
+  color: var(--da-ink-strong) !important;
+  text-shadow: none !important;
+}
+body.it .hero .kv em, body.it .hero .li2 b, body.it .m-sub,
+body.it .ask__src, body.it .th__tag, body.it .m-pos b {
+  color: var(--da-gold) !important;
+  font-weight: 600 !important;
+}
+body.it .hero .note { color: var(--da-ink-soft) !important; font-size: 14px !important; }
+body.it .hero ul li::before { background: var(--da-gold) !important; }
+body.it .hero .rule { background: var(--da-line) !important; }
+body.it .hero__rule { background: linear-gradient(90deg, transparent, var(--da-gold-line)) !important; }
+body.it .hero__rule--r { background: linear-gradient(270deg, transparent, var(--da-gold-line)) !important; }
+
+/* 引导句 / 引文 / TA想对你说：浅雾紫底 + 香槟金细线 + 宋体 */
+body.it .hero p.hero__lead {
+  color: var(--da-ink-strong) !important;
+  background: linear-gradient(180deg, #FFFEFA, var(--da-paper-2)) !important;
+  border: 1px solid var(--da-gold-line) !important;
+  font-family: var(--da-serif) !important;
+  font-size: 19px !important;
+  line-height: 1.8 !important;
+  letter-spacing: .04em !important;
+  padding: 12px 20px !important;
+  max-width: 100%;
+  box-shadow: none !important;
+}
+body.it .hero .quote, body.it .hero .quote6, body.it .tail {
+  background: linear-gradient(100deg, #F6EFF8, #FDFBF8 78%) !important;
+  border: 1px solid var(--da-line) !important;
+  border-left: 3px solid var(--da-gold) !important;
+  color: var(--da-ink) !important;
+  font-size: var(--da-body) !important;
+  line-height: var(--da-lh) !important;
+  box-shadow: none !important;
+}
+body.it .hero .quote6 {
+  font-family: var(--da-serif) !important;
+  font-size: 19px !important;
+  letter-spacing: .02em !important;
+  color: var(--da-ink-strong) !important;
+}
+
+/* 章节折叠条 */
+body.it .row, body.it .rgroup.is-open .row {
+  background: linear-gradient(180deg, #FFFEFA, var(--da-paper-2)) !important;
+  border-color: var(--da-gold-line) !important;
+  box-shadow: inset 0 1px 0 #FFF, 0 8px 18px -14px rgba(40, 22, 72, .5) !important;
+  padding: 14px 18px !important;
+}
+body.it .row__t { color: var(--da-ink-strong) !important; }
+body.it .row__ch { color: var(--da-ink-soft) !important; font-size: 16px !important; }
+body.it .row__ic { font-size: 14px !important; }
+body.it .rowbody__pad { padding-top: 16px !important; }
+
+/* 追问弹层 */
+body.it .ask__head { border-bottom-color: var(--da-line) !important; }
+body.it .ask__t {
+  color: var(--da-ink-strong) !important;
+  font-size: 19px !important;
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+body.it .ask__src { flex: 1 1 auto; min-width: 0; }
+body.it .ask__x, body.it .ask__supp, body.it .ask__note {
+  color: var(--da-ink-soft) !important;
+  border-color: var(--da-line) !important;
+}
+body.it .ask__bar {
+  background: #FFFEFA !important;
+  border-color: var(--da-line) !important;
+  height: 52px !important;
+}
+body.it .ask__input { color: var(--da-ink) !important; font-size: var(--da-body) !important; }
+body.it .ask__input::placeholder { color: #8B7E99 !important; opacity: 1; }
+body.it .ask__send { color: #FFFDF7 !important; font-size: 16px !important; }
+body.it .th__who { color: var(--da-ink-soft) !important; }
+body.it .th__b {
+  font-size: var(--da-body) !important;
+  line-height: var(--da-lh) !important;
+  padding: 12px 16px !important;
+}
+body.it .th--me .th__b {
+  background: #EFE6F7 !important;
+  border-color: var(--da-gold-line) !important;
+  color: var(--da-ink-strong) !important;
+}
+body.it .th--bot .th__b {
+  background: #FFFEFA !important;
+  border-color: var(--da-line) !important;
+  color: var(--da-ink) !important;
+}
+body.it .th__supp { background: #F8F2FA !important; border-color: var(--da-line) !important; }
+body.it .th__supp b { color: var(--da-ink-strong) !important; }
+body.it .th__supp b span { color: var(--da-ink-soft) !important; }
+
+/* 牌面详情弹层（牌意说明） */
+body.it .modal__close { color: var(--da-ink-soft) !important; border-color: var(--da-line) !important; }
+body.it .m-chips span {
+  color: var(--da-ink-strong) !important;
+  border-color: var(--da-line) !important;
+  background: #F8F2FA !important;
+  font-size: 14px !important;
+}
+body.it .m-pos {
+  background: #F8F2FA !important;
+  border-left-color: var(--da-gold) !important;
+  font-size: 16px !important;
+}
+body.it .m-sec h4 { color: var(--da-ink-strong) !important; }
+body.it .m-sec p { margin-bottom: .9em; }
+body.it .empty__mark { color: var(--da-gold) !important; }
+
+/* 牌图鉴抽屉（牌意说明） */
+.drawer__panel p, .drawer__panel li, .drawer__panel span,
+.drawer__panel h1, .drawer__panel h2, .drawer__panel h3,
+.drawer__panel h4, .drawer__panel .dhead__en,
+.drawer__panel .dhead__num, .drawer__panel .dhead__kw,
+.drawer__panel .dsec__t, .drawer__panel .drev h4,
+.drawer__panel .drawer__x {
+  color: var(--da-ink) !important;
+  text-shadow: none !important;
+}
+.drawer__panel .dsec__t, .drawer__panel .dhead__en,
+.drawer__panel h1, .drawer__panel h2, .drawer__panel h3 {
+  color: var(--da-ink-strong) !important;
+}
+
+/* ══ 7. 深色区按钮 / 标签：字重与对比度 ═══════════════════════════════ */
+.tab { color: #F3EAFD !important; font-weight: 500 !important; }
+.tab.is-on {
+  background: linear-gradient(180deg, #FFFDF7, #EFE5F8) !important;
+  color: var(--da-ink-strong) !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+  box-shadow: inset 0 1px 0 #FFF, 0 4px 14px -8px rgba(40, 22, 72, .8) !important;
+}
+.crumb a, .pill, .act, .tbtn, .src, .stat {
+  text-shadow: none !important;
+  font-weight: 500 !important;
+}
+.stat em, .stat i { font-weight: 600 !important; }
+
+/* ══ 8. 移动端：真实手机尺寸下无需放大即可阅读 ══════════════════════ */
+@media (max-width: 900px) {
+  :root { --da-body: 18px; }
+  body p, body li, body dd, body dt, body blockquote, body label {
+    font-size: 18px !important;
+    line-height: 1.8 !important;
+  }
+  body.it .rbody { padding: 18px 16px 24px !important; border-radius: 10px; }
+  body.it .hero p.hero__lead { font-size: 18px !important; padding: 12px 14px !important; }
+  body.it .hero .quote6 { font-size: 18px !important; }
+  .panel__title, .daily__title, .rl-title, .ar-title { font-size: 26px !important; }
+  .hero__t, .row__t, .ask__t, .daily__name, .mode__name { font-size: 21px !important; }
+  .tab, .pill, .act, .tbtn, .stat, .src, .minor__item { font-size: 14px !important; }
+  .tab { padding: 9px 14px !important; }
+  .act { min-height: 46px !important; }
+  .daily__link, .daily__more, .mode__go { font-size: 16px !important; }
+  .ask__box, .modal__box { max-height: 90svh !important; }
+  .ask__bar { height: 54px !important; }
+  .ask__send { min-height: 42px !important; }
+  .rl-msg__bub { font-size: 18px !important; max-width: 88% !important; }
+  .rl-chat__input { font-size: 17px !important; }
+  .th__b { font-size: 18px !important; }
+  .rbody .hero, .arp, .drawer__panel, .letter__body { max-width: 100%; }
+}
+
+/* ══ 9. 观测站版式：今日探索排在主功能列表的最底下 ═══════════════════ */
+.panel__inner { display: flex; flex-direction: column; }
+.panel__head { order: 1; }
+.modes      { order: 2; }
+.minor      { order: 3; }
+#daily      { order: 4; }

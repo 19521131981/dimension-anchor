@@ -26,7 +26,13 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
-  function txt(s) { return esc(s).replace(/&lt;br&gt;/gi, '<br>'); }
+  function txt(s) {
+    /* 渲染前的最后一道闸：任何来源（规则引擎 / AI 通道 / 旧记录）里
+       漏出的 undefined / null 字面量都不允许出现在页面上。 */
+    var raw = (s === undefined || s === null) ? '' : String(s);
+    raw = raw.replace(/\bundefined\b/g, '').replace(/\bnull\b/g, '');
+    return esc(raw).replace(/&lt;br&gt;/gi, '<br>');
+  }
   function clone(o) { return JSON.parse(JSON.stringify(o || null)); }
   function attr(s) { return String(s == null ? '' : s).replace(/["\\]/g, '\\$&'); }
 
@@ -51,7 +57,11 @@
     source: 'local',
     model: '',
     thread: [],
-    busy: false
+    busy: false,
+    /* 深度探索：只以云数据库返回的状态为准，不在本地存储付费标记 */
+    premium: { tier: 'free', active: false, valid_until: null },
+    askChapter: '',
+    feedback: ''
   };
 
   /* ══ 数据准备 ══════════════════════════════════════════════ */
@@ -73,6 +83,149 @@
         return { q: t.text, a: a ? a.text : '' };
       })
     };
+  }
+
+  /* ══ 深度探索（Premium）════════════════════════════════════
+     付费状态只来自云数据库；这里只做界面与上下文组装，不做权限判断。
+     ═══════════════════════════════════════════════════════ */
+  function chapterText(ch) {
+    return ((ch && ch.lead) ? ch.lead + '\n' : '') + ((ch && ch.blocks) || []).map(function (b) {
+      if (b.t === 'ul') return (b.items || []).join('；');
+      if (b.t === 'kv' || b.t === 'chips') {
+        return (b.items || []).map(function (i) {
+          return (i.k ? i.k + '：' : '') + (i.v || i.x || '');
+        }).join('；');
+      }
+      if (b.t === 'li2') return b.k + '：' + b.v;
+      if (b.t === 'rule') return '';
+      return String(b.x || '').replace(/<br\s*\/?>/gi, '；');
+    }).filter(Boolean).join('\n').slice(0, 1400);
+  }
+
+  /* 完整上下文：原始问题 + 全部牌面/正逆位/牌位 + 人物档案 + 六章 + 历史 */
+  function fullContext(chapterKey, question, feedback) {
+    var ses = state.session || {};
+    var L = state.link || {};
+    var chs = (state.result && state.result.chapters) || [];
+    var pid = L.profileId || '';
+    var profile = '';
+    try { if (window.DA_ARCHIVE) profile = window.DA_ARCHIVE.summary(pid) || ''; } catch (e) {}
+    if (!profile && L.subjectName) {
+      profile = '对象：' + L.subjectName + (L.persona ? '；人物设定：' + L.persona : '');
+    }
+
+    var cards = placed().map(function (e) {
+      var c = cardOf(e) || {};
+      var kw = (e.reversed ? (c.kr || []) : (c.ku || [])).join('、');
+      return {
+        slot: e.slot, positionCn: e.positionCn, cn: e.cn,
+        en: e.en || c.en || '', orientation: e.reversed ? '逆位' : '正位',
+        keywords: kw
+      };
+    });
+
+    return {
+      readingId: String((state.record && state.record.id) || ses.id || ''),
+      question: L.question || L.wish || ses.question || '',
+      spreadCn: ses.spreadCn || '',
+      relation: L.relation || '',
+      background: L.background || '',
+      profile: profile,
+      cards: cards,
+      supp: state.supp.map(function (s) {
+        return { cn: s.cn, orientation: s.reversed ? '逆位' : '正位' };
+      }),
+      chapters: chs.map(function (ch, i) {
+        return { no: '第 ' + (i + 1) + ' 章', title: ch.title, text: chapterText(ch) };
+      }),
+      history: ctxOf().history,
+      chapterKey: chapterKey || '',
+      chapterTitle: chapterKey ? ((chapterOf(chapterKey) || {}).title || '') : '',
+      feedback: feedback || '',
+      ask: question
+    };
+  }
+
+  function exploreHTML(key, label) {
+    return '<div class="pm-explore-wrap">' +
+      '<button class="pm-explore" type="button" data-pm-explore="' + attr(key) + '">' +
+      '<i>✧</i>' + esc(label || '继续探索这一章') + '</button>' +
+      '<span class="pm-explore__note">带着本次牌阵、正逆位与六章解读继续问</span></div>';
+  }
+
+  function fmtDate(v) {
+    if (!v) return '—';
+    var d = new Date(v);
+    if (isNaN(d.getTime())) return String(v);
+    return d.getFullYear() + ' 年 ' + (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日';
+  }
+
+  function paintPremium() {
+    var on = state.premium.active === true;
+    var badge = $('pmBadge');
+    if (badge) {
+      badge.classList.toggle('is-free', !on);
+      badge.innerHTML = on ? '<i>✦</i> Premium' : '<i>✦</i> Free';
+      badge.title = on ? ('深度探索有效至 ' + fmtDate(state.premium.valid_until)) : '点击解锁深度探索';
+    }
+    if ($('pmLockBar')) $('pmLockBar').classList.toggle('is-on', !on);
+    var head = document.querySelector('.ask__src');
+    if (head) {
+      head.textContent = on
+        ? '已解锁 · 每次都带上完整牌阵'
+        : '基础解读已开放 · 追问需解锁';
+    }
+  }
+
+  function refreshPremium() {
+    var P = window.DA_PREMIUM;
+    if (!P) { paintPremium(); return; }
+    return P.status().then(function (s) {
+      state.premium = {
+        tier: (s && s.tier) || 'free',
+        active: !!(s && s.active),
+        valid_until: (s && s.valid_until) || null
+      };
+      paintPremium();
+    }).catch(function () {
+      state.premium = { tier: 'free', active: false, valid_until: null };
+      paintPremium();
+    });
+  }
+
+  function openGate() {
+    var g = $('pmGate');
+    if (!g) return;
+    g.hidden = false;
+    var st = $('pmState');
+    st.textContent = '';
+    st.className = 'pm-gate__state';
+    setTimeout(function () { $('pmCode').focus(); }, 60);
+  }
+  function closeGate() { if ($('pmGate')) $('pmGate').hidden = true; }
+
+  function doRedeem() {
+    var P = window.DA_PREMIUM;
+    var st = $('pmState'), btn = $('pmRedeem');
+    if (!P || !st || !btn) return;
+    st.className = 'pm-gate__state is-busy';
+    st.textContent = '正在向服务端验证占卜码…';
+    btn.disabled = true;
+    P.redeem($('pmCode').value).then(function (r) {
+      if (r && r.ok) {
+        st.className = 'pm-gate__state is-ok';
+        st.textContent = '解锁成功 · 深度探索有效至 ' + fmtDate(r.valid_until);
+        S.flip();
+        refreshPremium();
+        setTimeout(closeGate, 1900);
+      } else {
+        st.className = 'pm-gate__state is-err';
+        st.textContent = P.message({ code: (r && r.reason) || 'INVALID' });
+      }
+    }).catch(function (e) {
+      st.className = 'pm-gate__state is-err';
+      st.textContent = P.message(e);
+    }).then(function () { btn.disabled = false; });
   }
 
   /* ══ 牌阵网格 ══════════════════════════════════════════════ */
@@ -226,7 +379,8 @@
         '<span class="hero__rule hero__rule--r"></span>' +
       '</div>' +
       (ch.lead ? '<p class="hero__lead">' + txt(ch.lead) + '</p>' : '') +
-      blocksHTML(ch.blocks, ch.key === 'cards');
+      blocksHTML(ch.blocks, ch.key === 'cards') +
+      exploreHTML(ch.key, ch.key === 'voice' ? '继续和 TA 聊下去' : '继续探索这一章');
 
     hero.style.animation = 'none';
     void hero.offsetHeight;
@@ -255,7 +409,9 @@
       var body = document.createElement('div');
       body.className = 'rowbody';
       body.innerHTML = '<div class="rowbody__in"><div class="rowbody__pad hero">' +
-        blocksHTML(ch.blocks, ch.key === 'cards') + '</div></div>';
+        blocksHTML(ch.blocks, ch.key === 'cards') +
+        exploreHTML(ch.key, ch.key === 'voice' ? '继续和 TA 聊下去' : '继续探索这一章') +
+        '</div></div>';
 
       btn.addEventListener('click', function () {
         state.openRow = open ? null : ch.key;
@@ -293,7 +449,8 @@
     if (!q) (v.blocks || []).forEach(function (b) { if (!q && b.t === 'p') q = b; });
 
     tail.hidden = false;
-    tail.innerHTML = '<div class="tail__cap">TA 想对你说</div><p>' + txt(q ? q.x : '') + '</p>';
+    tail.innerHTML = '<div class="tail__cap">TA 想对你说</div><p>' + txt(q ? q.x : '') + '</p>' +
+      exploreHTML('voice', '继续和 TA 聊下去');
   }
 
   function renderHead() {
@@ -500,10 +657,18 @@
   }
 
   /* ══ 继续追问 ══════════════════════════════════════════════ */
-  function openAsk() {
+  function openAsk(chapterKey, preset) {
+    if (chapterKey && typeof chapterKey !== 'string') chapterKey = '';
+    state.askChapter = chapterKey || '';
     $('ask').hidden = false;
+    if (preset) $('askInput').value = preset;
     $('askInput').focus();
     S.page();
+    if (!state.premium.active) {
+      var hint = threadEl().querySelector('.ask__hint');
+      if (hint) hint.textContent = '六章基础解读已经完整开放。想把这一问继续问下去，需要先输入占卜码解锁深度探索。';
+      if ($('pmLockBar')) $('pmLockBar').classList.add('is-on');
+    }
   }
   function closeAsk() { $('ask').hidden = true; }
   function threadEl() { return $('thread'); }
@@ -516,13 +681,41 @@
     threadEl().scrollTop = threadEl().scrollHeight;
   }
 
-  function pushBot(text, who) {
+  function pushBot(text, who, withFeedback) {
     var d = document.createElement('div');
     d.className = 'th th--bot';
     d.innerHTML = '<span class="th__who">' + esc(who || '观测站') + '</span><div class="th__b">' +
       String(text || '').split(/\n{2,}/).map(function (p) {
         return '<p>' + txt(p.trim()) + '</p>';
       }).join('') + '</div>';
+    threadEl().appendChild(d);
+    if (withFeedback) attachFeedback();
+    threadEl().scrollTop = threadEl().scrollHeight;
+  }
+
+  /* 反馈校准：用户补充的信息优先于原结论 */
+  function attachFeedback() {
+    var d = document.createElement('div');
+    d.className = 'pm-fb';
+    d.innerHTML = '<span class="pm-fb__cap">这段分析准吗？</span>' +
+      '<button type="button" data-fb="符合">符合</button>' +
+      '<button type="button" data-fb="部分符合">部分符合</button>' +
+      '<button type="button" data-fb="不符合">不符合</button>';
+    d.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-fb]') : null;
+      if (!b) return;
+      var v = b.getAttribute('data-fb');
+      d.querySelectorAll('button').forEach(function (x) { x.classList.toggle('is-on', x === b); });
+      if (v === '符合') {
+        state.feedback = '';
+        toast('记下了。想继续，直接问下一个问题就好。');
+        return;
+      }
+      state.feedback = v;
+      $('askInput').placeholder = '补充一下真实情况，我会据此重新分析…';
+      $('askInput').focus();
+      toast('已标记为「' + v + '」，写下补充后发送即可重新校准。');
+    });
     threadEl().appendChild(d);
     threadEl().scrollTop = threadEl().scrollHeight;
   }
@@ -548,26 +741,40 @@
 
     pushMe(q);
     input.value = '';
+    input.placeholder = '例如：那我现在该先做什么？';
     state.thread.push({ role: 'user', text: q, at: Date.now() });
     persistThread();
+
+    var chapterKey = state.askChapter || '';
+    var feedback = state.feedback || '';
+    state.feedback = '';
 
     state.busy = true;
     $('sendBtn').disabled = true;
 
-    if (AI.available()) {
-      AI.ask(ctxOf(), q).then(function (j) {
-        pushBot(j.text, '观测站 · ' + (j.model || 'DeepSeek'));
-        state.thread.push({ role: 'bot', text: j.text, at: Date.now() });
-        state.source = 'ai';
-        state.model = j.model || state.model;
-        S.flip();
-      }).catch(function () {
-        localAnswer(q);
-      }).then(finish);
-    } else {
-      localAnswer(q);
+    /* Free 身份：不发起任何追问调用，直接引导解锁 */
+    if (!window.DA_PREMIUM || !state.premium.active) {
+      pushBot('这一问属于深度探索。解锁之后，我会带着这次的完整牌阵、六章解读和刚才的对话，继续陪你往下看。', '观测站');
+      openGate();
       finish();
+      return;
     }
+
+    window.DA_PREMIUM.ask(fullContext(chapterKey, q, feedback)).then(function (j) {
+      pushBot(j.text, '观测站 · 深度探索', true);
+      state.thread.push({ role: 'bot', text: j.text, at: Date.now() });
+      state.source = 'ai';
+      S.flip();
+    }).catch(function (e) {
+      if (e && e.code === 'PREMIUM_REQUIRED') {
+        refreshPremium();
+        pushBot('权益已经失效，请重新输入一张有效的占卜码。', '观测站');
+        openGate();
+      } else {
+        toast(window.DA_PREMIUM.message(e));
+        localAnswer(q);   /* 网络异常时才回落到本地推演，不冒充 AI 追问 */
+      }
+    }).then(finish);
 
     function finish() {
       state.busy = false;
@@ -843,6 +1050,24 @@
     document.querySelectorAll('a').forEach(function (a) {
       a.addEventListener('click', function () { S.page(); });
     });
+
+    /* 权益入口在任何状态下都可用（含空态） */
+    var badge = $('pmBadge');
+    if (badge) badge.addEventListener('click', function () {
+      if (state.premium.active) toast('深度探索有效至 ' + fmtDate(state.premium.valid_until));
+      else openGate();
+    });
+    if ($('unlockBtn')) $('unlockBtn').addEventListener('click', openGate);
+    if ($('pmLockBtn')) $('pmLockBtn').addEventListener('click', openGate);
+    if ($('pmGateX')) $('pmGateX').addEventListener('click', closeGate);
+    if ($('pmGate')) $('pmGate').querySelectorAll('[data-pm-close]').forEach(function (el) {
+      el.addEventListener('click', closeGate);
+    });
+    if ($('pmRedeem')) $('pmRedeem').addEventListener('click', doRedeem);
+    if ($('pmCode')) $('pmCode').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); doRedeem(); }
+    });
+    refreshPremium();
   }
 
   function bind() {
@@ -860,6 +1085,20 @@
     });
     $('suppBtn').addEventListener('click', drawSupp);
 
+    /* ── 章节「继续探索」与预设问题 ───────────────────────────── */
+    document.addEventListener('click', function (e) {
+      var t = e.target && e.target.closest ? e.target : null;
+      if (!t || !t.closest) return;
+      var ex = t.closest('[data-pm-explore]');
+      if (ex) { openAsk(ex.getAttribute('data-pm-explore')); return; }
+      var chip = t.closest('.pm-chip');
+      if (chip) {
+        $('askInput').value = chip.getAttribute('data-q') || '';
+        $('askInput').focus();
+        if (!state.premium.active) openGate();
+      }
+    });
+
     $('mClose').addEventListener('click', closeCard);
     $('modal').querySelectorAll('[data-close]').forEach(function (el) {
       el.addEventListener('click', closeCard);
@@ -869,19 +1108,13 @@
 
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      if (!$('pmGate').hidden) { closeGate(); return; }
       if (!$('modal').hidden) { closeCard(); return; }
       if (!$('ask').hidden) closeAsk();
     });
 
-    /* 追问面板顶部的来源标签跟着实际通道走 */
-    var head = document.querySelector('.ask__src');
-    if (head) {
-      AI.probe().then(function (s) {
-        head.textContent = s.ok
-          ? 'DeepSeek 已接通 · 会带上牌阵与角色档案继续回答'
-          : 'AI 接口未接通 · 本地引擎按牌面字段回应';
-      });
-    }
+    /* 权益状态每次进页面都重新向服务端查询 */
+    refreshPremium();
   }
 
   if (document.readyState === 'loading') {

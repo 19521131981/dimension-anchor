@@ -10,6 +10,8 @@
 <link rel="stylesheet" href="assets/css/interpret.css?v=20261107">
 <link rel="stylesheet" href="assets/css/cards.css">
 <link rel="stylesheet" href="assets/css/ambient.css?v=20261108d">
+<link rel="stylesheet" href="assets/css/typography.css?v=20261108e">
+<link rel="stylesheet" href="assets/css/premium.css?v=20261109b">
 </head>
 <body class="it">
 
@@ -41,6 +43,7 @@
   </nav>
 
   <div class="topacts">
+    <button class="pm-badge is-free" id="pmBadge" type="button" title="查看深度探索权益">✦ Free</button>
     <button class="pill" id="soundBtn" type="button" aria-pressed="false">
       <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
@@ -100,7 +103,10 @@
           <span class="act__ic" aria-hidden="true">⧉</span><span>复制解读内容</span>
         </button>
         <button class="act act--primary" id="askBtn" type="button">
-          <span class="act__ic" aria-hidden="true">✦</span><span>继续追问</span>
+          <span class="act__ic" aria-hidden="true">✦</span><span>继续探索</span>
+        </button>
+        <button class="act" id="unlockBtn" type="button">
+          <span class="act__ic" aria-hidden="true">✧</span><span>解锁深度探索</span>
         </button>
       </div>
     </section>
@@ -131,22 +137,57 @@
   <div class="ask__scrim" data-close="1"></div>
   <div class="ask__box" role="dialog" aria-modal="true" aria-labelledby="askT">
     <header class="ask__head">
-      <h3 class="ask__t" id="askT">继续追问</h3>
-      <span class="ask__src">AI 接口未接通 · 本地引擎按牌面字段回应</span>
+      <h3 class="ask__t" id="askT">继续探索</h3>
+      <span class="ask__src">六章基础解读已完整开放</span>
       <button class="ask__x" id="askClose" type="button" aria-label="关闭">✕</button>
     </header>
     <div class="ask__thread" id="thread" aria-live="polite">
       <p class="ask__hint">这一问会带上本次牌阵与前面所有的解读。每问一次可以多抽一张补充牌。</p>
     </div>
+    <div class="pm-presets" id="pmPresets">
+      <p class="pm-presets__cap">从这里开始，或者直接自己写</p>
+      <button class="pm-chip" type="button" data-q="我想问TA……">我想问TA……</button>
+      <button class="pm-chip" type="button" data-q="这张牌还有其他含义吗？">这张牌还有其他含义吗？</button>
+      <button class="pm-chip" type="button" data-q="这句话是什么意思？">这句话是什么意思？</button>
+      <button class="pm-chip" type="button" data-q="我觉得分析不完全准确。">我觉得分析不完全准确。</button>
+      <button class="pm-chip" type="button" data-q="我想补充一个真实事件。">我想补充一个真实事件。</button>
+      <button class="pm-chip" type="button" data-q="我想继续探索这段关系。">我想继续探索这段关系。</button>
+    </div>
     <div class="ask__bar">
       <input class="ask__input" id="askInput" type="text"
-             placeholder="例如：那我现在该先做什么？" autocomplete="off">
+             placeholder="写下你的问题…" autocomplete="off">
       <button class="ask__send" id="sendBtn" type="button">发送</button>
     </div>
     <div class="ask__foot">
       <button class="ask__supp" id="suppBtn" type="button"><span aria-hidden="true">✦</span> 抽一张补充牌</button>
       <span class="ask__note" id="suppInfo">每问一次只能抽一张，补充牌会真实落进牌阵。</span>
     </div>
+    <div class="pm-lockbar" id="pmLockBar">
+      <p>连续追问、章节深入、补充背景与关系二次探索，需要有效的占卜码。</p>
+      <button type="button" id="pmLockBtn">输入占卜码解锁</button>
+    </div>
+  </div>
+</div>
+
+<!-- 解锁深度探索 -->
+<div class="pm-gate" id="pmGate" hidden>
+  <div class="pm-gate__scrim" data-pm-close="1"></div>
+  <div class="pm-gate__box" role="dialog" aria-modal="true" aria-labelledby="pmGateT">
+    <button class="pm-gate__x" type="button" id="pmGateX" aria-label="关闭">✕</button>
+    <p class="pm-gate__kicker">DEEP EXPLORATION</p>
+    <h2 class="pm-gate__t" id="pmGateT">解锁深度探索</h2>
+    <p class="pm-gate__d">基础六章解读对所有人都开放。输入一张有效的占卜码，可以把这次牌阵继续问下去。</p>
+    <ul class="pm-gate__list">
+      <li>AI 连续追问，始终带着最初的问题、全部牌面与六章解读</li>
+      <li>章节深入解释、补充背景、纠正分析与关系二次探索</li>
+      <li>权益绑定到你的星际通行证账号，换设备也在</li>
+    </ul>
+    <label class="pm-gate__label" for="pmCode">占卜码</label>
+    <input class="pm-gate__input" id="pmCode" type="text" inputmode="text"
+           autocomplete="off" spellcheck="false" placeholder="DA-XXXX-XXXX-XXXX" maxlength="40">
+    <button class="pm-gate__btn" id="pmRedeem" type="button">验证并解锁</button>
+    <p class="pm-gate__state" id="pmState" role="status" aria-live="polite"></p>
+    <p class="pm-gate__foot">验证在服务端完成：过期、次数用尽、已停用的占卜码都会被拒绝。账户未登录时会先请你点亮通行证。</p>
   </div>
 </div>
 
@@ -173,7 +214,12 @@
 <script src="assets/js/tarot-sound.js"></script>
 <script src="assets/js/tarot-reading.js"></script>
 <script src="assets/js/da-store.js"></script>
+<script src="assets/js/da-archive.js?v=20261108"></script>
 <script src="assets/js/da-ai.js"></script>
-<script src="assets/js/interpret.js"></script>
+<script src="assets/js/workbuddy-cloud-sdk.global.js"></script>
+<script src="assets/js/da-cloud-config.js"></script>
+<script src="assets/js/da-auth.js"></script>
+<script src="assets/js/da-premium.js?v=20261109a"></script>
+<script src="assets/js/interpret.js?v=20261109a"></script>
 </body>
 </html>

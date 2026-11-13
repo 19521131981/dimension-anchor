@@ -197,14 +197,29 @@
 .scene__clouds--far { opacity: .17; }
 .scene__clouds--near { opacity: .12; }
 
-/* 极缓的「镜头呼吸」：整块画板同缩，所有对位关系不变 */
+/* 极缓的「镜头呼吸」：整块画板同缩，所有对位关系不变
+   —— 只在大屏保留。手机上整幅原画被 1.3% 的慢缩放反复重采样，
+   每一帧的小数像素会量化成 1px 跳格，看起来就是「图片一跳一跳」；
+   手机端改由视频光层、流星与云雾承担动感，画板保持像素对齐。 */
 .plate {
   animation: plateBreath 34s ease-in-out infinite alternate;
+  /* 独立合成层：缩放交给 GPU 双线性插值，避免每帧重绘原图 */
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 @keyframes plateBreath {
-  from { transform: scale(1); }
-  50%  { transform: scale(1.008); }
-  to   { transform: scale(1.013); }
+  from { transform: translateZ(0) scale(1); }
+  50%  { transform: translateZ(0) scale(1.008); }
+  to   { transform: translateZ(0) scale(1.013); }
+}
+
+@media (max-width: 900px) {
+  .plate {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
 }
 
 /* ══ 3 · 宫殿入口 ═════════════════════════════════════════════ */

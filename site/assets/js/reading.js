@@ -1293,12 +1293,14 @@
       fitBoard();
       var st = $('#ssteps');
       if (st) st.innerHTML = stepsHTML('flip');
-      bar.innerHTML = '<span>逐张点击翻开 · 也可以一次揭示剩余</span>' +
+      bar.innerHTML = '<span>' + (state.mode === 'relay'
+          ? '翻开这张牌 · 它是今晚信号的源头' : '逐张点击翻开 · 也可以一次揭示剩余') + '</span>' +
         '<span class="statusbar__pill" id="flipCount">已翻 0 / ' + state.session.cards.length + '</span>';
       $('#drawActions').innerHTML =
         '<button class="btn btn--ghost" id="revealRest" style="display:none">揭示剩余星轨</button>' +
         '<button class="btn btn--ghost" id="pauseAuto" style="display:none">暂停</button>' +
-        '<button class="btn btn--primary" id="toBoard" style="display:none">查看完整牌阵</button>';
+        '<button class="btn btn--primary" id="toBoard" style="display:none">' +
+        (state.mode === 'relay' ? '接通信号' : '查看完整牌阵') + '</button>';
 
       state.session.cards.forEach(function (entry) {
         var slot = slotEls[entry.slot];
@@ -1347,9 +1349,14 @@
       var toBoard = $('#toBoard');
       if (rest) rest.style.display = 'none';
       if (pause) pause.style.display = 'none';
-      if (toBoard) { toBoard.style.display = ''; toBoard.textContent = '查看完整牌阵'; }
+      if (toBoard) {
+        toBoard.style.display = '';
+        toBoard.textContent = state.mode === 'relay' ? '接通信号' : '查看完整牌阵';
+      }
       S.complete();
-      toast('全部翻开。先看清整个牌阵，再决定要不要读它。');
+      toast(state.mode === 'relay'
+        ? '牌已经翻开。信号正在另一端等待。'
+        : '全部翻开。先看清整个牌阵，再决定要不要读它。');
     }
 
     /* ---- 自动揭示 ---- */
@@ -1433,6 +1440,26 @@
     setStep('board');
     var sess = state.session;
     var L = state.link || {};
+
+    /* ══ 实时传讯：一张牌即信号源，直接接往 relay.html ══ */
+    if (state.mode === 'relay') {
+      var only = (sess.cards || [])[0];
+      if (!only) { go('shuffle'); return; }
+      try {
+        var pending = {
+          card: only.id,
+          rev: !!only.reversed,
+          slot: only.slot,
+          at: Date.now()
+        };
+        sessionStorage.setItem('DA2_RELAY_PENDING', JSON.stringify(pending));
+      } catch (e) {}
+      var rurl = 'relay.html?fresh=1&card=' + encodeURIComponent(only.id) +
+        '&rev=' + (only.reversed ? '1' : '0');
+      S.complete();
+      location.href = window.DA_LINK ? DA_LINK.fix(rurl) : rurl;
+      return;
+    }
 
     var rows = sess.cards.map(function (c) {
       return '<div class="slots__row"><span class="slots__n">' + c.slot + '</span>' +
@@ -1562,9 +1589,23 @@
     var step = q.get('step') || 'ritual';
     if (q.get('mode') === 'heal') state.mode = 'heal';
 
+    /* ══ 实时传讯：跳过连接仪式与牌阵选择，直接洗牌抽一张 ══ */
+    if (q.get('mode') === 'relay') {
+      state.mode = 'relay';
+      state.spreadKey = 'single';
+      state.deckMode = 78;
+      document.body.setAttribute('data-mode', 'relay');
+      try {
+        var savedRelay = JSON.parse(localStorage.getItem('DA_LINK_SESSION') || 'null');
+        if (savedRelay) state.link = savedRelay;
+      } catch (e) {}
+      if (!state.link) state.link = { mode: 'relay', subjectName: '', relation: '实时传讯' };
+      if (!step || step === 'ritual' || step === 'spread') step = 'shuffle';
+    }
+
     try {
       var saved = JSON.parse(localStorage.getItem('DA_LINK_SESSION') || 'null');
-      if (saved) state.link = saved;
+      if (saved && state.mode !== 'relay') state.link = saved;
     } catch (e) {}
 
     if (step === 'spread') { renderSpread(); return; }

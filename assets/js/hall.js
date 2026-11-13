@@ -134,8 +134,17 @@
 
   function route() {
     var hash = location.hash.replace(/^#\/?/, '');
+    var go = function (page, anchor) {
+      var url = window.DA_LINK ? DA_LINK.fix(page) : page;
+      location.href = anchor ? url + anchor : url;
+    };
     // 塔罗观测站已建成独立页面
-    if (hash === 'tarot') { location.href = window.DA_LINK ? DA_LINK.fix('observatory.html') : 'observatory.html'; return; }
+    if (hash === 'tarot') { go('observatory.html'); return; }
+    // 星轨档案馆已建成独立页面
+    if (hash === 'archive') { go('archive.html'); return; }
+    // 每日探索 = 观测站里那块真实可用的「今日探索」：
+    // 带 #daily 锚点过去，观测站会自动定位到它，不再是「稍后再来」的死路。
+    if (hash === 'daily') { go('observatory.html', '#daily'); return; }
     if (hash && SPACES[hash]) openGate(hash);
     else closeGate(false);
   }
@@ -187,10 +196,46 @@
     }
   }
 
+  /* ── 右上角头像：个人空间 / 通行证入口 ─────────────────────
+     未登录 → 打开通行证（手机号 / 邮箱验证码，登录即建号）；
+     已登录 → 打开账号面板（可查看账号、退出登录）。
+     状态同时反映在头像的金色状态点与 title 上，不做假状态。 */
+  function bindAvatar() {
+    var btn = document.getElementById('avatarBtn');
+    if (!btn) return;
+    var dot = document.getElementById('avatarDot');
+
+    function paint() {
+      var auth = window.DA_AUTH;
+      var on = !!(auth && auth.uid && auth.uid());
+      var who = (auth && auth.name) ? auth.name() : '';
+      var label = on
+        ? ('个人空间 · 已登录 ' + (who || '通行证'))
+        : '个人空间 · 通行证（手机号或邮箱登录，换设备也能读到同一份档案）';
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+      btn.classList.toggle('is-in', on);
+      if (dot) dot.hidden = !on;
+    }
+
+    btn.addEventListener('click', function () {
+      if (window.DA_AUTH && DA_AUTH.open) { DA_AUTH.open(); return; }
+      /* 通行证模块没就位时，也不能让按钮毫无反应 */
+      location.href = window.DA_LINK ? DA_LINK.fix('cottage.html') : 'cottage.html';
+    });
+
+    if (window.DA_AUTH) {
+      if (DA_AUTH.onChange) DA_AUTH.onChange(paint);
+      if (DA_AUTH.init) { try { DA_AUTH.init().then(paint); } catch (e) { paint(); } }
+    }
+    paint();
+  }
+
   function boot() {
     renderMoon();
     renderTheme();
     bind();
+    bindAvatar();
     route();
   }
 

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>占卜码管理 · DIMENSION ANCHOR</title>
+<link rel="stylesheet" href="assets/css/typography.css?v=20261108e">
+<link rel="stylesheet" href="assets/css/premium.css?v=20261109b">
+</head>
+<body class="pm-admin">
+<main class="pm-wrap">
+  <header class="pm-head">
+    <p class="pm-head__k">DIMENSION ANCHOR · ADMIN</p>
+    <h1>占卜码管理</h1>
+    <p>批量生成、有效期、可用次数、兑换记录与停用。所有校验都在云端数据库完成，管理权限由服务端判定。</p>
+  </header>
+
+  <!-- 通行证 -->
+  <section class="pm-card" id="signCard">
+    <h2>第一步 · 点亮通行证</h2>
+    <p>管理身份要绑定一个真实账号。用手机号或邮箱验证码登录，登录本身不授予管理权限。</p>
+    <button class="pm-btn" type="button" id="signBtn">登录 / 查看账号</button>
+    <p class="pm-msg" id="signMsg"></p>
+  </section>
+
+  <!-- 管理员密钥 -->
+  <section class="pm-card" id="claimCard" hidden>
+    <h2>第二步 · 认领管理身份</h2>
+    <p>输入一次性管理员密钥。密钥只在服务端以哈希形式保存，认领成功后立即失效。</p>
+    <div class="pm-lock">
+      <input id="adminSecret" type="text" autocomplete="off" spellcheck="false" placeholder="DA-ADM-XXXX-XXXX-XXXX-XXXX">
+      <button class="pm-btn" type="button" id="claimBtn">认领管理身份</button>
+    </div>
+    <p class="pm-msg" id="claimMsg"></p>
+  </section>
+
+  <!-- 控制台 -->
+  <div id="console" hidden>
+    <section class="pm-card">
+      <h2>批量生成占卜码</h2>
+      <p>码由服务端安全随机生成，只存哈希；明文仅在生成当次显示一次。</p>
+      <div class="pm-grid">
+        <div><label for="genCount">生成数量</label><input id="genCount" type="number" min="1" max="200" value="10"></div>
+        <div><label for="genDays">有效期（天）</label><input id="genDays" type="number" min="1" max="3650" value="30"></div>
+        <div><label for="genUses">每张可用次数</label><input id="genUses" type="number" min="1" max="1000" value="1"></div>
+        <div><label for="genLabel">批次备注</label><input id="genLabel" type="text" maxlength="80" placeholder="例如：首批内测"></div>
+      </div>
+      <button class="pm-btn" type="button" id="genBtn">生成占卜码</button>
+      <p class="pm-msg" id="genMsg"></p>
+      <div class="pm-codes" id="genCodes" hidden></div>
+    </section>
+
+    <section class="pm-card">
+      <h2>占卜码清单</h2>
+      <p>只显示掩码，不显示明文与哈希。停用后即刻无法兑换。</p>
+      <button class="pm-btn pm-btn--sm pm-btn--ghost" type="button" id="reloadBtn">刷新</button>
+      <div class="pm-scroll" style="margin-top:12px">
+        <table class="pm-table">
+          <thead><tr><th>掩码</th><th>批次</th><th>有效期至</th><th>次数</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="codeRows"></tbody>
+        </table>
+      </div>
+      <p class="pm-msg" id="listMsg"></p>
+    </section>
+
+    <section class="pm-card">
+      <h2>兑换记录</h2>
+      <p>最近 100 条，账号做脱敏显示。成功与失败原因都会留痕。</p>
+      <div class="pm-scroll">
+        <table class="pm-table">
+          <thead><tr><th>时间</th><th>占卜码</th><th>账号</th><th>结果</th></tr></thead>
+          <tbody id="redeemRows"></tbody>
+        </table>
+      </div>
+      <p class="pm-msg" id="redeemMsg"></p>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="assets/js/workbuddy-cloud-sdk.global.js"></script>
+<script src="assets/js/da-cloud-config.js"></script>
+<script src="assets/js/da-auth.js"></script>
+<script src="assets/js/da-premium.js?v=20261109a"></script>
+<script src="assets/js/admin.js?v=20261109a"></script>
+</body>
+</html>

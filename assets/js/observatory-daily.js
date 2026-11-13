@@ -230,4 +230,31 @@
       if (open && S && S.hover) S.hover();
     });
   }
+
+  /* ---------- 从星轨大厅「每日探索」进来时的落点 ----------
+     首页第五个入口现在直接带着 #daily 过来：先定位到这一块，
+     再把注意力交给今天这张牌（未翻开就高亮牌背）。
+     观测站是异步渲染的，页面高度会随后续内容变化，
+     所以滚动后要复查一次，必要时再校正，避免停在半路。 */
+  function jumpToDaily() {
+    if (location.hash !== '#daily') return;
+    var tries = 0;
+    var go = function () {
+      if (!root) return;
+      var r = root.getBoundingClientRect();
+      if (!r.height) return;                       /* 还没渲染出来，等下一轮 */
+      var target = Math.round(r.top + window.scrollY - (window.innerHeight - r.height) / 2);
+      window.scrollTo({ top: Math.max(0, target), behavior: tries === 0 ? 'smooth' : 'auto' });
+      tries++;
+      if (tries < 5) {
+        setTimeout(function () {
+          var rr = root.getBoundingClientRect();
+          if (rr.top < -4 || rr.top > window.innerHeight) go();
+        }, 600);
+      }
+    };
+    setTimeout(go, 320);
+  }
+  jumpToDaily();
+  window.addEventListener('hashchange', jumpToDaily);
 })();

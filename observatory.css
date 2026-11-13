@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>塔罗观测站 · THE MOONLIT OBSERVATORY — DIMENSION ANCHOR</title>
+<meta name="description" content="DIMENSION ANCHOR 维度锚点塔罗观测站：月光宫殿中的水晶星核、月环之门与原创七十八张塔罗。">
+<link rel="stylesheet" href="assets/css/observatory.css?v=20261108c">
+<link rel="stylesheet" href="assets/css/ambient.css">
+</head>
+<body class="obs">
+
+<!-- 宝石渐变（三个板块图标共用） -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gemStroke" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"   stop-color="#FFF4D6" />
+      <stop offset=".45" stop-color="#E7CB96" />
+      <stop offset=".75" stop-color="#C9A96E" />
+      <stop offset="1"   stop-color="#B49AD8" />
+    </linearGradient>
+    <linearGradient id="gemFillDream" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"  stop-color="#EDE2FF" />
+      <stop offset=".5" stop-color="#B9A2E8" />
+      <stop offset="1"  stop-color="#6E56AC" />
+    </linearGradient>
+    <linearGradient id="gemFillHeal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"  stop-color="#FFE6EE" />
+      <stop offset=".5" stop-color="#E8AFD2" />
+      <stop offset="1"  stop-color="#9C5C9E" />
+    </linearGradient>
+    <linearGradient id="gemFillRelay" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0"  stop-color="#FFF1D4" />
+      <stop offset=".5" stop-color="#E4C289" />
+      <stop offset="1"  stop-color="#A8773F" />
+    </linearGradient>
+  </defs>
+</svg>
+
+
+<!-- ══ 第一屏：宫殿舞台 ══ -->
+<section class="stage" aria-labelledby="obsTitle">
+
+  <div class="stage__frame">
+    <img class="stage__art" src="assets/media/observatory-desktop.jpg"
+         alt="月光宫殿中的塔罗观测站：水晶星核悬于银色星轨环中央，圆形占卜台之下是通往穹顶的大理石长厅。" />
+    <video class="stage__light" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+           poster="assets/media/observatory-desktop.jpg"
+           src="assets/media/observatory.mp4"></video>
+    <!-- 拱廊水晶吊灯：只变色，绝不移动 -->
+    <span class="stage__lamp stage__lamp--1" aria-hidden="true"></span>
+    <span class="stage__lamp stage__lamp--2" aria-hidden="true"></span>
+    <span class="stage__lamp stage__lamp--3" aria-hidden="true"></span>
+    <span class="stage__lamp stage__lamp--4" aria-hidden="true"></span>
+    <!-- 星核脉动 + 浮尘 -->
+    <span class="stage__core" aria-hidden="true"></span>
+    <div class="amb-dust" aria-hidden="true"></div>
+    <div class="stage__fog" aria-hidden="true"></div>
+    <div class="stage__note-mask" aria-hidden="true"></div>
+  </div>
+  <div class="stage__top-shade" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand__mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M17.6 15.2A7.6 7.6 0 0 1 8.8 6.4a7.6 7.6 0 1 0 8.8 8.8Z"
+                stroke="#D7C5A4" stroke-width="1.3" stroke-linejoin="round"/>
+          <circle cx="17.2" cy="6.6" r="1.1" fill="#FFF9EC" opacity=".9"/>
+        </svg>
+      </span>
+      <span class="brand__txt">
+        <span class="brand__name">Dimension Anchor</span>
+        <span class="brand__sub">塔罗观测站</span>
+      </span>
+    </a>
+
+    <nav class="topbar__nav" aria-label="观测站导航">
+      <a class="tbtn tbtn--keep" href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M14 6l-6 6 6 6" stroke="currentColor" stroke-width="1.4"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="tbtn__text">返回星轨大厅</span>
+      </a>
+
+      <button class="tbtn" id="soundBtn" aria-expanded="false" aria-controls="soundPop">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4z" stroke="currentColor" stroke-width="1.35"
+                stroke-linejoin="round"/>
+          <path d="M15.6 9.2a4 4 0 0 1 0 5.6M18 6.9a7.2 7.2 0 0 1 0 10.2" stroke="currentColor"
+                stroke-width="1.35" stroke-linecap="round"/>
+        </svg>
+        <span class="tbtn__text">音效</span>
+      </button>
+
+      <a class="tbtn" href="#" id="archiveBtn">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="4.2" y="5" width="15.6" height="14" rx="2.4" stroke="currentColor" stroke-width="1.35"/>
+          <path d="M4.2 9.4h15.6M9 5V3.4M15 5V3.4" stroke="currentColor" stroke-width="1.35"
+                stroke-linecap="round"/>
+        </svg>
+        <span class="tbtn__text">观测档案</span>
+      </a>
+    </nav>
+
+    <!-- 音效面板 -->
+    <div class="sound-pop" id="soundPop" role="dialog" aria-label="音效设置">
+      <div class="sound-pop__row">
+        <span class="sound-pop__label">环境音与提示音</span>
+        <button class="switch" id="muteSwitch" role="switch" aria-checked="true"
+                aria-label="开启或关闭音效"></button>
+      </div>
+      <div class="sound-pop__slider">
+        <label class="sound-pop__label" for="volRange" style="display:block;margin-bottom:9px">音量</label>
+        <input type="range" id="volRange" min="0" max="100" value="60" aria-label="音量">
+      </div>
+      <p class="sound-pop__hint">声音只在你第一次操作后才会响起，随时可以关掉。</p>
+    </div>
+  </header>
+
+  <!-- 中央：当前连接状态 + 主行动 -->
+  <div class="stage__foot">
+    <p class="linkstate" id="linkState">
+      <span class="linkstate__dot" aria-hidden="true"></span>
+      <span id="linkStateText">尚未建立连接</span>
+    </p>
+
+    <h1 class="sr-only" id="obsTitle">塔罗观测站 · The Moonlit Observatory</h1>
+
+    <a class="cta" href="reading.html?step=ritual" id="startRitual">
+      <span class="cta__ico" aria-hidden="true">✦</span>
+      开启连接仪式
+    </a>
+
+    <p class="stage__foot-note">每张牌都是一句话，但要先决定，你想问谁。</p>
+  </div>
+</section>
+
+<!-- ══ 第二屏：中庭面板 ══ -->
+<section class="panel" aria-labelledby="panelTitle">
+  <div class="panel__inner">
+
+    <div class="panel__head">
+      <p class="panel__kicker">Choose your path</p>
+      <h2 class="panel__title" id="panelTitle">今天，你想怎么问</h2>
+      <div class="panel__rule" aria-hidden="true"><i></i><b>✦</b><i></i></div>
+      <p class="panel__desc">
+        三条不同的路径，共用同一套七十八张原创牌组与同一套真实随机抽牌。
+        牌不会替你做决定，它只把你已经知道的事，换一个角度说给你听。
+      </p>
+    </div>
+
+    <!-- ══ 每日探索：一天一张牌 ══ -->
+    <section class="daily" id="daily" aria-labelledby="dailyTitle">
+      <div class="daily__head">
+        <div class="daily__headl">
+          <span class="daily__kicker">Daily Crossing</span>
+          <h3 class="daily__title" id="dailyTitle">今日探索</h3>
+        </div>
+        <p class="daily__date" id="dailyDate">—</p>
+      </div>
+
+      <div class="daily__body">
+        <div class="dcard" id="dcard">
+          <button class="dcard__btn" type="button" id="dcardBtn"
+                  aria-label="翻开今日之牌" aria-expanded="false">
+            <span class="dcard__inner">
+              <span class="dcard__face dcard__face--back">
+                <img src="assets/media/backs/major.jpg" alt="" aria-hidden="true">
+                <span class="dcard__seal" aria-hidden="true">✦</span>
+              </span>
+              <span class="dcard__face dcard__face--front">
+                <img id="dcardImg" alt="" width="560" height="692" loading="lazy" decoding="async">
+                <span class="dcard__rev" aria-hidden="true">逆位</span>
+              </span>
+            </span>
+          </button>
+          <span class="dcard__glow" aria-hidden="true"></span>
+          <p class="dcard__hint" id="dcardHint">轻触牌背，翻开今天</p>
+        </div>
+
+        <div class="daily__txt">
+          <p class="daily__moon">
+            <i class="moonph" id="dailyPh" aria-hidden="true"></i>
+            <span id="dailyMoonText">—</span>
+          </p>
+
+          <h4 class="daily__name is-closed" id="dailyName">牌还扣着</h4>
+          <p class="daily__en" id="dailyEn">One card, one day</p>
+
+          <ul class="daily__keys" id="dailyKeys"></ul>
+
+          <p class="daily__line is-muted" id="dailyLine">
+            牌已经替你在桌上放好了一张，但还扣着。今天的第一步，是先把它翻过来。
+          </p>
+
+          <div class="daily__two" id="dailyTwo" hidden>
+            <div><b>宜</b><span id="dailyDo">—</span></div>
+            <div class="is-no"><b>忌</b><span id="dailyDont">—</span></div>
+          </div>
+
+          <button class="daily__more" type="button" id="dailyMore"
+                  aria-expanded="false" aria-controls="dailyFull" hidden>
+            细读这张牌 <i>→</i>
+          </button>
+
+          <div class="daily__full" id="dailyFull" aria-hidden="true">
+            <div class="daily__full-in">
+              <div class="daily__full-c">
+                <p id="dailyFullUp"></p>
+                <dl class="daily__dl" id="dailyFullDl"></dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="daily__foot">
+        <p class="daily__streak" id="dailyStreak">—</p>
+        <a class="daily__link" href="reading.html?step=ritual">
+          带着这张牌去问一次 <i>→</i>
+        </a>
+      </div>
+    </section>
+
+    <div class="modes">
+      <a class="mode" href="reading.html?step=ritual">
+        <span class="mode__ico" aria-hidden="true">
+          <svg class="gemico" viewBox="0 0 48 48" fill="none">
+            <path d="M14 9 34 9 44 21 24 45 4 21 Z" fill="url(#gemFillDream)" />
+            <path d="M14 9 4 21 20 21 Z"  fill="rgba(255,255,255,.34)" />
+            <path d="M14 9 34 9 28 21 20 21 Z" fill="rgba(255,255,255,.14)" />
+            <path d="M34 9 44 21 28 21 Z" fill="rgba(255,255,255,.28)" />
+            <path d="M4 21 20 21 24 45 Z"  fill="rgba(24,16,48,.26)" />
+            <path d="M20 21 28 21 24 45 Z" fill="rgba(255,255,255,.10)" />
+            <path d="M28 21 44 21 24 45 Z" fill="rgba(24,16,48,.16)" />
+            <path d="M4 21h40M14 9l6 12M34 9l-6 12M20 21l4 24M28 21l-4 24"
+                  stroke="rgba(255,252,244,.5)" stroke-width=".7" />
+            <path d="M14 9 34 9 44 21 24 45 4 21 Z" stroke="url(#gemStroke)" stroke-width="1.6" stroke-linejoin="round" />
+            <ellipse cx="24" cy="24.6" rx="10" ry="7.6" fill="rgba(16,10,36,.32)" />
+            <path d="M28.6 18.2a7.6 7.6 0 1 0 5 12.9 6.1 6.1 0 1 1-5-12.9Z"
+                  stroke="#FFF6DC" stroke-width="1.5" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span class="mode__name">日常梦占</span>
+        <span class="mode__en">Daily Dream Reading</span>
+        <span class="mode__desc">连接仪式 → 选牌组 → 选牌阵 → 洗牌切牌 → 亲手抽牌翻牌。最完整的一条路。</span>
+        <span class="mode__go">进入连接仪式 <i>→</i></span>
+      </a>
+
+      <a class="mode" href="reading.html?step=ritual&amp;mode=heal">
+        <span class="mode__ico" aria-hidden="true">
+          <svg class="gemico" viewBox="0 0 48 48" fill="none">
+            <path d="M14 9 34 9 44 21 24 45 4 21 Z" fill="url(#gemFillHeal)" />
+            <path d="M14 9 4 21 20 21 Z"  fill="rgba(255,255,255,.34)" />
+            <path d="M14 9 34 9 28 21 20 21 Z" fill="rgba(255,255,255,.14)" />
+            <path d="M34 9 44 21 28 21 Z" fill="rgba(255,255,255,.28)" />
+            <path d="M4 21 20 21 24 45 Z"  fill="rgba(24,16,48,.26)" />
+            <path d="M20 21 28 21 24 45 Z" fill="rgba(255,255,255,.10)" />
+            <path d="M28 21 44 21 24 45 Z" fill="rgba(24,16,48,.16)" />
+            <path d="M4 21h40M14 9l6 12M34 9l-6 12M20 21l4 24M28 21l-4 24"
+                  stroke="rgba(255,252,244,.5)" stroke-width=".7" />
+            <path d="M14 9 34 9 44 21 24 45 4 21 Z" stroke="url(#gemStroke)" stroke-width="1.6" stroke-linejoin="round" />
+            <ellipse cx="24" cy="24.6" rx="10" ry="7.6" fill="rgba(16,10,36,.32)" />
+            <path d="M24 31.8c-4.7-3.3-7.7-6-7.7-9.4a4.3 4.3 0 0 1 7.7-2.8 4.3 4.3 0 0 1 7.7 2.8c0 3.4-3 6.1-7.7 9.4Z"
+                  stroke="#FFF6DC" stroke-width="1.5" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span class="mode__name">情绪疗愈</span>
+        <span class="mode__en">Emotional Healing</span>
+        <span class="mode__desc">先说出此刻的情绪与困惑，再用三五张牌把它摊开来看。适合心里有一团雾的时候。</span>
+        <span class="mode__go">说说现在的感受 <i>→</i></span>
+      </a>
+
+      <button class="mode" type="button" id="relayMode" aria-describedby="relayNote">
+        <span class="mode__badge">第二阶段</span>
+        <span class="mode__ico" aria-hidden="true">
+          <svg class="gemico" viewBox="0 0 48 48" fill="none">
+            <path d="M14 9 34 9 44 21 24 45 4 21 Z" fill="url(#gemFillRelay)" />
+            <path d="M14 9 4 21 20 21 Z"  fill="rgba(255,255,255,.34)" />
+            <path d="M14 9 34 9 28 21 20 21 Z" fill="rgba(255,255,255,.14)" />
+            <path d="M34 9 44 21 28 21 Z" fill="rgba(255,255,255,.28)" />
+            <path d="M4 21 20 21 24 45 Z"  fill="rgba(24,16,48,.26)" />
+            <path d="M20 21 28 21 24 45 Z" fill="rgba(255,255,255,.10)" />
+            <path d="M28 21 44 21 24 45 Z" fill="rgba(24,16,48,.16)" />
+            <path d="M4 21h40M14 9l6 12M34 9l-6 12M20 21l4 24M28 21l-4 24"
+                  stroke="rgba(255,252,244,.5)" stroke-width=".7" />
+            <path d="M14 9 34 9 44 21 24 45 4 21 Z" stroke="url(#gemStroke)" stroke-width="1.6" stroke-linejoin="round" />
+            <ellipse cx="24" cy="24.6" rx="10" ry="7.6" fill="rgba(16,10,36,.32)" />
+            <rect x="17.4" y="19.2" width="13.2" height="9.6" rx="1.6"
+                  stroke="#FFF6DC" stroke-width="1.5" />
+            <path d="M18.2 20.4 24 25l5.8-4.6" stroke="#FFF6DC" stroke-width="1.5" stroke-linejoin="round" />
+          </svg>
+        </span>
+        <span class="mode__name">实时传讯</span>
+        <span class="mode__en">Live Transmission</span>
+        <span class="mode__desc" id="relayNote">与已建立连接的对象持续对话的独立空间，可关联某次梦占记录。</span>
+        <span class="mode__go">尚未开放 <i>·</i></span>
+      </button>
+    </div>
+
+    <nav class="minor" aria-label="其他入口">
+      <a class="minor__item is-idle" href="#" id="resumeItem">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 4.6v6.2l4 2.3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="7.6" stroke="currentColor" stroke-width="1.3"/>
+        </svg>
+        <span id="resumeText">继续上次探索</span>
+      </a>
+      <a class="minor__item" href="tarot.html">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="4.4" y="3.8" width="10.4" height="14.4" rx="1.8"
+                stroke="currentColor" stroke-width="1.3"/>
+          <path d="M17.6 6.4l1.6.6a1.8 1.8 0 0 1 1 2.3l-3.4 8.4" stroke="currentColor"
+                stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+        <span>78 张牌图鉴</span>
+      </a>
+      <a class="minor__item is-idle" href="#" id="historyItem">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M5 6.6h14M5 12h14M5 17.4h9" stroke="currentColor" stroke-width="1.3"
+                stroke-linecap="round"/>
+        </svg>
+        <span>历史记录</span>
+      </a>
+      <a class="minor__item is-idle" href="#" id="favItem">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M7 4.6h10v15l-5-3.4-5 3.4z" stroke="currentColor" stroke-width="1.3"
+                stroke-linejoin="round"/>
+        </svg>
+        <span>收藏夹</span>
+      </a>
+    </nav>
+
+  </div>
+</section>
+
+<footer class="obs-foot">DIMENSION ANCHOR · THE MOONLIT OBSERVATORY</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/tarot-sound.js"></script>
+<script src="assets/js/observatory.js"></script>
+<script src="assets/js/tarot-deck.js"></script>
+<script src="assets/js/tarot-images.js"></script>
+<script src="assets/js/observatory-daily.js?v=20261108"></script>
+
+<script>
+/* 与大厅同一策略：明确选"减少"才停；系统减少动态默认降到柔和 */
+try {
+  var m = 'full';
+  try { m = localStorage.getItem('DA2_MOTION') || m; } catch (e) {}
+  if (m === 'full' && matchMedia('(prefers-reduced-motion: reduce)').matches) m = 'soft';
+  document.documentElement.dataset.motion = m;
+  if (m === 'reduced') document.querySelectorAll('video').forEach(function (v) { v.pause(); });
+} catch (e) {}
+</script>
+</body>
+</html>

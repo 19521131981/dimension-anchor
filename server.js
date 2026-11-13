@@ -169,15 +169,22 @@ const CHARTER = `你是 DIMENSION ANCHOR（维度锚点）塔罗观测站的解�
 
 const RULES = `
 硬性要求：
-1. 六个章节必须使用同一组牌面数据，任何一章都不许改写牌名或正逆位。
-2. 不许把单张牌的关键词直接拼接成文章；要有句法、有推进、有前后照应。
-3. 第四章（关系脉络）要写成一条连贯的叙事线，不能重复第二章的单牌解析。
-4. 第五章（深层讯息）遇到不确定的地方，保留两到三种合理解释，不要武断。
-5. 第六章（TA想对你说）是象征性幻想表达，不是超自然通信，也不是角色的客观真实想法；
-   开头不要每次都用同一句套话，要结合牌意、关系背景与角色性格写出专属细节。
-6. 不要出现「作为 AI」「根据塔罗牌」这类元叙述；不要编造用户没给过的具体事件、时间、地点。
-7. 中文写作。每章 150–400 字，第二章按牌数自然变长。
-8. 只输出 JSON，不要 Markdown 代码块，不要任何解释性文字。`;
+1. 六个章节使用同一组牌面数据，任何一章都不许改写牌名、花色、正逆位或牌位，也不许新增未给出的牌。
+2. 六章各有唯一职责，不得互相复述同一个结论，更不许把六段写成同一段话的换词版本：
+   · 第一章「整体能量」：只做全景——整体主题、核心矛盾、元素与正逆位分布。不要逐张讲牌。
+   · 第二章「单牌解析」：逐张讲牌意、正逆位与具体牌位，不要做跨牌推断。
+   · 第三章「牌间联系」：只讲牌与牌之间的呼应、冲突与变化（相邻关系、重复数字、元素聚散），不要重述单张牌义。
+   · 第四章「关系脉络」：把人物档案、关系背景与用户真实写下的事件串成一条叙事线，不能重复第二章。
+   · 第五章「深层讯息」：探索潜在情绪、可能的认知偏差与被忽略的问题；保留两到三种合理解释，不要武断。
+   · 第六章「TA想对你说」：第一人称拟声，必须同时落实实际牌意（至少引用两张牌的牌名/牌位/正逆位意象）、
+     人物设定与关系背景，语气要有角色个性、真挚、带一点克制的暧昧，不许套话开头，不许写成告白模板。
+3. 只能描述此刻的象征结构，不能把推测写成事实，不能断言对方真实想法，不能给确定的未来预测、
+   复合时间线或「一定会」「早晚」「注定」这类表述。不确定的地方一律用「也许」「可能」「看起来」。
+4. 第六章是象征性幻想表达，不是超自然通信，也不是角色的客观真实想法；没有角色档案时写成
+   「这段关系本身想对你说的话」，不许虚构人物身份。
+5. 不要出现「作为 AI」「根据塔罗牌」这类元叙述；不要编造用户没给过的具体事件、时间、地点或对话。
+6. 中文写作。每章 150–400 字，第二章按牌数自然变长。禁止整段加粗式强调，重点词点到为止。
+7. 只输出 JSON，不要 Markdown 代码块，不要任何解释性文字。`;
 
 const SCHEMA = `
 输出结构（严格遵守）：
@@ -185,7 +192,7 @@ const SCHEMA = `
   "chapters": [
     {
       "key": "overview",
-      "title": "整体解读",
+      "title": "整体能量",
       "lead": "一句 12–20 字的导语",
       "blocks": [ {"t":"p","x":"段落"}, {"t":"ul","items":["要点","要点"]} ]
     },
@@ -613,7 +620,7 @@ function parseJSON(text) {
 
 const CH_ORDER = ['overview', 'cards', 'links', 'relation', 'deep', 'voice'];
 const CH_TITLE = {
-  overview: '整体解读', cards: '单牌解析', links: '牌间联系',
+  overview: '整体能量', cards: '单牌解析', links: '牌间联系',
   relation: '关系脉络', deep: '深层讯息', voice: 'TA 想对你说'
 };
 const CH_NO = { overview: 'I', cards: 'II', links: 'III', relation: 'IV', deep: 'V', voice: 'VI' };
@@ -984,6 +991,19 @@ const server = http.createServer(async (req, res) => {
         }
         (ctx.messages || []).forEach((m) => msgs.push({ role: m.role === 'user' ? 'user' : 'assistant', content: String(m.content || '') }));
         const r = await callModel(msgs, { temperature: 0.95, maxTokens: 600 });
+        const j = parseJSON(r.text);
+        return send(res, 200, { ok: true, model: r.model, text: String(j.text || '').trim() });
+      }
+
+      if (p === '/api/relay') {
+        /* 实时传讯：提示词与星象注记在前端组装，服务端只做带 Key 的安全中转 */
+        const r = await callModel([
+          { role: 'system', content: String(ctx.system || '') },
+          { role: 'user', content: String(ctx.user || '') }
+        ], {
+          temperature: Math.min(1.2, Number(ctx.temperature) || 0.95),
+          maxTokens: Math.min(900, Number(ctx.maxTokens) || 300)
+        });
         const j = parseJSON(r.text);
         return send(res, 200, { ok: true, model: r.model, text: String(j.text || '').trim() });
       }

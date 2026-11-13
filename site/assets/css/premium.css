@@ -1,0 +1,219 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 深度探索权益层 / Premium UI
+   浅底深字、深底亮字；文字规范由 typography.css 统一控制，这里只做
+   容器、按钮、状态与层次。所有交互状态都对应真实的服务端结果。
+
+   通行证弹窗（DA_AUTH）与本页共用的 --pm-* 变量抽到 auth.css，
+   本文件 @import 引入，样式只有一份来源。
+   ══════════════════════════════════════════════════════════════════════ */
+@import url("auth.css");
+
+/* ══ 顶部权益徽记 ═══════════════════════════════════════════════════ */
+.pm-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 13px; min-height: 38px;
+  border: 1px solid var(--pm-gold-line); border-radius: 999px;
+  background: linear-gradient(180deg, #FFFDF7, #EFE5F8);
+  color: var(--pm-ink-strong) !important;
+  font-size: 14px !important; font-weight: 600 !important;
+  letter-spacing: .04em; white-space: nowrap;
+}
+.pm-badge i { font-style: normal; color: var(--pm-gold); }
+.pm-badge.is-free { opacity: .92; }
+.pm-badge[hidden] { display: none !important; }
+
+/* ══ 章节下方「继续探索」 ═══════════════════════════════════════════ */
+.pm-explore {
+  display: inline-flex; align-items: center; gap: 9px;
+  margin: 20px 0 6px; padding: 11px 20px; min-height: 46px;
+  border: 1px solid var(--pm-gold-line); border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255,253,247,.95), rgba(239,229,248,.92));
+  color: var(--pm-ink-strong) !important;
+  font-size: 16px !important; font-weight: 600 !important;
+  line-height: 1.5; cursor: pointer;
+  box-shadow: 0 8px 22px -16px rgba(40, 22, 72, .8);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.pm-explore:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -14px rgba(40, 22, 72, .8); }
+.pm-explore i { font-style: normal; color: var(--pm-gold); font-size: 17px; }
+.pm-explore__note {
+  display: block; margin: 4px 0 0; font-size: 14px !important;
+  color: var(--pm-ink) !important; font-weight: 400 !important;
+}
+.pm-explore-wrap { margin-top: 14px; padding-top: 4px; border-top: 1px solid var(--pm-line); }
+
+/* ══ 追问面板：预设问题 + 反馈校准 ═══════════════════════════════════ */
+.pm-presets {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 14px 16px 4px;
+  border-top: 1px solid var(--pm-line);
+}
+.pm-presets__cap {
+  width: 100%; margin: 0 0 2px;
+  font-size: 14px !important; font-weight: 600 !important;
+  color: var(--pm-ink-strong) !important;
+}
+.pm-chip {
+  padding: 8px 13px; min-height: 40px;
+  border: 1px solid var(--pm-gold-line); border-radius: 999px;
+  background: #FFFDF9; color: var(--pm-ink) !important;
+  font-size: 15px !important; font-weight: 500 !important;
+  line-height: 1.5; cursor: pointer; text-align: left;
+}
+.pm-chip:hover { background: #F3ECF6; border-color: var(--pm-gold); }
+.pm-chip[disabled] { opacity: .5; cursor: default; }
+
+.pm-fb { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 4px; }
+.pm-fb__cap { font-size: 14px !important; color: var(--pm-ink) !important; font-weight: 500 !important; }
+.pm-fb button {
+  padding: 6px 12px; min-height: 36px;
+  border: 1px solid var(--pm-line); border-radius: 999px;
+  background: #FFFDF9; color: var(--pm-ink) !important;
+  font-size: 14px !important; font-weight: 500 !important; cursor: pointer;
+}
+.pm-fb button.is-on { border-color: var(--pm-gold); background: #F3ECF6; color: var(--pm-ink-strong) !important; }
+.pm-fb button:hover { border-color: var(--pm-gold); }
+
+.pm-lockbar {
+  display: none; padding: 12px 16px; border-top: 1px solid var(--pm-line);
+  background: rgba(243, 236, 246, .7);
+}
+.pm-lockbar.is-on { display: block; }
+.pm-lockbar p { margin: 0 0 8px; font-size: 16px !important; color: var(--pm-ink) !important; }
+.pm-lockbar button {
+  padding: 9px 18px; min-height: 42px;
+  border: 1px solid var(--pm-gold-line); border-radius: 999px;
+  background: linear-gradient(180deg, #FFFDF7, #EFE5F8);
+  color: var(--pm-ink-strong) !important;
+  font-size: 15px !important; font-weight: 600 !important; cursor: pointer;
+}
+
+/* ══ 解锁深度探索弹窗 ═══════════════════════════════════════════════ */
+.pm-gate { position: fixed; inset: 0; z-index: 120; display: flex; align-items: center; justify-content: center; padding: 18px; }
+.pm-gate[hidden] { display: none !important; }
+.pm-gate__scrim { position: absolute; inset: 0; background: rgba(20, 12, 36, .74); backdrop-filter: blur(6px); }
+.pm-gate__box {
+  position: relative; width: min(440px, 100%); max-height: 92svh; overflow: auto;
+  padding: 28px 26px 24px; border-radius: 18px;
+  border: 1px solid var(--pm-gold-line);
+  background: linear-gradient(178deg, var(--pm-paper) 0%, #FAF6F9 52%, var(--pm-paper-2) 100%);
+  color: var(--pm-ink) !important;
+  box-shadow: 0 32px 80px -30px rgba(12, 6, 28, .85);
+}
+.pm-gate__x {
+  position: absolute; top: 12px; right: 12px; width: 38px; height: 38px;
+  border: 1px solid var(--pm-line); border-radius: 50%; background: #FFFDF9;
+  color: var(--pm-ink) !important; font-size: 16px !important; cursor: pointer;
+}
+.pm-gate__kicker { margin: 0 0 6px; font-size: 14px !important; font-weight: 600 !important;
+  letter-spacing: .16em; color: var(--pm-gold) !important; }
+.pm-gate__t { margin: 0 0 12px; font-size: 26px !important; line-height: 1.45 !important;
+  font-weight: 600 !important; color: var(--pm-ink-strong) !important; font-family: "Songti SC", "STSong", Georgia, serif; }
+.pm-gate__d { margin: 0 0 18px; font-size: 17px !important; line-height: 1.8 !important;
+  color: var(--pm-ink) !important; }
+.pm-gate__list { margin: 0 0 20px; padding-left: 20px; }
+.pm-gate__list li { font-size: 16px !important; line-height: 1.8 !important; color: var(--pm-ink) !important; margin-bottom: 4px; }
+.pm-gate__label { display: block; margin-bottom: 8px; font-size: 14px !important;
+  font-weight: 600 !important; color: var(--pm-ink-strong) !important; }
+.pm-gate__input {
+  width: 100%; box-sizing: border-box; padding: 12px 14px; min-height: 50px;
+  border: 1px solid var(--pm-gold-line); border-radius: 12px;
+  background: #FFFDF9; color: var(--pm-ink) !important;
+  font-size: 18px !important; letter-spacing: .1em; text-transform: uppercase;
+}
+.pm-gate__input::placeholder { color: #8C7D9C; letter-spacing: .02em; text-transform: none; }
+.pm-gate__btn {
+  width: 100%; margin-top: 12px; min-height: 50px;
+  border: 1px solid var(--pm-gold-line); border-radius: 12px;
+  background: linear-gradient(180deg, #FFFDF7, #EFE5F8);
+  color: var(--pm-ink-strong) !important;
+  font-size: 17px !important; font-weight: 600 !important; cursor: pointer;
+}
+.pm-gate__btn[disabled] { opacity: .6; cursor: default; }
+.pm-gate__state { margin: 14px 0 0; min-height: 24px; font-size: 16px !important; line-height: 1.6 !important;
+  font-weight: 500 !important; color: var(--pm-ink) !important; }
+.pm-gate__state.is-ok { color: #2F6B4F !important; }
+.pm-gate__state.is-err { color: #9B3A4A !important; }
+.pm-gate__state.is-busy { color: var(--pm-gold) !important; }
+.pm-gate__foot { margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--pm-line);
+  font-size: 14px !important; line-height: 1.7 !important; color: var(--pm-ink) !important; }
+
+/* ══ 通行证弹窗的样式已移入 auth.css（见文件头 @import）═══════════════ */
+
+/* ══ 管理端 ═════════════════════════════════════════════════════════ */
+body.pm-admin {
+  min-height: 100vh; margin: 0; padding: 26px 16px 60px;
+  background: radial-gradient(1200px 700px at 20% -10%, #3B2759 0%, #241637 48%, #180F29 100%);
+  color: var(--pm-on-dark);
+}
+.pm-wrap { max-width: 1000px; margin: 0 auto; }
+.pm-head { margin-bottom: 22px; }
+.pm-head__k { margin: 0 0 6px; font-size: 14px !important; letter-spacing: .18em;
+  color: #F0D9A8 !important; font-weight: 600 !important; }
+.pm-head h1 { margin: 0 0 8px; font-size: clamp(26px, 3vw, 30px) !important;
+  color: #FFFDF7 !important; }
+.pm-head p { margin: 0; font-size: 16px !important; color: var(--pm-on-dark-2) !important; }
+.pm-card {
+  margin-bottom: 18px; padding: 22px 22px 24px; border-radius: 16px;
+  border: 1px solid var(--pm-gold-line);
+  background: linear-gradient(178deg, var(--pm-paper), var(--pm-paper-2));
+  color: var(--pm-ink) !important;
+  box-shadow: 0 24px 60px -34px rgba(10, 5, 24, .9);
+}
+.pm-card h2 { margin: 0 0 6px; font-size: 22px !important; color: var(--pm-ink-strong) !important; }
+.pm-card > p { margin: 0 0 16px; font-size: 16px !important; color: var(--pm-ink) !important; }
+.pm-card p, .pm-card span, .pm-card li, .pm-card label, .pm-card div, .pm-card b, .pm-card td, .pm-card th {
+  color: var(--pm-ink) !important; }
+.pm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.pm-grid label { display: block; font-size: 14px !important; font-weight: 600 !important; margin-bottom: 6px; }
+.pm-grid input { width: 100%; box-sizing: border-box; min-height: 46px; padding: 9px 12px;
+  border: 1px solid var(--pm-gold-line); border-radius: 10px; background: #FFFDF9;
+  color: var(--pm-ink) !important; font-size: 16px !important; }
+.pm-btn { min-height: 46px; padding: 10px 20px; border-radius: 10px;
+  border: 1px solid var(--pm-gold-line); background: linear-gradient(180deg, #FFFDF7, #EFE5F8);
+  color: var(--pm-ink-strong) !important; font-size: 16px !important; font-weight: 600 !important; cursor: pointer; }
+.pm-btn[disabled] { opacity: .6; cursor: default; }
+.pm-btn--sm { min-height: 36px; padding: 6px 12px; font-size: 14px !important; }
+.pm-btn--ghost { background: transparent; }
+.pm-msg { margin: 12px 0 0; min-height: 22px; font-size: 15px !important; font-weight: 500 !important; }
+.pm-msg.is-ok { color: #2F6B4F !important; }
+.pm-msg.is-err { color: #9B3A4A !important; }
+.pm-table { width: 100%; border-collapse: collapse; font-size: 15px !important; }
+.pm-table th, .pm-table td { padding: 9px 8px; text-align: left; border-bottom: 1px solid var(--pm-line);
+  font-size: 14px !important; line-height: 1.6 !important; }
+.pm-table th { font-weight: 600 !important; color: var(--pm-ink-strong) !important; }
+.pm-table tr.is-off td { opacity: .55; }
+.pm-codes { margin: 14px 0 0; padding: 14px; border-radius: 10px; background: #FFFDF9;
+  border: 1px dashed var(--pm-gold-line); font-size: 16px !important; line-height: 2 !important;
+  word-break: break-all; }
+.pm-codes code { font-size: 16px !important; color: var(--pm-ink-strong) !important; font-weight: 600 !important; }
+.pm-scroll { max-height: 420px; overflow: auto; }
+.pm-lock { text-align: center; padding: 16px 0 4px; }
+.pm-lock input { max-width: 340px; margin: 0 auto 12px; display: block; }
+
+@media (max-width: 900px) {
+  .pm-gate__box { padding: 24px 18px 20px; }
+  .pm-presets { padding: 12px 12px 2px; }
+  .pm-chip { font-size: 15px !important; }
+  .pm-card { padding: 18px 14px 20px; }
+  .pm-table th, .pm-table td { padding: 8px 5px; }
+}
+
+/* 通行证弹窗的强调色修正已移入 auth.css */
+
+/* 追问面板头部：标题一行、辅助说明另起一行，避免窄屏挤出孤字 */
+body.it .ask__head { flex-wrap: wrap !important; row-gap: 2px; }
+body.it .ask__src { flex: 0 0 100% !important; order: 3; }
+
+/* 通行证提示条：解读页原有 .toast 靠 .is-on 淡入（DA_AUTH 也会加这个 class）；
+   不要用 :not([hidden]) 强改 opacity，否则空 toast 会常驻成一条深色小胶囊。 */
+#toast { font-size: 15px !important; line-height: 1.7 !important; font-weight: 500 !important; }
+#toast:empty { display: none !important; }
+body.pm-admin #toast {
+  position: fixed; left: 50%; bottom: 28px; z-index: 500;
+  max-width: min(520px, 88vw); padding: 12px 18px;
+  border: 1px solid rgba(255, 236, 200, .45); border-radius: 11px;
+  background: rgba(46, 32, 76, .97); color: #FFF6E6 !important;
+  font-size: 15px !important; line-height: 1.7 !important; text-align: center;
+}
+body.pm-admin #toast[hidden] { display: none; }

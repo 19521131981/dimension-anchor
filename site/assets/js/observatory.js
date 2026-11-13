@@ -131,8 +131,7 @@
   }
 
   /* ---------- 未开放入口 ---------- */
-  [['#archiveBtn', '我的观测档案'], ['#historyItem', '历史记录'], ['#favItem', '收藏夹'],
-   ['#relayMode', '实时传讯']].forEach(function (pair) {
+  [['#historyItem', '历史记录'], ['#favItem', '收藏夹']].forEach(function (pair) {
     var el = $(pair[0]);
     if (!el) return;
     el.addEventListener('click', function (e) {

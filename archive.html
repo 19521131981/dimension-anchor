@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>档案室 · THE ARCHIVE — DIMENSION ANCHOR</title>
+<meta name="description" content="DIMENSION ANCHOR 档案室：每一次占卜与传讯都会自动整理成 TA 的档案，钉在这面墙上。">
+<link rel="stylesheet" href="assets/css/archive.css?v=20261108">
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261108d">
+<link rel="stylesheet" href="assets/css/typography.css?v=20261108e">
+</head>
+<body class="ar">
+
+<!-- ══ 档案室墙面（生图） ══ -->
+<div class="ar-wall" aria-hidden="true">
+  <img class="ar-wall__img" src="assets/media/archive/wall.jpg" alt="">
+  <div class="ar-wall__shade"></div>
+  <div class="amb-dust"></div>
+</div>
+
+<header class="ar-top">
+  <a class="ar-top__back" href="observatory.html">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M14 6l-6 6 6 6" stroke="currentColor" stroke-width="1.4"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>观测站</span>
+  </a>
+  <div class="ar-top__brand" aria-hidden="true">
+    <span class="ar-top__sigil">✦</span>
+    <span class="ar-top__name">The Archive</span>
+  </div>
+  <span class="ar-top__spacer"></span>
+</header>
+
+<main class="ar-main">
+
+  <section class="ar-hero">
+    <p class="ar-kicker">The Archive Room</p>
+    <h1 class="ar-title">档案室</h1>
+    <p class="ar-lede" id="arLede">
+      TA 的档案不用你来写。每一次占卜、每一段传讯、每一封来信，
+      都会自己长成这面墙上的一页。
+    </p>
+    <div class="ar-rule" aria-hidden="true"><i></i><b>✦</b><i></i></div>
+  </section>
+
+  <!-- ══ 封印状态：次数不够 ══ -->
+  <section class="ar-locked" id="arLocked" hidden>
+    <div class="ar-seal" aria-hidden="true">
+      <i class="ar-seal__ring"></i>
+      <i class="ar-seal__ring ar-seal__ring--far"></i>
+      <b>✦</b>
+    </div>
+    <h2 class="ar-locked__t">档案室的门还封着</h2>
+    <p class="ar-locked__d" id="arLockText">—</p>
+    <div class="ar-lockbar" aria-hidden="true">
+      <i id="arLockFill"></i>
+    </div>
+    <div class="ar-locked__acts">
+      <a class="ar-btn" href="reading.html?step=ritual"><span>去做一次占卜</span></a>
+      <a class="ar-btn ar-btn--ghost" href="relay.html"><span>去接一段传讯</span></a>
+    </div>
+  </section>
+
+  <!-- ══ 开放状态：档案墙 ══ -->
+  <section class="ar-wall-of" id="arOpen" hidden>
+    <p class="ar-wall-of__sub" id="arSub">钉在墙上的每一个名字，都是一段真实发生过的事。</p>
+    <div class="ar-cards" id="arCards"></div>
+
+    <p class="ar-empty" id="arEmpty" hidden>
+      墙还空着——去接一段传讯，或者做一次占卜，<br>第一页档案会自己出现在这里。
+    </p>
+  </section>
+
+  <p class="ar-foot">THE WALL REMEMBERS · DIMENSION ANCHOR</p>
+</main>
+
+<!-- ══ 档案详情弹层（生图拱框） ══ -->
+<div class="ar-pop" id="arPop" hidden>
+  <div class="ar-pop__scrim" data-ar-close></div>
+  <div class="ar-pop__frame" role="dialog" aria-modal="true" aria-label="角色档案">
+    <button class="ar-pop__x" type="button" data-ar-close aria-label="关闭">
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M3.5 3.5 12.5 12.5M12.5 3.5 3.5 12.5" fill="none" stroke="currentColor"
+              stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <div class="ar-pop__in" id="arPopBody"></div>
+  </div>
+</div>
+
+<div class="ar-toast" id="arToast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/da-link.js"></script>
+<script src="assets/js/da-store.js"></script>
+<script src="assets/js/da-archive.js?v=20261108"></script>
+<script src="assets/js/archive.js?v=20261108"></script>
+
+<script>
+try {
+  var m = 'full';
+  try { m = localStorage.getItem('DA2_MOTION') || m; } catch (e) {}
+  if (m === 'full' && matchMedia('(prefers-reduced-motion: reduce)').matches) m = 'soft';
+  document.documentElement.dataset.motion = m;
+} catch (e) {}
+</script>
+</body>
+</html>

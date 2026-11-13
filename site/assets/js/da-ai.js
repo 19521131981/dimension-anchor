@@ -112,9 +112,15 @@ window.DA_AI = (function () {
   function packContext(o) {
     o = o || {};
     var link = o.link || {};
-    var profile = o.profileId && window.DA_STORE
-      ? window.DA_STORE.profiles.summary(o.profileId)
-      : (o.profile || '');
+    /* 档案库优先：常说的话、往来次数一并注入；无档案时退回 profiles */
+    var profile = '';
+    if (o.profileId) {
+      profile = (window.DA_ARCHIVE && DA_ARCHIVE.summary)
+        ? DA_ARCHIVE.summary(o.profileId)
+        : (window.DA_STORE ? window.DA_STORE.profiles.summary(o.profileId) : '');
+    } else {
+      profile = o.profile || '';
+    }
     return {
       question: link.question || o.question || '',
       subject: link.subjectName || '',
@@ -182,7 +188,11 @@ window.DA_AI = (function () {
       return fetchJSON(b + '/api/chat', {
         method: 'POST',
         body: {
-          profile: window.DA_STORE ? window.DA_STORE.profiles.summary(o.profileId) : (o.profile || ''),
+          profile: (o.profileId
+            ? ((window.DA_ARCHIVE && DA_ARCHIVE.summary)
+                ? DA_ARCHIVE.summary(o.profileId)
+                : (window.DA_STORE ? window.DA_STORE.profiles.summary(o.profileId) : ''))
+            : (o.profile || '')),
           link: o.link || {},
           messages: (messages || []).slice(-24).map(function (m) {
             return { role: m.role === 'me' ? 'user' : 'assistant', content: m.text };
@@ -224,8 +234,11 @@ window.DA_AI = (function () {
       { k: '牌阵数据', v: (o && o.session ? packCards(o.session).length : 0) + ' 张牌的牌名 / 正逆位 / 牌位' },
       { k: '连接对象', v: link.subjectName || '（未填写）' },
       { k: '关系与背景', v: [link.relation, link.background].filter(Boolean).join('｜') || '（未填写）' },
-      { k: '角色档案', v: (o && o.profileId && window.DA_STORE
-          ? window.DA_STORE.profiles.summary(o.profileId) : '（未使用）') }
+      { k: '角色档案', v: (o && o.profileId
+          ? ((window.DA_ARCHIVE && DA_ARCHIVE.summary)
+              ? DA_ARCHIVE.summary(o.profileId)
+              : (window.DA_STORE ? window.DA_STORE.profiles.summary(o.profileId) : ''))
+          : '（未使用）') }
     ];
     return rows;
   }

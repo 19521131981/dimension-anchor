@@ -450,19 +450,31 @@ window.DA_AUTH = (function () {
     });
   }
   function toast(msg) {
-    var t = document.getElementById('toast');
+    /* 各页的提示条位置不同：有 #toast 的用 #toast，星轨大厅用的是 .hall-toast。
+       两者的显隐机制一致（.is-on），这里按存在性依次回退。 */
+    var t = document.getElementById('toast') || document.querySelector('.hall-toast');
     if (!t) return;
-    t.textContent = msg; t.hidden = false;
+    var s = String(msg == null ? '' : msg).trim();
+    if (!s) return;
+    t.textContent = s;
+    t.hidden = false;
+    /* 解读页的 toast 靠 .is-on 淡入，管理端靠 hidden；两边都照顾到 */
+    t.classList.add('is-on');
     clearTimeout(t._t);
-    t._t = setTimeout(function () { t.hidden = true; }, 3200);
+    t._t = setTimeout(function () {
+      t.hidden = true; t.classList.remove('is-on');
+    }, 3200);
   }
 
-  /* 导航里的通行证胶囊（自动插入，不改各页 HTML） */
+  /* 导航里的通行证胶囊（自动插入，不改各页 HTML）
+     带 data-no-auth-chip 的页面（星轨大厅）不在导航里塞胶囊——
+     那一页的账号入口是右上角头像，由页面自己接到 open()。 */
   function paintChip() {
     var nav = document.querySelector('.nav');
     if (!nav) return;
     var chip = nav.querySelector('#navAuth');
     if (!chip) {
+      if (nav.hasAttribute('data-no-auth-chip')) return;
       chip = document.createElement('button');
       chip.id = 'navAuth';
       chip.className = 'nav__auth';

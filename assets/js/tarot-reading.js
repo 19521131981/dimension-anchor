@@ -69,12 +69,35 @@ window.DA_READING = (function () {
     return PAIR[k1] || PAIR[k2] || '两种元素并置，各自成立，需要你手动把它们接起来。';
   }
 
+  /* ── 文本兜底 ──────────────────────────────────────────────
+     任何缺失的字段都不得以 undefined / null / NaN 的形式出现在
+     用户可见的文案里：牌库缺字段、旧记录缺字段、AI 通道回传空值时，
+     一律换成可读的兜底文本，而不是把字面量漏给用户。 */
+  function T(v, fb) {
+    var fallback = (fb === undefined || fb === null) ? '' : String(fb);
+    if (v === undefined || v === null) return fallback;
+    var s = String(v);
+    if (s === 'undefined' || s === 'null' || s === 'NaN') return fallback;
+    return s;
+  }
+  function FIRST(arr, fb) {
+    if (!arr || !arr.length) return (fb === undefined || fb === null) ? '' : String(fb);
+    return T(arr[0], fb);
+  }
+  /* 安全取数组元素：索引越界（含负数）时返回兜底，不会拿到 undefined */
+  function AT(arr, idx, fb) {
+    if (!arr || !arr.length) return (fb === undefined || fb === null) ? '' : String(fb);
+    var i = idx % arr.length;
+    if (i < 0) i += arr.length;
+    return T(arr[i], fb);
+  }
+
   /* 会话条目 → 原始牌数据 */
   function data(e) { return D.byId(e && e.id) || {}; }
   function kwOf(e) {
     var c = data(e);
     var arr = e.reversed ? (c.kr || []) : (c.ku || []);
-    return arr[0] || '';
+    return T(arr[0], '');
   }
 
   function ori(e) { return e.reversed ? '逆位' : '正位'; }
@@ -146,7 +169,7 @@ window.DA_READING = (function () {
     var b1 = [];
     b1.push({
       t: 'p',
-      x: '这一次，你在「' + session.spreadCn + '」里抽出了 ' + m.n + ' 张牌：' +
+      x: '这一次，你在「' + T(session.spreadCn, '这次牌阵') + '」里抽出了 ' + m.n + ' 张牌：' +
         m.ups + ' 张正位、' + m.revs + ' 张逆位；其中 ' + m.majors + ' 张大牌，' + m.minors + ' 张小牌。' +
         (session.deckMode === 22
           ? '你只用了大阿尔卡那，这是一次把问题拉回主线本身的抽法。'
@@ -154,14 +177,14 @@ window.DA_READING = (function () {
     });
     b1.push({
       t: 'p',
-      x: '最该先被读的是落在「' + first.positionCn + '」的《' + first.cn + '》' + ori(first) + '。' +
-        pick(first, data(first).up || '', data(first).rev || '')
+      x: '最该先被读的是落在「' + T(first.positionCn, '这个位置') + '」的《' + T(first.cn, '这张牌') + '》' + ori(first) + '。' +
+        T(pick(first, data(first).up || '', data(first).rev || ''), '')
     });
     if (m.n > 1) {
       b1.push({
         t: 'p',
-        x: '而收在「' + last.positionCn + '」的《' + last.cn + '》' + ori(last) + '，' +
-          pick(last, data(last).up || '', data(last).rev || '')
+        x: '而收在「' + T(last.positionCn, '那个位置') + '」的《' + T(last.cn, '那张牌') + '》' + ori(last) + '，' +
+          T(pick(last, data(last).up || '', data(last).rev || ''), '')
       });
     }
 
@@ -171,56 +194,83 @@ window.DA_READING = (function () {
         ' · 风（宝剑）' + m.suits.swords + ' · 土（星币）' + m.suits.pentacles);
     }
     if (m.dominant) {
-      facts.push(SUITS[m.dominant].cn + '出现最多（' + m.dominantCount + ' 次），元素是' +
-        SUITS[m.dominant].el + '——' + DOMINANT[m.dominant]);
+      facts.push(T(SUITS[m.dominant] && SUITS[m.dominant].cn, '这一组') + '出现最多（' + m.dominantCount + ' 次），元素是' +
+        T(SUITS[m.dominant] && SUITS[m.dominant].el, '—') + '——' + T(DOMINANT[m.dominant], '这股力量反复出现。'));
     }
     if (m.absent.length && m.minors) {
-      facts.push(m.absent.map(function (k) { return SUITS[k].cn; }).join(' / ') + ' 完全没有出现——' +
-        ABSENT[m.absent[0]]);
+      facts.push(m.absent.map(function (k) { return T(SUITS[k] && SUITS[k].cn, '这一组'); }).join(' / ') + ' 完全没有出现——' +
+        T(ABSENT[m.absent[0]], '这一组暂时没有出现。'));
     }
     if (m.majors >= 3 && m.minors > 0) {
       facts.push('大牌 ' + m.majors + ' 张，占到 ' + Math.round(m.majors / m.n * 100) +
         '%——这不是一件小事，是一段正在推进的周期。');
     }
     facts.push(revLine(m));
+
+    /* 整体主题 / 核心矛盾：只从牌面结构推导，不写成确定结论 */
+    var themeKw = T(kwOf(core), '') || T(core.cn, '') || '这件事';
+    var themeLine = '这次牌面反复回到「' + themeKw + '」这个题目：' +
+      '从「' + T(first.positionCn, '这个位置') + '」的《' + T(first.cn, '这张牌') + '》' + ori(first) +
+      (m.n > 1 ? '，到「' + T(last.positionCn, '那个位置') + '」的《' + T(last.cn, '那张牌') + '》' + ori(last) : '') +
+      '，说的是同一个处境的不同阶段。';
+    var tension = [];
+    if (m.revs && m.ups) {
+      tension.push('一边是 ' + m.ups + ' 张正位往外推，一边是 ' + m.revs + ' 张逆位往里收：想靠近和想停一停，可能同时在场。');
+    }
+    if (m.dominant && m.absent.length) {
+      tension.push(SUITS[m.dominant].cn + '偏重、' + m.absent.map(function (k) { return SUITS[k].cn; }).join(' / ') +
+        '缺席：有力气的地方和缺少支撑的地方，也许不在同一处。');
+    }
+    if (m.majors && m.minors) {
+      tension.push('大牌说的是阶段，小牌说的是日常，两者对同一件事的尺度并不一样。');
+    }
+    if (!tension.length) {
+      tension.push('目前没有明显的对冲，更像是同一个侧面被几张牌重复提起。');
+    }
+    b1.push({ t: 'li2', k: '整体主题', v: themeLine });
+    b1.push({ t: 'li2', k: '核心矛盾', v: tension.join(' ') + '这是牌面结构上的张力，不代表现实里一定发生了什么。' });
     b1.push({ t: 'ul', items: facts });
     b1.push({
       t: 'note',
       x: '以上每一条都能在这 ' + m.n + ' 张牌的真实字段里对上：花色、正逆位、牌位、翻牌顺序。下面是逐张的展开。'
     });
-    chapters.push({ key: 'overview', no: 'I', title: '整体解读', en: 'OVERVIEW', blocks: b1 });
+    chapters.push({ key: 'overview', no: 'I', title: '整体能量', en: 'OVERVIEW', blocks: b1 });
 
     /* ── II 单牌解析 ─────────────────────────────────────── */
     var b2 = [];
     cards.forEach(function (e, idx) {
       var c = D.byId(e.id) || {};
+      var slotNo = T(e.slot, '');
       b2.push({
         t: 'h',
-        x: String(e.slot).padStart(2, '0') + ' · ' + e.positionCn + '　《' + e.cn + '》' +
-          (c.en ? ' ' + c.en : '') + '　' + ori(e)
+        x: (slotNo ? String(slotNo).padStart(2, '0') + ' · ' : '') +
+          T(e.positionCn, '这个位置') + '　《' + T(e.cn, '这张牌') + '》' +
+          (c.en ? ' ' + T(c.en, '') : '') + '　' + ori(e)
       });
       b2.push({
         t: 'chips',
-        items: (e.reversed ? (c.kr || []) : (c.ku || [])).map(function (k) { return { x: k, tone: 'gold' }; })
-          .concat([{ x: e.positionCn, tone: 'plain' }, { x: ori(e), tone: e.reversed ? 'rev' : 'up' }])
+        items: (e.reversed ? (c.kr || []) : (c.ku || [])).map(function (k) { return { x: T(k, ''), tone: 'gold' }; })
+          .concat([{ x: T(e.positionCn, '这个位置'), tone: 'plain' }, { x: ori(e), tone: e.reversed ? 'rev' : 'up' }])
       });
-      b2.push({ t: 'p', x: pick(e, c.up || '', c.rev || '') });
+      b2.push({ t: 'p', x: T(pick(e, c.up || '', c.rev || ''), '') });
+      /* 牌位说明缺失时整句省略，不留下空引号「“”」 */
+      var posDesc = T(e.positionDesc, '');
       b2.push({
         t: 'p',
-        x: '放在「' + e.positionCn + '」这个牌位上——“' + (e.positionDesc || '') + '”' +
-          stanceOf(e)
+        x: '放在「' + T(e.positionCn, '这个位置') + '」这个牌位上' +
+          (posDesc ? '——“' + posDesc + '”' : '') + stanceOf(e)
       });
       if (e.reversed && c.rev) {
-        b2.push({ t: 'p', x: '逆位时它说的是：' + c.rev });
+        b2.push({ t: 'p', x: '逆位时它说的是：' + T(c.rev, '') });
       }
       b2.push({
         t: 'kv',
         items: [
-          { k: '爱情', v: c.love || '—' },
-          { k: '友情 · 亲情', v: c.kin || '—' },
-          { k: '情绪内在', v: c.mood || '—' },
-          { k: '现实建议', v: c.act || '—' },
-          { k: '象征物', v: c.sym || '—' }
+          { k: '爱情', v: T(c.love, '—') },
+          { k: '友情 · 亲情', v: T(c.kin, '—') },
+          { k: '情绪内在', v: T(c.mood, '—') },
+          { k: '现实建议', v: T(c.act, '—') },
+          { k: '象征物', v: T(c.sym, '—') }
         ]
       });
       if (idx < cards.length - 1) b2.push({ t: 'rule' });
@@ -230,8 +280,8 @@ window.DA_READING = (function () {
     /* ── III 牌间联系 ───────────────────────────────────── */
     var b3 = [];
     if (m.n === 1) {
-      b3.push({ t: 'p', x: '单牌阵没有牌与牌之间的关系可讲。这一张就是全部——《' + first.cn + '》' + ori(first) + '。' });
-      b3.push({ t: 'p', x: pick(first, first.up, first.rev) });
+      b3.push({ t: 'p', x: '单牌阵没有牌与牌之间的关系可讲。这一张就是全部——《' + T(first.cn, '这张牌') + '》' + ori(first) + '。' });
+      b3.push({ t: 'p', x: T(pick(first, first.up, first.rev), '') });
     } else {
       b3.push({ t: 'p', x: '按牌位顺序把相邻的两张连起来，再加上重复的数字与花色聚集，就能看出这张牌阵在讲哪几件事。' });
       var pairs = Math.min(cards.length - 1, 5);
@@ -244,10 +294,10 @@ window.DA_READING = (function () {
         lastRel = rel;
         b3.push({
           t: 'li2',
-          k: '「' + A.positionCn + '」→「' + B.positionCn + '」',
-          v: '《' + A.cn + '》' + ori(A) + ' 接 《' + B.cn + '》' + ori(B) + '。' +
+          k: '「' + T(A.positionCn, '前一处') + '」→「' + T(B.positionCn, '后一处') + '」',
+          v: '《' + T(A.cn, '这张牌') + '》' + ori(A) + ' 接 《' + T(B.cn, '那张牌') + '》' + ori(B) + '。' +
             (relNew ? rel + ' ' : '') +
-            '重心落在《' + B.cn + '》的「' + kwOf(B) + '」。' +
+            '重心落在《' + T(B.cn, '那张牌') + '》的「' + (T(kwOf(B), '') || T(FIRST(data(B).ku, '这一面'), '这一面')) + '」。' +
             (sameOri ? '两张同为' + ori(A) + '，方向一致。'
                      : '一张向外、一张向内，中间有一段错位。')
         });
@@ -278,7 +328,7 @@ window.DA_READING = (function () {
       if (m.majors) {
         b3.push({
           t: 'p',
-          x: '大牌落在 ' + m.majorCards.map(function (c) { return '「' + c.positionCn + '」'; }).join('') +
+          x: '大牌落在 ' + m.majorCards.map(function (c) { return '「' + T(c.positionCn, '这个位置') + '」'; }).join('') +
             '，' + (m.majors >= 3 ? '整段叙事的分量集中在这些位置上。' : '只是点了一下，没有接管整个牌阵。')
         });
       }
@@ -290,12 +340,12 @@ window.DA_READING = (function () {
     var b4 = [];
     var hasSubject = !!(L.subjectName && String(L.subjectName).trim());
     if (hasSubject) {
-      var who = '你连接的对象是「' + L.subjectName + '」';
-      if (L.workName) who += '，来自《' + L.workName + '》';
-      if (L.relation) who += '，你们的关系是「' + L.relation + '」';
+      var who = '你连接的对象是「' + T(L.subjectName, '这位') + '」';
+      if (L.workName) who += '，来自《' + T(L.workName, '') + '》';
+      if (L.relation) who += '，你们的关系是「' + T(L.relation, '') + '」';
       b4.push({ t: 'p', x: who + '。' });
       if (L.background && String(L.background).trim()) {
-        b4.push({ t: 'quote', x: '你自己写下的背景：「' + L.background + '」' });
+        b4.push({ t: 'quote', x: '你自己写下的背景：「' + T(L.background, '') + '」' });
       } else {
         b4.push({ t: 'note', x: '你没有写背景，所以下面只从牌面读出关系的形状，不补写任何情节。' });
       }
@@ -309,12 +359,13 @@ window.DA_READING = (function () {
       items: arc.map(function (e) {
         var c = D.byId(e.id) || {};
         var line = pick(e, c.love || '', c.rev || '');
-        return '「' + e.positionCn + '」《' + e.cn + '》' + ori(e) + '：' + (line || c.act || '');
+        return '「' + T(e.positionCn, '这个位置') + '」《' + T(e.cn, '这张牌') + '》' + ori(e) + '：' +
+          (T(line, '') || T(c.act, '') || T(c.up, ''));
       })
     });
 
     if (m.revs) {
-      var revPos = m.reversedCards.map(function (c) { return '「' + c.positionCn + '」'; }).join('');
+      var revPos = m.reversedCards.map(function (c) { return '「' + T(c.positionCn, '这个位置') + '」'; }).join('');
       var extra = '';
       if (m.suits.swords >= 1) extra = '其中宝剑在场，这些位置多半和「没说出口的话」有关。';
       else if (m.suits.cups >= 1) extra = '其中圣杯在场，卡住的地方多半在感受，不在事实。';
@@ -323,9 +374,9 @@ window.DA_READING = (function () {
       b4.push({ t: 'p', x: '整副牌都是正位，关系里没有明显的暗流——更可能的风险是过于平稳，谁都不去动那块真正想动的部分。' });
     }
     if (L.relation && /恋|爱|暧昧|伴侣|前任|暗恋/.test(L.relation)) {
-      b4.push({ t: 'p', x: '以「' + L.relation + '」这个前提来看，' + (m.suits.cups ? '水元素在场，说明这段关系里感受是主线。' : '水元素不在场，说明这段关系现在更多由现实或理智在维持。') });
+      b4.push({ t: 'p', x: '以「' + T(L.relation, '') + '」这个前提来看，' + (m.suits.cups ? '水元素在场，说明这段关系里感受是主线。' : '水元素不在场，说明这段关系现在更多由现实或理智在维持。') });
     } else if (L.relation && /家|亲|父母|兄弟|姐妹/.test(L.relation)) {
-      b4.push({ t: 'p', x: '以「' + L.relation + '」这个前提来看，' + ((D.byId(first.id) || {}).kin || '') });
+      b4.push({ t: 'p', x: '以「' + T(L.relation, '') + '」这个前提来看，' + T((D.byId(first.id) || {}).kin, '这段关系里的距离多半在日常相处里。') });
     }
     b4.push({ t: 'note', x: '牌面不预测另一个人的行为，也不替任何人做决定。它只描述此刻的能量结构。' });
     chapters.push({ key: 'relation', no: 'IV', title: '关系脉络', en: 'THE THREAD', blocks: b4 });
@@ -334,8 +385,8 @@ window.DA_READING = (function () {
     var b5 = [];
     b5.push({
       t: 'p',
-      x: '如果这张牌阵只允许留下一句话，那就是《' + core.cn + '》' + ori(core) + '：' +
-        pick(core, data(core).up || '', data(core).rev || '')
+      x: '如果这张牌阵只允许留下一句话，那就是《' + T(core.cn, '这张牌') + '》' + ori(core) + '：' +
+        T(pick(core, data(core).up || '', data(core).rev || ''), '')
     });
     if (m.reversedCards.length) {
       b5.push({ t: 'p', x: '逆位不是坏牌，是还没落地的那部分：' });
@@ -343,17 +394,40 @@ window.DA_READING = (function () {
         t: 'ul',
         items: m.reversedCards.slice(0, 4).map(function (e) {
           var c = D.byId(e.id) || {};
-          return '《' + e.cn + '》逆位（' + e.positionCn + '）——' + (c.rev || '');
+          return '《' + T(e.cn, '这张牌') + '》逆位（' + T(e.positionCn, '这个位置') + '）——' + T(c.rev, '');
         })
       });
     }
     var coreC = D.byId(core.id) || {};
-    b5.push({ t: 'p', x: '现实里能被执行的那一步：' + (coreC.act || '—') });
+    b5.push({ t: 'p', x: '现实里能被执行的那一步：' + T(coreC.act, '把眼前那一件小事先做完，再决定要不要说出口。') });
+    /* 认知偏差 / 被忽略的问题：一律用可能性措辞，不写成定论 */
+    var bias = [];
+    if (m.dominant === 'swords') bias.push('也许你正在用「想清楚」替代「说出口」：分析越完整，越难开口。');
+    else if (m.dominant === 'cups') bias.push('也许你把感受当成了事实：这边有波动，就以为那边也一样。');
+    else if (m.dominant === 'wands') bias.push('也许你把「还没行动」读成了「不想行动」：节奏被当成了态度。');
+    else if (m.dominant === 'pentacles') bias.push('也许你只承认看得见的进展，忽略了自己其实已经撑了一段时间。');
+    else bias.push('也许你把一次沉默当成了一个结论，而牌面并没有给出这么确定的东西。');
+    if (m.revs >= 2) bias.push('逆位偏多时，人容易把「推迟」解释成「拒绝」——这两件事未必相同。');
+    b5.push({ t: 'li2', k: '可能的认知偏差', v: bias.join(' ') });
+
+    var missed = [];
+    if (m.absent.length) {
+      missed.push('缺席的是' + m.absent.map(function (k) { return T(SUITS[k] && SUITS[k].cn, '这一组'); }).join(' / ') +
+        '：' + T(ABSENT[m.absent[0]], '这一组暂时没有出现。') + '这部分也许正是你没算进去的。');
+    }
+    if (m.reversedCards.length) {
+      missed.push('「' + T(m.reversedCards[0].positionCn, '这个位置') + '」的《' + T(m.reversedCards[0].cn, '这张牌') +
+        '》逆位，问的未必是对方，而是你还没承认的那一层犹豫。');
+    }
+    if (!missed.length) {
+      missed.push('牌面里最安静的位置是「' + T(first.positionCn, '这个位置') + '」：它常常是已经发生、却没被算进判断里的那件事。');
+    }
+    b5.push({ t: 'li2', k: '容易被忽略的', v: missed.join(' ') });
     b5.push({
       t: 'quote',
-      x: '“当「' + ((coreC.ku || ['那件事'])[0]) + '」真的发生时，你会先放下什么？”'
+      x: '“当「' + FIRST(coreC.ku, '那件事') + '」真的发生时，你会先放下什么？”'
     });
-    b5.push({ t: 'note', x: '这是象征性的内在提示，不是诊断，也不是预言。' });
+    b5.push({ t: 'note', x: '这是象征性的内在提示，不是诊断，也不是预言；以上都只是可能，不是对你或对方的判定。' });
     chapters.push({ key: 'deep', no: 'V', title: '深层讯息', en: 'THE UNDERTOW', blocks: b5 });
 
     /* ── VI TA 想对你说 ─────────────────────────────────── */
@@ -364,22 +438,92 @@ window.DA_READING = (function () {
     if (!other) other = m.minorCards.filter(function (e) { return e.suit === 'cups'; })[0];
     if (!other) other = last;
     var oc = D.byId(other.id) || {};
+    var fc = D.byId(first.id) || {};
+    var lc = D.byId(last.id) || {};
+
+    /* 同一张牌只算一次锚点，避免单牌阵里重复列举 */
+    var anchors = [];
+    [other, first, last].forEach(function (e) {
+      if (e && !anchors.some(function (a) { return a.id === e.id && a.positionCn === e.positionCn; })) anchors.push(e);
+    });
+    var anchorLabel = ['说话的底色', '事情开始的地方', '还悬着的那头', '另一个侧面'];
+    var anchorTxt = anchors.map(function (e, i) {
+      return '「' + T(e.positionCn, '这个位置') + '」的《' + T(e.cn, '这张牌') + '》' + ori(e) +
+        '（' + T(anchorLabel[i], anchorLabel[3]) + '）';
+    }).join('、');
+
+    /* 有角色档案就贴合说话习惯；没有就不虚构身份 */
+    var profileTxt = '';
+    try {
+      if (window.DA_ARCHIVE && DA_ARCHIVE.summary && (L.profileId || hasSubject)) {
+        profileTxt = String(DA_ARCHIVE.summary(L.profileId || '') || '').replace(/\s+/g, ' ').slice(0, 80);
+      }
+    } catch (e) { profileTxt = ''; }
+
+    var sceneBits = [];
+    if (L.question) sceneBits.push('你问的是「' + T(L.question, '') + '」');
+    if (L.relation) sceneBits.push('你们之间是「' + T(L.relation, '') + '」');
+    if (L.background) sceneBits.push('你写下的「' + T(String(L.background).slice(0, 38), '') + '」');
+    var scene = sceneBits.length ? '分寸按' + sceneBits.join('、') + '来拿。' : '';
 
     b6.push({
       t: 'p',
-      x: hasSubject
-        ? '下面这段话是替「' + L.subjectName + '」拟的语气，从《' + other.cn + '》' + ori(other) +
-          '（' + other.positionCn + '）的象征里借来的——不是对方真的说过的话。'
-        : '这次没有指定对象，所以这段话是写给「关系里的另一端」的，可以是任何人。它来自《' +
-          other.cn + '》' + ori(other) + '。'
+      x: '这一段是替' + (hasSubject ? '「' + T(L.subjectName, '那位') + '」' : '「关系里的另一端」') +
+        '拟的语气，不是对方真的说过的话。它从这些牌里借意象：' + anchorTxt + '。' +
+        (profileTxt ? '说话方式参照角色档案：' + profileTxt + '。' : '') + scene +
+        '这一章只做拟声，不替任何人确认心意，也不预告以后会怎样。'
     });
+
+    /* 用牌面与背景做确定性种子：换一组牌 / 换一个对象，句式就不同 */
+    var seedStr = (other.id || '') + '|' + (L.subjectName || '') + '|' + (L.relation || '') + '|' + (L.question || '');
+    var seed = 0;
+    for (var si = 0; si < seedStr.length; si++) seed = (seed * 31 + seedStr.charCodeAt(si)) >>> 0;
+    var OPEN = [
+      '有句话我搁了一阵子，',
+      '我不太会把这种事说圆，',
+      '如果只留一句实话，',
+      '你大概也察觉到了一点，',
+      '先别急着替我补完，'
+    ];
+    var CLOSE = [
+      '我没有要你现在回答什么，只是不想让它一直停在没说出口的地方。',
+      '这不算承诺，也不是暗示；只是今晚，我愿意把它放在这里。',
+      '你不必当真到明天，但我也没有打算把它收回去。',
+      '如果这算靠近一点，那就先到这儿，剩下的不急着写完。'
+    ];
+    /* 索引一律走 AT()：seed 是无符号 32 位，算术右移（>>）会得到负数，
+       取模后变成负索引，数组越界返回 undefined——这正是台词最后一句显示
+       “undefined”的根因。改成无符号右移 + 安全取用。 */
+    var open = AT(OPEN, seed, OPEN[0]);
+    var close = AT(CLOSE, seed >>> 3, CLOSE[0]);
+    var clean = function (s) { return T(s, '').replace(/[。！？；;]+$/g, ''); };
+    /* 台词用牌的关键词与牌位说话，不直接复述牌意解释，避免像在念牌书 */
+    var kw = T(kwOf(other), '') || clean(FIRST(oc.ku, '说不清'));
+    var feel = other.reversed
+      ? '我这边是「' + kw + '」，只是它还没翻到正面来'
+      : '我这边更接近「' + kw + '」，没什么好修饰的';
+    var arc = (m.n > 1)
+      ? '《' + T(first.cn, '这一张') + '》落在「' + T(first.positionCn, '这个位置') + '」，《' +
+        T(last.cn, '这一张') + '》落在「' + T(last.positionCn, '那个位置') + '」，中间这一段我不替它下结论'
+      : '这一张《' + T(first.cn, '牌面') + '》就摆在那儿，我不替它补情节';
+    var step = clean(T(oc.act, '') || T(fc.act, '') || T(lc.act, '') || '我也还在找能说出口的版本');
+    var revHint = other.reversed
+      ? '「' + T(other.positionCn, '这一格') + '」这一格尤其往里收，话到嘴边会慢半拍。'
+      : '';
+    var relHint = L.relation ? '你说我们是「' + T(L.relation, '这种关系') + '」，我不急着替它换名字。' : '';
+
     b6.push({
       t: 'quote6',
-      x: '“我这边大概是这样的：' + (oc.mood || '说不清，但确实有东西在动。') + '”<br>' +
-        '“关于我们：' + (oc.love || '我不想把它说死。') + '”<br>' +
-        '“如果要说一句实话——' + (oc.act || '我也还在找那个能说出口的版本。') + '”'
+      x: '“' + open + feel + '。”<br>' +
+        '“关于我们，' + arc + '。' + relHint + revHint + '”<br>' +
+        '“要说一句能落地的——' + step + '。”<br>' +
+        '“' + close + '”'
     });
-    b6.push({ t: 'note', x: '这段是象征性的拟声，用来让你听见另一种可能，不代表对方的真实想法和立场。' });
+    b6.push({
+      t: 'note',
+      x: '这是从牌意、牌位与正逆位出发写的一段拟声，用来听见另一种可能；' +
+        '它不代表对方的真实想法，也不构成任何关于未来的判断。'
+    });
     chapters.push({ key: 'voice', no: 'VI', title: 'TA 想对你说', en: 'WHAT THEY MIGHT SAY', blocks: b6 });
 
     chapters.forEach(function (ch) { ch.lead = LEADS[ch.key] || ''; });
@@ -451,9 +595,9 @@ window.DA_READING = (function () {
     var L = link || {};
     var lines = [];
     lines.push('DIMENSION ANCHOR｜维度锚点 · 塔罗观测站');
-    lines.push('解读结果 · ' + session.spreadCn + ' · ' + (session.deckMode === 22 ? '大阿尔卡那' : '完整 78 张'));
+    lines.push('解读结果 · ' + T(session.spreadCn, '这次牌阵') + ' · ' + (session.deckMode === 22 ? '大阿尔卡那' : '完整 78 张'));
     if (L.subjectName) {
-      lines.push('连接对象：' + L.subjectName + (L.relation ? '（' + L.relation + '）' : ''));
+      lines.push('连接对象：' + T(L.subjectName, '未命名对象') + (L.relation ? '（' + T(L.relation, '') + '）' : ''));
     }
     lines.push('日期：' + new Date().toLocaleString('zh-CN'));
     lines.push('');

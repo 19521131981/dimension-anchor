@@ -138,7 +138,9 @@ window.DA_LETTER = (function () {
     if (form.profileId) {
       var p = S.profiles.get(form.profileId);
       if (p) {
-        out.profile = S.profiles.summary(p.id);
+        /* 档案库优先：常说的话与往来记录一并给写信人 */
+        out.profile = (window.DA_ARCHIVE && DA_ARCHIVE.summary)
+          ? DA_ARCHIVE.summary(p.id) : S.profiles.summary(p.id);
         out.charId = p.id;
         out.charName = p.name || '';
         out.profileRel = p.relation || '';
