@@ -673,6 +673,14 @@
         '<span>' + esc(L.background || '未填写具体背景，以当下的注意力作为连接点。') + '</span></div>',
       '</div>',
 
+      /* R6（v2 §7）：恢复 link.question 写入方——选填，known/unknown 两条仪式共用此确认步；
+         下游 packContext 白名单已含 question，链路零改动。 */
+      '<div class="field" style="margin-top:18px">',
+      '<label class="field__label" for="cAsk">本次想问的问题（选填）</label>',
+      '<input type="text" id="cAsk" placeholder="比如：TA 现在是怎么想的？留空就看整体能量">',
+      '<p class="field__hint">只用于这一次解读，会随连接一起保存。</p>',
+      '</div>',
+
       '<div class="actions actions--split">',
       '<button class="btn btn--ghost" id="cBack">返回修改信息</button>',
       '<div class="actions__right">',
@@ -682,13 +690,28 @@
       '</div>'
     ].join('');
 
+    /* R6：预填已保存的问题；输入先暂存到 state，往返修改信息不丢失 */
+    var askEl = $('#cAsk');
+    if (askEl) askEl.value = state.pendingAsk || (L.question || '');
+    if (askEl) askEl.addEventListener('input', function () {
+      state.pendingAsk = askEl.value.trim();
+    });
+
     $('#cBack').addEventListener('click', function () {
       if ((state.link || {}).mode === 'unknown') renderUnknownConfirm();
       else if ((state.link || {}).mode === 'heal') renderHeal();
       else renderKnown();
     });
 
-    $('#cNext').addEventListener('click', function () { go('spread'); });
+    $('#cNext').addEventListener('click', function () {
+      var q = state.pendingAsk || (askEl ? askEl.value.trim() : '');
+      if (state.link) {
+        if (q) state.link.question = q;
+        else delete state.link.question;
+        saveLink(state.link);
+      }
+      go('spread');
+    });
   }
 
   /* ══════════════════════════════════════════════════════════

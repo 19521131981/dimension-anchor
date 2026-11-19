@@ -625,6 +625,12 @@ window.DA_READING = (function () {
     var seedStr = (other.id || '') + '|' + (L.subjectName || '') + '|' + (L.relation || '') + '|' + (L.question || '');
     var seed = 0;
     for (var si = 0; si < seedStr.length; si++) seed = (seed * 31 + seedStr.charCodeAt(si)) >>> 0;
+    /* C10（v2 §3）：OPEN/CLOSE 句式按 R3 关系阶段分档，亲近句式只出现在
+       明确的亲近关系档；疏远档一律收着说；分不清的走中性档。 */
+    var REL_WARM = /(暧昧|恋爱|恋人|男友|女友|对象|爱人|伴侣|家人|亲人|老公|老婆|丈夫|妻子|未婚夫|未婚妻)/;
+    var REL_COLD = /(陌生|不熟|初识|刚认识|疏远|同事|同学|普通朋友|分手|前任|吵架|闹翻|冷战)/;
+    var relRaw = String(L.relation || '');
+    var tier = REL_COLD.test(relRaw) ? 'cold' : (REL_WARM.test(relRaw) ? 'warm' : 'neutral');
     var OPEN = [
       '有句话我搁了一阵子，',
       '我不太会把这种事说圆，',
@@ -634,6 +640,21 @@ window.DA_READING = (function () {
       '我犹豫过要不要讲，',
       '说出来之前，我先想了一遍，',
       '有些事讲出来会变轻一点，'
+    ];
+    var OPEN_NEUTRAL = [
+      '有句话我搁了一阵子，',
+      '我不太会把这种事说圆，',
+      '如果只留一句实话，',
+      '先别急着替我补完，',
+      '我犹豫过要不要讲，',
+      '说出来之前，我先想了一遍，',
+      '有些事讲出来会变轻一点，'
+    ];
+    var OPEN_COLD = [
+      '有句话不知道该不该说，',
+      '想了想，还是说一句，',
+      '其实没什么大事，',
+      '有些事说一下就过去了，'
     ];
     var CLOSE = [
       '我没有要你现在回答什么，只是不想让它一直停在没说出口的地方。',
@@ -645,10 +666,17 @@ window.DA_READING = (function () {
       '先放在这儿，等你哪天想起来了，再说。',
       '我不催你，你按自己的节奏来。'
     ];
+    var CLOSE_NEUTRAL = [
+      '我没有要你现在回答什么，只是不想让它一直停在没说出口的地方。',
+      '听完就好，不用接，也不用给答案。',
+      '先放在这儿，等你哪天想起来了，再说。',
+      '我不催你，你按自己的节奏来。'
+    ];
     /* 索引一律走 AT()：seed 是无符号 32 位，算术右移（>>）会得到负数，
        取模后变成负索引，数组越界返回 undefined——这正是台词最后一句显示
        “undefined”的根因。改成无符号右移 + 安全取用。 */
-    var open = AT(OPEN, seed, OPEN[0]);
+    var openPool = tier === 'cold' ? OPEN_COLD : (tier === 'warm' ? OPEN : OPEN_NEUTRAL);
+    var open = AT(openPool, seed, openPool[0]);
     /* 冷淡型角色换一套收着的收尾，不说亲近话 */
     var CLOSE_COLD = [
       '先这样。你不用接。',
@@ -657,7 +685,8 @@ window.DA_READING = (function () {
       '不用回我，我知道你听见了。'
     ];
     var coldRole = COLD_MARK.test(profileTxt || '');
-    var closePool = coldRole ? CLOSE_COLD : CLOSE;
+    var closePool = (tier === 'cold' || coldRole) ? CLOSE_COLD :
+      (tier === 'warm' ? CLOSE : CLOSE_NEUTRAL);
     var close = AT(closePool, seed >>> 3, closePool[0]);
 
     /* 台词里的"状态"与"打算"都取自这次真实抽到的那张牌：

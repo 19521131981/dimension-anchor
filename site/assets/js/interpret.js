@@ -932,11 +932,15 @@
       renderRows();
       renderTail();
       toast('六章已由 DeepSeek 重写。牌面、正逆位、牌位仍取自这一次真实抽出的牌。');
+      /* §7.1 三态日志：ai_normal / local_template / abnormal（不存用户原文） */
+      try { console.log('[interpret] ai_normal · chapters=' + n + ' · model=' + (state.model || '')); } catch (e) {}
       S.complete();
     }).catch(function (e) {
       setSrc('本地推演');
       AI.state.source = 'local';
       if (e && e.message) AI.state.lastError = e.message;
+      /* 验证回退 / 通道失败：保留本次已落盘的本地六章，不重复存档、零新增调用 */
+      try { console.warn('[interpret] abnormal → local_template（' + ((e && e.message) || '') + '）'); } catch (e2) {}
     }).then(function () {
       state.busy = false;
     });
@@ -963,6 +967,13 @@
     var result = RD.build(rec, link);
     if (!result) { showEmpty(); bindGlobal(); return; }
 
+    /* 存档一致性修复（v2.1.1 勘误 1）：历史 AI 记录直接沿用已存档的 AI 六章，
+       不再用本地推演覆盖——否则存档出现「标 ai、内容是本地」的矛盾。
+       仅当没有可沿用的 AI 章节时才重建本地六章，并按「本地」来源落盘；
+       若历史记录标了 ai 但章节缺失，则诚实降级为本地并允许重新升级。 */
+    var aiKept = rec.source === 'ai' && Array.isArray(rec.chapters) && rec.chapters.length === 6;
+    if (aiKept) result.chapters = clone(rec.chapters);
+
     /* 补齐牌 → 章节的锚点，本地引擎与 AI 走同一套 */
     result.chapters.forEach(attachCards);
 
@@ -970,19 +981,24 @@
     state.link = link;
     state.result = result;
     state.tab = 'overview';
-    state.source = rec.source === 'ai' ? 'ai' : 'local';
+    state.source = aiKept ? 'ai' : 'local';
     state.thread = (rec.thread || []).slice();
     state.supp = (rec.cards || []).filter(function (c) { return c.placed && c.supp; });
 
-    state.record = ST.readings.save(
-      ST.readings.fromSession(rec, link, result, {
-        source: state.source,
-        supp: state.supp.map(function (s) {
-          return { slot: s.slot, id: s.id, cn: s.cn, reversed: s.reversed, question: s.question || '' };
-        }),
-        thread: state.thread
-      })
-    );
+    if (aiKept) {
+      /* AI 历史沿用：内容与存档一致，不重复写盘（幂等，双击/刷新仍只有一条记录） */
+      state.record = rec;
+    } else {
+      state.record = ST.readings.save(
+        ST.readings.fromSession(rec, link, result, {
+          source: state.source,
+          supp: state.supp.map(function (s) {
+            return { slot: s.slot, id: s.id, cn: s.cn, reversed: s.reversed, question: s.question || '' };
+          }),
+          thread: state.thread
+        })
+      );
+    }
 
     $('empty').hidden = true;
     $('split').hidden = false;

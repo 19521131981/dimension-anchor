@@ -23,6 +23,11 @@
   var now = new Date();
 
   function pad(n) { return (n < 10 ? '0' : '') + n; }
+  /* 时间基准说明（v2.1.1 勘误 3）：keyOf 取「用户当地日历日」的本地年月日分量
+     （不经 epoch 换算），作「今日之牌」与 dateKey 的业务键；月相另用
+     Date.UTC(2000,0,6,18,14) 绝对时刻历元——两套基准是有意混用并存：
+     「今天」跟用户走，月相跟天文走。跨时区打开会得到不同「今天」，属已登记
+     的已知行为（[E] 是否接受仍待裁定，未实测），不在代码层强行统一。 */
   function keyOf(dt) {
     return '' + dt.getFullYear() + pad(dt.getMonth() + 1) + pad(dt.getDate());
   }
