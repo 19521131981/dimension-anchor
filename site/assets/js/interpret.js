@@ -58,6 +58,7 @@
     model: '',
     thread: [],
     busy: false,
+    archiveReadOnly: false,
     /* 深度探索：只以云数据库返回的状态为准，不在本地存储付费标记 */
     premium: { tier: 'free', active: false, valid_until: null },
     askChapter: '',
@@ -909,6 +910,7 @@
 
   function upgrade() {
     if (state.busy || state.source === 'ai') return;
+    if (state.archiveReadOnly) { setSrc('本地推演'); return; }
     state.busy = true;
     setSrc('DeepSeek 正在解读', true);
 
@@ -956,41 +958,219 @@
     toastTimer = setTimeout(function () { el.classList.remove('is-on'); }, 3600);
   }
 
+  /* ══ T11 · 存档一致性：DA2 权威 / v1 兼容 ═══════════════════
+     原则：DA2_READINGS 是新版权威存档；DA_LAST_READING 只作兼容读取来源。
+     有效的新版数据优先，旧版数据不得覆盖它；损坏存档先留底再恢复，
+     无法验证恢复时明确提示，不写回一份「看起来完整」的假记录。
+     ═══════════════════════════════════════════════════════════ */
+  var STATUS_KEY   = 'DA2_READING_STATUS';
+  var BACKUP_KEY   = 'DA2_READINGS_CORRUPT_BACKUP';
+  var ANOMALY_KEY  = 'DA2_READING_ANOMALIES';
+
+  function rawOf(k) {
+    try {
+      var raw = localStorage.getItem(k);
+      if (raw == null) return { present: false, valid: true, raw: '', value: null };
+      try { return { present: true, valid: true, raw: raw, value: JSON.parse(raw) }; }
+      catch (e) { return { present: true, valid: false, raw: raw, value: null, error: e.message || 'JSON parse error' }; }
+    } catch (e) { return { present: false, valid: false, raw: '', value: null, error: String(e) }; }
+  }
+  function setStatus(st) {
+    try {
+      var o = Object.assign({ at: Date.now() }, st || {});
+      localStorage.setItem(STATUS_KEY, JSON.stringify(o));
+    } catch (e) {}
+  }
+  function backupRaw(tag, value) {
+    try {
+      var arr = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
+      if (!Array.isArray(arr)) arr = [];
+      arr.unshift({ at: Date.now(), tag: tag, value: value });
+      if (arr.length > 8) arr.length = 8;
+      localStorage.setItem(BACKUP_KEY, JSON.stringify(arr));
+    } catch (e) {}
+  }
+  function anomaly(code, detail) {
+    try { console.warn('[interpret] abnormal · ' + code + ' · ' + (detail || '')); } catch (e) {}
+    try {
+      var arr = JSON.parse(localStorage.getItem(ANOMALY_KEY) || '[]');
+      if (!Array.isArray(arr)) arr = [];
+      arr.unshift({ at: Date.now(), code: code, detail: String(detail || '').slice(0, 240) });
+      if (arr.length > 30) arr.length = 30;
+      localStorage.setItem(ANOMALY_KEY, JSON.stringify(arr));
+    } catch (e2) {}
+  }
+  function storageNotice(msg) {
+    var el = document.getElementById('daStorageNotice');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'daStorageNotice';
+      el.setAttribute('role', 'status');
+      el.style.cssText = 'position:fixed;left:16px;right:16px;bottom:16px;z-index:9999;padding:12px 14px;' +
+        'border:1px solid #c62828;border-radius:10px;background:#fff8f6;color:#5b1a16;' +
+        'font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.12);';
+      document.body.appendChild(el);
+    }
+    el.textContent = String(msg || '');
+  }
+  function usableRecord(r) {
+    return !!(r && typeof r === 'object' && !Array.isArray(r) &&
+      typeof r.id === 'string' && r.id && Array.isArray(r.cards) && r.cards.length);
+  }
+  function chaptersComplete(r) {
+    var cs = r && r.chapters;
+    return Array.isArray(cs) && cs.length === 6 && cs.every(function (c) {
+      return c && typeof c.key === 'string' && Array.isArray(c.blocks);
+    });
+  }
+  function fromLegacy(legacy) {
+    var link = legacy.link || ST.session.get() || {};
+    var rec = ST.readings.fromSession(legacy, link, { chapters: legacy.chapters || [] }, {
+      source: legacy.source || 'local',
+      version: legacy.version || (legacy.source === 'ai' ? 'ai-legacy' : 'local-v1')
+    });
+    if (Array.isArray(legacy.supp) && legacy.supp.length) rec.supp = clone(legacy.supp);
+    if (Array.isArray(legacy.thread) && legacy.thread.length) rec.thread = clone(legacy.thread);
+    if (legacy.note) rec.note = legacy.note;
+    return rec;
+  }
+  /* DA2 存档是「记录」结构，本地引擎要的是「会话」结构；
+     这里只在内存里补齐 placed / suit / revealOrder，不改存档原件。 */
+  function sessionOf(rec) {
+    var s = clone(rec);
+    var order = {};
+    (rec.flipOrder || []).forEach(function (slot, i) { order[slot] = i + 1; });
+    var suppQ = {};
+    (rec.supp || []).forEach(function (x) { if (x && x.slot != null) suppQ[x.slot] = x.question || ''; });
+    s.cards = (rec.cards || []).map(function (c, i) {
+      var meta = D.byId(c.id) || {};
+      return Object.assign({}, c, {
+        placed: true,
+        suit: c.suit || meta.s,
+        roman: c.roman || meta.pip,
+        cn: c.cn || meta.cn || '',
+        en: c.en || meta.en || '',
+        revealOrder: c.revealOrder || order[c.slot] || (i + 1),
+        question: c.question || suppQ[c.slot] || ''
+      });
+    });
+    s.link = rec.link || ST.session.get() || {};
+    if (!s.spreadCn) s.spreadCn = '塔罗牌阵';
+    return s;
+  }
+
   /* ══ 启动 ══════════════════════════════════════════════════ */
   function boot() {
-    ST.migrate();
+    var legacyRaw = rawOf(ST.keys.v1Reading);
+    var da2Raw = rawOf(ST.keys.readings);
+    var legacy = legacyRaw.valid && usableRecord(legacyRaw.value) ? legacyRaw.value : null;
+    var da2List = [];
+    var readOnly = false;
 
-    var rec = ST.lastReading();
+    if (legacyRaw.present && !legacyRaw.valid) {
+      anomaly('V1_READING_PARSE_ERROR', legacyRaw.error);
+    }
+
+    if (da2Raw.present && (!da2Raw.valid || !Array.isArray(da2Raw.value))) {
+      /* D：损坏的原始字节先留底，不静默覆盖或删除 */
+      backupRaw('DA2_READINGS_RAW', String(da2Raw.raw).slice(0, 50000));
+      anomaly('DA2_READINGS_DAMAGED', da2Raw.error || 'DA2_READINGS 不是数组');
+      setStatus({ state: 'damaged', detail: 'DA2_READINGS 无法解析，已留底并尝试从兼容存档恢复' });
+      storageNotice('检测到新版存档损坏，原始数据已留底。正在从旧版存档安全恢复…');
+      if (legacy) {
+        var rescued = fromLegacy(legacy);
+        try {
+          localStorage.setItem(ST.keys.readings, JSON.stringify([rescued]));
+          da2List = [rescued];
+          setStatus({ state: 'recovered', detail: '已从 DA_LAST_READING 恢复记录 ' + rescued.id });
+          anomaly('DA2_RECOVERED_FROM_V1', rescued.id);
+        } catch (e) {
+          setStatus({ state: 'recovery_failed', detail: '写入恢复存档失败：' + (e.message || e) });
+          storageNotice('新版存档损坏且恢复写入失败。原始数据已留底，未伪造完整记录。');
+          showEmpty(); bindGlobal(); return;
+        }
+      } else {
+        setStatus({ state: 'unrecoverable', detail: 'DA2_READINGS 损坏且没有可验证的旧版记录' });
+        storageNotice('新版存档损坏，且没有可验证的旧版记录可恢复。原始数据已留底，未伪造完整记录。');
+        showEmpty(); bindGlobal(); return;
+      }
+    } else {
+      da2List = da2Raw.present ? da2Raw.value.filter(usableRecord) : [];
+      if (da2Raw.present && da2List.length !== da2Raw.value.length) {
+        anomaly('DA2_INVALID_ENTRIES', '跳过 ' + (da2Raw.value.length - da2List.length) + ' 条无效记录（未删除）');
+      }
+      /* B/C：健康存储下沿用既有兼容迁移；它按 id 去重，不覆盖已有新版记录 */
+      ST.migrate();
+      var after = rawOf(ST.keys.readings);
+      if (after.valid && Array.isArray(after.value)) da2List = after.value.filter(usableRecord);
+
+      /* v1 若是一轮全新抽牌（DA2 里没有这个 id），只追加，不覆盖已有记录 */
+      if (legacy && !da2List.some(function (r) { return r.id === legacy.id; })) {
+        var newest = 0;
+        da2List.forEach(function (r) { if ((r.at || 0) > newest) newest = r.at || 0; });
+        if (!da2List.length || (legacy.at || 0) >= newest) {
+          ST.readings.save(fromLegacy(legacy));
+          var nowRaw = rawOf(ST.keys.readings);
+          if (nowRaw.valid && Array.isArray(nowRaw.value)) da2List = nowRaw.value.filter(usableRecord);
+        }
+      }
+    }
+
+    var rec = null;
+    if (legacy) {
+      for (var i = 0; i < da2List.length; i++) if (da2List[i].id === legacy.id) { rec = da2List[i]; break; }
+    }
+    if (!rec && da2List.length) {
+      rec = da2List.slice().sort(function (a, b) { return (b.at || 0) - (a.at || 0); })[0];
+    }
     if (!rec || !rec.cards || !rec.cards.length) { showEmpty(); bindGlobal(); return; }
 
+    var complete = chaptersComplete(rec);
+    var aiFlag = rec.source === 'ai';
+    if (aiFlag && !complete) {
+      /* 标了 AI 却缺章：先找可验证的旧版 AI 六章；找不到就不写回假记录 */
+      anomaly('AI_CHAPTERS_INCOMPLETE', rec.id);
+      var recoveredChapters = null;
+      if (legacy && legacy.id === rec.id && legacy.source === 'ai' && chaptersComplete(legacy)) {
+        recoveredChapters = clone(legacy.chapters);
+      }
+      if (recoveredChapters) {
+        backupRaw('AI_RECORD_' + rec.id, clone(rec));
+        ST.readings.patch(rec.id, { chapters: recoveredChapters });
+        rec = ST.readings.get(rec.id) || rec;
+        complete = chaptersComplete(rec);
+        setStatus({ state: 'ai_recovered', detail: '已从兼容存档恢复 ' + rec.id + ' 的 AI 六章' });
+        storageNotice('检测到 AI 六章不完整，已从旧版存档恢复；原始记录已留底。');
+      } else {
+        readOnly = true;
+        setStatus({ state: 'ai_incomplete_unrecoverable', detail: rec.id + ' 标记 AI 但六章不完整，无兼容数据可恢复' });
+        storageNotice('这份记录的 AI 六章不完整，也没有可验证的旧版数据可恢复。下面显示的是本地规则推演，原始存档未被覆盖。');
+      }
+    }
+
+    var session = sessionOf(rec);
     var link = rec.link || ST.session.get() || {};
-    var result = RD.build(rec, link);
+    var result = RD.build(session, link);
     if (!result) { showEmpty(); bindGlobal(); return; }
 
-    /* 存档一致性修复（v2.1.1 勘误 1）：历史 AI 记录直接沿用已存档的 AI 六章，
-       不再用本地推演覆盖——否则存档出现「标 ai、内容是本地」的矛盾。
-       仅当没有可沿用的 AI 章节时才重建本地六章，并按「本地」来源落盘；
-       若历史记录标了 ai 但章节缺失，则诚实降级为本地并允许重新升级。 */
-    var aiKept = rec.source === 'ai' && Array.isArray(rec.chapters) && rec.chapters.length === 6;
-    if (aiKept) result.chapters = clone(rec.chapters);
-
-    /* 补齐牌 → 章节的锚点，本地引擎与 AI 走同一套 */
+    /* A：DA2 里的六章（含 source 标记）直接沿用，绝不拿 v1 重新生成后覆盖 */
+    if (complete) result.chapters = clone(rec.chapters);
     result.chapters.forEach(attachCards);
 
-    state.session = rec;
+    state.session = session;
     state.link = link;
     state.result = result;
     state.tab = 'overview';
-    state.source = aiKept ? 'ai' : 'local';
+    state.openRow = null;
+    state.supp = (session.cards || []).filter(function (c) { return c.placed && c.supp; });
+    state.source = complete ? (aiFlag ? 'ai' : 'local') : 'local';
     state.thread = (rec.thread || []).slice();
-    state.supp = (rec.cards || []).filter(function (c) { return c.placed && c.supp; });
-
-    if (aiKept) {
-      /* AI 历史沿用：内容与存档一致，不重复写盘（幂等，双击/刷新仍只有一条记录） */
-      state.record = rec;
-    } else {
+    state.archiveReadOnly = readOnly;
+    if (complete) {
+      state.record = rec;                       /* 幂等：刷新/重开不重复写盘 */
+    } else if (!readOnly) {
       state.record = ST.readings.save(
-        ST.readings.fromSession(rec, link, result, {
+        ST.readings.fromSession(session, link, result, {
           source: state.source,
           supp: state.supp.map(function (s) {
             return { slot: s.slot, id: s.id, cn: s.cn, reversed: s.reversed, question: s.question || '' };
@@ -998,6 +1178,8 @@
           thread: state.thread
         })
       );
+    } else {
+      state.record = null;                      /* 损坏且不可恢复：只在内存中显示，不写回 */
     }
 
     $('empty').hidden = true;
@@ -1029,8 +1211,9 @@
     setSrc(state.source === 'ai' ? 'DeepSeek 生成' : '本地推演');
 
     AI.probe().then(function (s) {
-      if (!s.ok) { setSrc('本地推演'); return; }
+      /* source 是存档事实：即使本次探活失败，也不能把已归档的 AI 记录改标为本地 */
       if (state.source === 'ai') { setSrc('DeepSeek 生成'); return; }
+      if (!s.ok || state.archiveReadOnly) { setSrc('本地推演'); return; }
       upgrade();
     });
   }
