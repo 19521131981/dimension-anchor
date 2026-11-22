@@ -48,9 +48,12 @@
          只透出光尘、流光与月面辉光，暗部全部透明，不给画面带来任何糊感 -->
     <img class="plate__art" src="assets/media/hall/hall-plate.jpg"
          alt="DIMENSION ANCHOR 星轨大厅：珍珠色拱廊环绕中央月环，月色笼罩宫殿尖顶，五道入口排在长廊尽头" />
-    <video class="plate__light" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+    <!-- VIDEO-LAZYLOAD-P1 -->
+    <!-- 带宽优化：窄屏(≤900px)视频本就被 CSS 隐藏/效果甚微，不下载 ~2MB 光层视频，静态底图照常显示 -->
+<script>(function(){function load(){if(window.innerWidth>900){var v=document.getElementById("plate__light-lazy");if(v&&v.hasAttribute("data-src")){v.src=v.getAttribute("data-src");v.removeAttribute("data-src");v.load();var p=v.play();if(p&&p.catch)p.catch(function(){});}}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load);else load();})();</script>
+<video class="plate__light" id="plate__light-lazy" autoplay muted loop playsinline preload="metadata" aria-hidden="true"
            poster="assets/media/hall/hall-plate.jpg"
-           src="assets/media/hall/hall-plate.mp4"></video>
+           data-src="assets/media/hall/hall-plate.mp4"></video>
 
     <!-- ══ 共享渐变（不给元素本身占位，只供引用） ══ -->
     <svg class="defs-sprite" width="0" height="0" aria-hidden="true" focusable="false"

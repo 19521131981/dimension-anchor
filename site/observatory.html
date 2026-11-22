@@ -57,9 +57,12 @@
   <div class="stage__frame">
     <img class="stage__art" src="assets/media/observatory-desktop.jpg"
          alt="月光宫殿中的塔罗观测站：水晶星核悬于银色星轨环中央，圆形占卜台之下是通往穹顶的大理石长厅。" />
-    <video class="stage__light" autoplay muted loop playsinline preload="auto" aria-hidden="true"
+    <!-- VIDEO-LAZYLOAD-P1 -->
+    <!-- 带宽优化：窄屏(≤900px)视频本就被 CSS 隐藏/效果甚微，不下载 ~2MB 光层视频，静态底图照常显示 -->
+<script>(function(){function load(){if(window.innerWidth>900){var v=document.getElementById("stage__light-lazy");if(v&&v.hasAttribute("data-src")){v.src=v.getAttribute("data-src");v.removeAttribute("data-src");v.load();var p=v.play();if(p&&p.catch)p.catch(function(){});}}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load);else load();})();</script>
+<video class="stage__light" id="stage__light-lazy" autoplay muted loop playsinline preload="metadata" aria-hidden="true"
            poster="assets/media/observatory-desktop.jpg"
-           src="assets/media/observatory.mp4"></video>
+           data-src="assets/media/observatory.mp4"></video>
     <!-- 拱廊水晶吊灯：只变色，绝不移动 -->
     <span class="stage__lamp stage__lamp--1" aria-hidden="true"></span>
     <span class="stage__lamp stage__lamp--2" aria-hidden="true"></span>
