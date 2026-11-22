@@ -7,6 +7,7 @@
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
   var M = window.DA_MAIL, L = window.DA_LETTER, S = window.DA_STORE;
+  var ET = window.DAErrorText || function (e, f) { return (e && e.message) || f || ''; };
 
   var els = {
     modeChip: $('#modeChip'), modeText: $('#modeText'),
@@ -114,7 +115,7 @@
         toast(on ? '已收进珍藏架' : '已取消珍藏');
         var hit = null; cache.forEach(function (l) { if (l.id === id) hit = l; });
         if (hit) hit.faved = on;
-      }).catch(function (e2) { toast(e2.message || '操作失败'); });
+      }).catch(function (e2) { toast(ET(e2, '操作失败')); });
       return;
     }
     var card = e.target.closest('.lt-card');
@@ -264,7 +265,7 @@
       return load().then(function () { openReader(rec.id, true); });
     }).catch(function (e) {
       els.dlgBody.innerHTML =
-        '<div class="err"><p>这封信没能送达</p><small>' + esc(e.message || '未知错误') + '</small>' +
+        '<div class="err"><p>这封信没能送达</p><small>' + esc(ET(e, '未知错误')) + '</small>' +
         '<button class="btn" type="button" id="dRetry">再抽一次</button></div>';
       els.dlgFoot.style.display = '';
       els.dlgGo.textContent = '请 TA 落笔';
@@ -291,7 +292,7 @@
         var hit = null; cache.forEach(function (l) { if (l.id === id) hit = l; });
         if (hit && hit.status === 'unread') { hit.status = 'read'; renderGrid(); }
       }).catch(function () {});
-    }).catch(function (e) { toast(e.message || '打不开这封信'); });
+    }).catch(function (e) { toast(ET(e, '打不开这封信')); });
   }
 
   function fillPaper(rec) {
@@ -370,7 +371,7 @@
       els.actFav.textContent = on ? '✦ 已珍藏' : '珍藏这封信';
       renderGrid();
       toast(on ? '已收进珍藏架' : '已取消珍藏');
-    }).catch(function (e) { toast(e.message || '操作失败'); });
+    }).catch(function (e) { toast(ET(e, '操作失败')); });
   });
   els.actReply.addEventListener('click', function () {
     if (!cur) return;
@@ -386,7 +387,7 @@
       closeReader();
       toast('已删除');
       return load();
-    }).catch(function (e) { toast(e.message || '删除失败'); });
+    }).catch(function (e) { toast(ET(e, '删除失败')); });
   });
 
   /* ══ 全局 ══════════════════════════════════════════════════ */
@@ -413,7 +414,7 @@
     var openId = new URLSearchParams(location.search).get('open');
     if (openId) openReader(openId);
   }).catch(function (e) {
-    els.grid.innerHTML = '<div class="empty" style="grid-column:1/-1">信件档案暂时读不到<small>' + esc(e.message || '') + '</small></div>';
+    els.grid.innerHTML = '<div class="empty" style="grid-column:1/-1">信件档案暂时读不到<small>' + esc(ET(e, '')) + '</small></div>';
   });
 
   /* 登录 / 退出后就地换档案：不刷新页面，读者不会被弹回列表顶部再走一遍 */

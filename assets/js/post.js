@@ -8,6 +8,7 @@
 
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var L = window.DA_LETTER, S = window.DA_STORE, AI = window.DA_AI;
+  var ET = window.DAErrorText || function (e, f) { return (e && e.message) || f || ''; };
 
   var el = {
     themeGrid: $('#themeGrid'), btnWrite: $('#btnWrite'), heroEnv: $('#heroEnv'),
@@ -238,7 +239,7 @@
       el.wizBody.innerHTML =
         '<div class="err">' +
         '<p>这封信没能寄出去</p>' +
-        '<small>' + esc(e.message || '未知错误') + '</small>' +
+        '<small>' + esc(ET(e, '未知错误')) + '</small>' +
         '<button type="button" id="errRetry">再试一次</button>' +
         '<p class="skip-note">你的角色与关系背景都已保留，不会丢失。</p>' +
         '</div>';
@@ -470,7 +471,7 @@
       openReader(rec, true);
     }).catch(function (e) {
       btn.disabled = false; btn.textContent = '再试一次';
-      toast(e.message || '星笺没能送达');
+      toast(ET(e, '星笺没能送达'));
     });
   }
 

@@ -20,6 +20,7 @@ window.DA_RELAY = (function () {
   var E = window.DA_ENGINE;
   var D = window.DA_TAROT;
   var SND = window.DA_SOUND;
+  var ET = window.DAErrorText || function (e, f) { return (e && e.message) || f || ''; };
 
   var $ = function (s) { return document.querySelector(s); };
   var esc = function (s) {
@@ -498,7 +499,7 @@ window.DA_RELAY = (function () {
       $('#jHint').textContent = '听——信号那头说话的人，像不像你心里想的那个 TA？';
     }).catch(function (e) {
       $('#jTyping').hidden = true;
-      $('#jHint').textContent = '信号翻译失败了（' + (e.message || '星海拥堵') + '）。';
+      $('#jHint').textContent = '信号翻译失败了（' + ET(e, '星海拥堵') + '）。';
       $('#jActs').hidden = false;
       var no = $('#jNo');
       no.querySelector('span').textContent = '重新抽一张牌，再试一次';
@@ -650,7 +651,7 @@ window.DA_RELAY = (function () {
       hideTyping();
       state.busy = false;
       var err = $('#chatErr');
-      $('#chatErrText').textContent = '信号在星海里中断了（' + (e.message || '未知原因') + '）';
+      $('#chatErrText').textContent = '信号在星海里中断了（' + ET(e, '未知原因') + '）';
       err.hidden = false;
     });
   }
@@ -680,7 +681,7 @@ window.DA_RELAY = (function () {
       hideTyping();
       state.busy = false;
       var err = $('#chatErr');
-      $('#chatErrText').textContent = '还是没能接上（' + (e.message || '未知原因') + '）。稍后再试试。';
+      $('#chatErrText').textContent = '还是没能接上（' + ET(e, '未知原因') + '）。稍后再试试。';
       err.hidden = false;
     });
   }

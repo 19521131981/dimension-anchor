@@ -6,6 +6,7 @@
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
   var M = window.DA_MAIL, S = window.DA_STORE;
+  var ET = window.DAErrorText || function (e, f) { return (e && e.message) || f || ''; };
 
   var els = {
     modeChip: $('#modeChip'), modeText: $('#modeText'),
@@ -176,7 +177,7 @@
       toast('草稿已保存 · 刷新页面也不会丢');
       if (tab !== 'draft') { tab = 'draft'; els.tabs.querySelectorAll('button').forEach(function (x) { x.classList.toggle('is-on', x.getAttribute('data-t') === 'draft'); }); }
       loadSide();
-    }).catch(function (e) { toast('保存失败：' + (e.message || '未知错误')); });
+    }).catch(function (e) { toast('保存失败：' + ET(e, '未知错误')); });
   });
 
   els.cClear.addEventListener('click', function () {
@@ -231,7 +232,7 @@
         els.dlg.hidden = true;
         document.body.style.overflow = '';
         /* 失败：正文与标题都还在编辑器里，不丢 */
-        toast('寄出失败：' + (e.message || '未知错误') + ' · 内容已保留', 4200);
+        toast('寄出失败：' + ET(e, '未知错误') + ' · 内容已保留', 4200);
       });
   });
 
@@ -266,7 +267,7 @@
       cur = null;
       toast('已删除');
       loadSide();
-    }).catch(function (e) { toast(e.message || '删除失败'); });
+    }).catch(function (e) { toast(ET(e, '删除失败')); });
   });
 
   /* ══ 全局 ══════════════════════════════════════════════════ */
@@ -322,7 +323,7 @@
     updateCount();
     return setupReply().then(loadSide);
   }).catch(function (e) {
-    els.outList.innerHTML = '<div class="empty">信件档案暂时读不到<small>' + esc(e.message || '') + '</small></div>';
+    els.outList.innerHTML = '<div class="empty">信件档案暂时读不到<small>' + esc(ET(e, '')) + '</small></div>';
   });
 
   /* 登录 / 退出后只换数据源，不刷新页面 */
