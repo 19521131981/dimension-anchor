@@ -110,6 +110,47 @@
     { k: 'unsure', t: '暂不确定', d: '先不下定义，让牌来说' }
   ];
 
+  /* T4b：关系阶段与关系类型分离。类型决定「语境」，阶段决定「亲疏分寸」。
+     爱情≠亲近、友情≠熟悉、亲情≠亲近——绝不从类型推断阶段；默认 unspecified。 */
+  var STAGES = [
+    { k: 'unspecified', t: '未说明' },
+    { k: 'stranger', t: '陌生' },
+    { k: 'initial', t: '初识' },
+    { k: 'familiar', t: '熟悉' },
+    { k: 'close', t: '亲近' }
+  ];
+  function stageName(k) {
+    for (var i = 0; i < STAGES.length; i++) if (STAGES[i].k === k) return STAGES[i].t;
+    return '未说明';
+  }
+  function stageChipsHtml(id) {
+    return '<div class="field">' +
+      '<span class="field__label">现在到哪一步（选填）</span>' +
+      '<div class="chips" id="' + id + '">' +
+      STAGES.map(function (s) {
+        return '<button type="button" class="chip' + (s.k === 'unspecified' ? ' is-on' : '') +
+          '" data-k="' + s.k + '" data-t="' + s.t + '">' + s.t + '</button>';
+      }).join('') +
+      '</div>' +
+      '<p class="field__hint">只决定说话的分寸，不改变关系类型。不选就按「未说明」，绝不替你推断亲疏。</p>' +
+      '</div>';
+  }
+  function bindStageChips(view, id, onChange) {
+    var chosen = { k: 'unspecified', t: '未说明' };
+    Array.prototype.forEach.call(view.querySelectorAll('#' + id + ' .chip'), function (b) {
+      b.addEventListener('click', function () {
+        Array.prototype.forEach.call(view.querySelectorAll('#' + id + ' .chip'), function (x) {
+          x.classList.remove('is-on');
+        });
+        b.classList.add('is-on');
+        chosen = { k: b.dataset.k, t: b.dataset.t };
+        if (onChange) onChange(chosen);
+        if (window.DA_SOUND) window.DA_SOUND.hover();
+      });
+    });
+    return function () { return chosen; };
+  }
+
   function renderRitual() {
     setStep('ritual');
     if (state.mode === 'heal') return renderHeal();
@@ -167,6 +208,7 @@
         subjectName: '此刻的自己',
         relation: '自我',
         relationKey: 'self',
+        relationStage: 'unspecified',
         background: (picked ? '情绪：' + picked + '。' : '') + (txt || '未填写具体情境'),
         mood: picked,
         savedAt: Date.now()
@@ -254,6 +296,8 @@
       '</div>',
       '</div>',
 
+      stageChipsHtml('kStage'),
+
       '<div class="field">',
       '<label class="field__label" for="kCtx">本次连接的背景（选填）</label>',
       '<textarea id="kCtx" placeholder="最近发生了什么？你为什么想问这件事？一句话也行。"></textarea>',
@@ -281,6 +325,7 @@
         S.hover();
       });
     });
+    var getStage = bindStageChips(view, 'kStage');
 
     function build() {
       var name = $('#kName').value.trim();
@@ -290,6 +335,7 @@
         workName: $('#kWork').value.trim(),
         relation: rel.t,
         relationKey: rel.k,
+        relationStage: getStage().k,
         background: $('#kCtx').value.trim(),
         savedAt: Date.now()
       };
@@ -303,6 +349,7 @@
         workName: '',
         relation: '暂不确定',
         relationKey: 'unsure',
+        relationStage: 'unspecified',
         background: '使用临时连接背景，未填写具体对象。',
         savedAt: Date.now()
       });
@@ -561,6 +608,8 @@
       '</div>',
       '</div>',
 
+      stageChipsHtml('fStage'),
+
       '<div class="actions">',
       '<button class="btn btn--ghost" id="frBack">回到引导牌</button>',
       '<button class="btn btn--primary" id="frNext">用这段描述连接</button>',
@@ -578,6 +627,7 @@
         rel = { k: b.dataset.k, t: b.dataset.t };
       });
     });
+    var getStage = bindStageChips(view, 'fStage');
 
     $('#frBack').addEventListener('click', function () { renderGuide(); });
     $('#frNext').addEventListener('click', function () {
@@ -585,6 +635,7 @@
       if (t.length < 4) { toast('再写一点点，哪怕只有一句。'); return; }
       state.freeText = t;
       state.relation = rel;
+      state.relationStage = getStage().k;
       renderUnknownConfirm();
     });
   }
@@ -634,6 +685,7 @@
         workName: '',
         relation: rel.t,
         relationKey: rel.k,
+        relationStage: state.relationStage || 'unspecified',
         background: summary,
         traits: state.traits,
         zodiac: state.zodiac || null,
@@ -669,6 +721,10 @@
         (L.workName ? ' · 来自《' + esc(L.workName) + '》' : '') + '</span></div>',
       '<div class="slots__row"><span class="slots__n">2</span><em>关系类型</em>' +
         '<span>' + esc(rel) + '</span></div>',
+      (L.relationStage
+        ? '<div class="slots__row"><span class="slots__n">＋</span><em>关系阶段</em>' +
+          '<span>' + esc(stageName(L.relationStage)) + '（只定分寸，不改类型）</span></div>'
+        : ''),
       '<div class="slots__row"><span class="slots__n">3</span><em>连接摘要</em>' +
         '<span>' + esc(L.background || '未填写具体背景，以当下的注意力作为连接点。') + '</span></div>',
       '</div>',

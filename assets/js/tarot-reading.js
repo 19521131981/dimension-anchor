@@ -625,12 +625,18 @@ window.DA_READING = (function () {
     var seedStr = (other.id || '') + '|' + (L.subjectName || '') + '|' + (L.relation || '') + '|' + (L.question || '');
     var seed = 0;
     for (var si = 0; si < seedStr.length; si++) seed = (seed * 31 + seedStr.charCodeAt(si)) >>> 0;
-    /* C10（v2 §3）：OPEN/CLOSE 句式按 R3 关系阶段分档，亲近句式只出现在
-       明确的亲近关系档；疏远档一律收着说；分不清的走中性档。 */
-    var REL_WARM = /(暧昧|恋爱|恋人|男友|女友|对象|爱人|伴侣|家人|亲人|老公|老婆|丈夫|妻子|未婚夫|未婚妻)/;
-    var REL_COLD = /(陌生|不熟|初识|刚认识|疏远|同事|同学|普通朋友|分手|前任|吵架|闹翻|冷战)/;
-    var relRaw = String(L.relation || '');
-    var tier = REL_COLD.test(relRaw) ? 'cold' : (REL_WARM.test(relRaw) ? 'warm' : 'neutral');
+    /* C10（v2 §3）/ T4b：OPEN/CLOSE 句式分档只由独立的「关系阶段 relationStage」决定。
+       关系类型（爱情/友情/亲情）只决定语境，绝不推断亲疏——爱情≠亲近、友情≠熟悉、
+       亲情≠亲近。旧档案没有 relationStage 时兼容为 unspecified，一律走中性档。 */
+    var STAGE_TIER = {
+      close: 'warm',          // 亲近：可用亲近句式
+      familiar: 'neutral',    // 熟悉：中性，不越界
+      initial: 'cold',        // 初识：收着说
+      stranger: 'cold',       // 陌生：收着说
+      unspecified: 'neutral'  // 未说明 / 旧档案：中性
+    };
+    var stageKey = String((L && L.relationStage) || 'unspecified');
+    var tier = STAGE_TIER[stageKey] || 'neutral';
     var OPEN = [
       '有句话我搁了一阵子，',
       '我不太会把这种事说圆，',

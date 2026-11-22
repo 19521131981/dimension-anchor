@@ -126,6 +126,8 @@ window.DA_AI = (function () {
       subject: link.subjectName || '',
       work: link.workName || '',
       relation: link.relation || '',
+      relationKey: link.relationKey || '',
+      relationStage: link.relationStage || 'unspecified',
       background: link.background || '',
       mode: link.mode || 'known',
       profile: profile || '',
@@ -234,6 +236,7 @@ window.DA_AI = (function () {
       { k: '牌阵数据', v: (o && o.session ? packCards(o.session).length : 0) + ' 张牌的牌名 / 正逆位 / 牌位' },
       { k: '连接对象', v: link.subjectName || '（未填写）' },
       { k: '关系与背景', v: [link.relation, link.background].filter(Boolean).join('｜') || '（未填写）' },
+      { k: '关系阶段', v: (link.relationStage && link.relationStage !== 'unspecified') ? link.relationStage : '未说明（不推断亲疏）' },
       { k: '角色档案', v: (o && o.profileId
           ? ((window.DA_ARCHIVE && DA_ARCHIVE.summary)
               ? DA_ARCHIVE.summary(o.profileId)
