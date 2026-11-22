@@ -59,6 +59,9 @@
     thread: [],
     busy: false,
     archiveReadOnly: false,
+    originalSource: 'local',
+    contentStatus: 'unknown',
+    displaySource: 'local',
     /* 深度探索：只以云数据库返回的状态为准，不在本地存储付费标记 */
     premium: { tier: 'free', active: false, valid_until: null },
     askChapter: '',
@@ -909,7 +912,7 @@
   }
 
   function upgrade() {
-    if (state.busy || state.source === 'ai') return;
+    if (state.busy || state.displaySource === 'ai') return;
     if (state.archiveReadOnly) { setSrc('本地推演'); return; }
     state.busy = true;
     setSrc('DeepSeek 正在解读', true);
@@ -917,6 +920,9 @@
     AI.interpret(ctxOf()).then(function (j) {
       var n = mergeAI(j.chapters);
       if (!n) throw new Error('没有可用章节');
+      state.originalSource = 'ai';
+      state.contentStatus = 'ai_complete';
+      state.displaySource = 'ai';
       state.source = 'ai';
       state.model = j.model || AI.state.model;
       setSrc('DeepSeek 生成');
@@ -966,6 +972,7 @@
   var STATUS_KEY   = 'DA2_READING_STATUS';
   var BACKUP_KEY   = 'DA2_READINGS_CORRUPT_BACKUP';
   var ANOMALY_KEY  = 'DA2_READING_ANOMALIES';
+  var BACKUP_CAP   = 5;   /* 超过后按时间先进先出淘汰；淘汰事件写进异常日志 */
 
   function rawOf(k) {
     try {
@@ -981,14 +988,64 @@
       localStorage.setItem(STATUS_KEY, JSON.stringify(o));
     } catch (e) {}
   }
+  /* 内容指纹：同一份原始损坏数据只备份一次。带长度，避免短串碰撞。 */
+  function digestOf(text) {
+    var s = String(text), h = 2166136261;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = (h * 16777619) >>> 0;
+    }
+    return 'fnv1a-' + h.toString(16) + '-' + s.length;
+  }
+  /* 完整留底，不截断；写入失败返回 false，调用方必须停止自动恢复。
+     失败时不写任何键，原有备份与各存档保持原样，绝不覆盖有效数据。 */
   function backupRaw(tag, value) {
     try {
-      var arr = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
-      if (!Array.isArray(arr)) arr = [];
-      arr.unshift({ at: Date.now(), tag: tag, value: value });
-      if (arr.length > 8) arr.length = 8;
-      localStorage.setItem(BACKUP_KEY, JSON.stringify(arr));
-    } catch (e) {}
+      var text = typeof value === 'string' ? value : JSON.stringify(value);
+      if (typeof text !== 'string') return false;
+      var id = digestOf(text);
+      var current = localStorage.getItem(BACKUP_KEY);
+      var arr = [];
+      if (current != null) {
+        try { arr = JSON.parse(current); } catch (e) { return false; }
+        if (!Array.isArray(arr)) return false;
+      }
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i] && arr[i].id === id) return true;   /* 去重：同内容不再重复写 */
+      }
+      arr.unshift({ id: id, at: Date.now(), tag: tag, bytes: text.length, value: text });
+      var evicted = [];
+      if (arr.length > BACKUP_CAP) evicted = arr.splice(BACKUP_CAP);
+      try {
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(arr));
+        if (evicted.length) {
+          anomaly('BACKUP_EVICTED_FIFO', evicted.map(function (x) { return x.id; }).join(','));
+        }
+        return true;
+      } catch (e) {
+        anomaly('BACKUP_WRITE_FAILED', (e && e.name) || 'QuotaExceeded');
+        return false;
+      }
+    } catch (e) { return false; }
+  }
+  /* 三个来源维度严格分开：原始 source / 内容完整状态 / 页面展示来源。
+     只有「原始标记 ai 且六章完整」才允许展示 AI；其余一律本地推演。 */
+  function sourceStateOf(rec, complete, readOnly) {
+    var original = rec && rec.source === 'ai' ? 'ai' : 'local';
+    var display = (original === 'ai' && complete) ? 'ai' : 'local';
+    var status;
+    if (original === 'ai' && complete) status = 'ai_complete';
+    else if (original === 'ai') status = readOnly ? 'ai_incomplete_unrecoverable' : 'ai_incomplete';
+    else status = complete ? 'local_complete' : 'local_incomplete';
+    return { originalSource: original, contentStatus: status, displaySource: display };
+  }
+  function stopForBackup(reason) {
+    anomaly('BACKUP_FAILED_STOP_RECOVERY', reason);
+    setStatus({ state: 'backup_failed', detail: reason, originalSource: 'unknown', contentStatus: 'backup_failed', displaySource: 'local' });
+    storageNotice('备份失败，自动恢复已停止；原始数据与各存档均未被覆盖。' + reason);
+    $('empty').hidden = false;
+    $('split').hidden = true;
+    bindGlobal();
   }
   function anomaly(code, detail) {
     try { console.warn('[interpret] abnormal · ' + code + ' · ' + (detail || '')); } catch (e) {}
@@ -1072,11 +1129,14 @@
     }
 
     if (da2Raw.present && (!da2Raw.valid || !Array.isArray(da2Raw.value))) {
-      /* D：损坏的原始字节先留底，不静默覆盖或删除 */
-      backupRaw('DA2_READINGS_RAW', String(da2Raw.raw).slice(0, 50000));
+      /* D：损坏的原始字节先完整留底；留底失败即停止，不碰任何存档 */
+      if (!backupRaw('DA2_READINGS_RAW', da2Raw.raw)) {
+        stopForBackup('DA2_READINGS 损坏且备份写入失败');
+        return;
+      }
       anomaly('DA2_READINGS_DAMAGED', da2Raw.error || 'DA2_READINGS 不是数组');
-      setStatus({ state: 'damaged', detail: 'DA2_READINGS 无法解析，已留底并尝试从兼容存档恢复' });
-      storageNotice('检测到新版存档损坏，原始数据已留底。正在从旧版存档安全恢复…');
+      setStatus({ state: 'damaged', detail: 'DA2_READINGS 无法解析，已完整留底并尝试从兼容存档恢复', originalSource: legacy && legacy.source === 'ai' ? 'ai' : 'local', contentStatus: 'damaged', displaySource: 'local' });
+      storageNotice('检测到新版存档损坏，原始数据已完整留底。正在从旧版存档安全恢复…');
       if (legacy) {
         var rescued = fromLegacy(legacy);
         try {
@@ -1097,7 +1157,12 @@
     } else {
       da2List = da2Raw.present ? da2Raw.value.filter(usableRecord) : [];
       if (da2Raw.present && da2List.length !== da2Raw.value.length) {
-        anomaly('DA2_INVALID_ENTRIES', '跳过 ' + (da2Raw.value.length - da2List.length) + ' 条无效记录（未删除）');
+        /* 多条记录里哪怕只有一条坏，也必须整份留底；不删异常记录 */
+        if (!backupRaw('DA2_INVALID_ENTRIES_RAW', da2Raw.raw)) {
+          stopForBackup('DA2_READINGS 含无效记录且备份写入失败');
+          return;
+        }
+        anomaly('DA2_INVALID_ENTRIES', '跳过 ' + (da2Raw.value.length - da2List.length) + ' 条无效记录（未删除，已整份留底）');
       }
       /* B/C：健康存储下沿用既有兼容迁移；它按 id 去重，不覆盖已有新版记录 */
       ST.migrate();
@@ -1135,15 +1200,20 @@
         recoveredChapters = clone(legacy.chapters);
       }
       if (recoveredChapters) {
-        backupRaw('AI_RECORD_' + rec.id, clone(rec));
-        ST.readings.patch(rec.id, { chapters: recoveredChapters });
-        rec = ST.readings.get(rec.id) || rec;
-        complete = chaptersComplete(rec);
-        setStatus({ state: 'ai_recovered', detail: '已从兼容存档恢复 ' + rec.id + ' 的 AI 六章' });
-        storageNotice('检测到 AI 六章不完整，已从旧版存档恢复；原始记录已留底。');
+        if (!backupRaw('AI_RECORD_' + rec.id, rec)) {
+          readOnly = true;
+          setStatus({ state: 'backup_failed', detail: rec.id + ' 的 AI 缺章恢复已停止：备份写入失败', originalSource: 'ai', contentStatus: 'ai_incomplete_unrecoverable', displaySource: 'local' });
+          storageNotice('AI 六章不完整，但备份失败，已停止自动恢复；原始存档未被覆盖。下面显示本地推演。');
+        } else {
+          ST.readings.patch(rec.id, { chapters: recoveredChapters });
+          rec = ST.readings.get(rec.id) || rec;
+          complete = chaptersComplete(rec);
+          setStatus({ state: 'ai_recovered', detail: '已从兼容存档恢复 ' + rec.id + ' 的 AI 六章', originalSource: 'ai', contentStatus: 'ai_complete', displaySource: 'ai' });
+          storageNotice('检测到 AI 六章不完整，已从旧版存档恢复；原始记录已完整留底。');
+        }
       } else {
         readOnly = true;
-        setStatus({ state: 'ai_incomplete_unrecoverable', detail: rec.id + ' 标记 AI 但六章不完整，无兼容数据可恢复' });
+        setStatus({ state: 'ai_incomplete_unrecoverable', detail: rec.id + ' 标记 AI 但六章不完整，无兼容数据可恢复', originalSource: 'ai', contentStatus: 'ai_incomplete_unrecoverable', displaySource: 'local' });
         storageNotice('这份记录的 AI 六章不完整，也没有可验证的旧版数据可恢复。下面显示的是本地规则推演，原始存档未被覆盖。');
       }
     }
@@ -1163,7 +1233,11 @@
     state.tab = 'overview';
     state.openRow = null;
     state.supp = (session.cards || []).filter(function (c) { return c.placed && c.supp; });
-    state.source = complete ? (aiFlag ? 'ai' : 'local') : 'local';
+    var srcState = sourceStateOf(rec, complete, readOnly);
+    state.originalSource = srcState.originalSource;
+    state.contentStatus = srcState.contentStatus;
+    state.displaySource = srcState.displaySource;
+    state.source = srcState.displaySource;          /* 兼容既有读取点 */
     state.thread = (rec.thread || []).slice();
     state.archiveReadOnly = readOnly;
     if (complete) {
@@ -1208,11 +1282,11 @@
     bindGlobal();
     bind();
 
-    setSrc(state.source === 'ai' ? 'DeepSeek 生成' : '本地推演');
+    setSrc(state.displaySource === 'ai' ? 'DeepSeek 生成' : '本地推演');
 
     AI.probe().then(function (s) {
-      /* source 是存档事实：即使本次探活失败，也不能把已归档的 AI 记录改标为本地 */
-      if (state.source === 'ai') { setSrc('DeepSeek 生成'); return; }
+      /* 展示来源只由「原始 source + 内容完整性」决定，探活不得改写它 */
+      if (state.displaySource === 'ai') { setSrc('DeepSeek 生成'); return; }
       if (!s.ok || state.archiveReadOnly) { setSrc('本地推演'); return; }
       upgrade();
     });
