@@ -30,7 +30,13 @@ export default async function handler(req, res) {
 
   const src = new URL(req.url, 'http://internal');
   const target = new URL(UPSTREAM + '/' + path);
-  target.search = src.search.replace(/^\?/, '').replace(/path=[^&]*&?/, '') ? src.search : '';
+  /* path 只是内部定位用的路由参数，不能漏到上游被 PostgREST 当过滤器解析。
+     其余查询串（select / direction / device_id / user_id / order / limit …）
+     原样保留，编码由 URLSearchParams 统一处理。 */
+  const query = new URLSearchParams(src.search);
+  query.delete('path');
+  const qs = query.toString();
+  target.search = qs ? '?' + qs : '';
 
   const headers = {};
   for (const k of Object.keys(req.headers || {})) {
