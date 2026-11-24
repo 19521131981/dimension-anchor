@@ -308,8 +308,8 @@
       case 'quote':  return '<div class="quote">' + txt(b.x) + '</div>';
       case 'quote6': return '<div class="quote6">' + txt(b.x) + '</div>' +
         (state.voiceEnhanced
-          ? '<div class="voice-boost is-done">✦ 已按角色档案生成，更贴合 TA 的语气</div>'
-          : '<button class="voice-boost" type="button" id="voiceBoostBtn">✧ 让 TA 说得更像本人 <em>（登录可用）</em></button>');
+          ? '<div class="voice-boost is-done">✦ TA 的声音已经清晰接通</div>'
+          : '<button class="voice-boost" type="button" id="voiceBoostBtn">✧ 听 TA 再说一遍 <em>（登录可接通）</em></button>');
       case 'chips':  return '<div class="chips">' + (b.items || []).map(function (i) {
                         var cls = i.tone === 'plain' ? 'plain' : (i.tone === 'rev' ? 'rev' : (i.tone === 'up' ? 'up' : ''));
                         return '<span' + (cls ? ' class="' + cls + '"' : '') + '>' + txt(i.x) + '</span>';
@@ -545,13 +545,13 @@
       '<h3 class="m-title" id="mTitle">这份解读是怎么来的</h3>' +
       '<p class="m-sub">' +
         (state.source === 'ai'
-          ? '前五章解读由 DeepSeek 生成，第六章传讯另按角色档案生成；牌面数据由本地提供'
-          : '前五章解读由站内本地规则引擎生成，第六章传讯按角色档案生成') +
+          ? '前五章的占卜师解读已由 DeepSeek 加深，第六章的传讯则顺着 TA 的性格接通；牌面始终来自这一次真实抽出的牌'
+          : '前五章由站内占卜规则推演，第六章顺着 TA 的性格与你们的连接接通；牌面始终来自这一次真实抽出的牌') +
       '</p>' +
-      '<div class="m-pos"><b>解读通道：' + (ok ? 'DeepSeek' + (state.model ? ' · ' + state.model : '') : '本地推演') + '</b>' +
-        (ok ? '' : '<br>原因：' + esc(AI.state.lastError || '未接入后端')) +
-        '<br><b>第六章传讯：' + (state.voiceEnhanced ? '已按角色档案增强' : '本地引擎生成（登录可增强）') + '</b></div>' +
-      '<div class="m-sec"><h4>两种角色，两种口吻</h4><p>前五章是「占卜师解读」：以这次真实抽出的牌为依据，讲清现状、关系与内在提示。第六章是「跨次元传讯」：以牌为媒介，按你为这个角色填写的性格、说话方式和你们的连接背景，拟出 TA 可能怎样回应你。传讯是想象，不是对方真实说过的话，也不能当作对未来的判断。</p></div>' +
+      '<div class="m-pos"><b>解读通道：' + (ok ? 'DeepSeek' + (state.model ? ' · ' + state.model : '') : '星轨推演') + '</b>' +
+        (ok ? '' : '<br>说明：' + esc(AI.state.lastError || '本地推演')) +
+        '<br><b>第六章传讯：' + (state.voiceEnhanced ? 'TA 的声音已清晰接通' : '已接通（登录可听得更清楚）') + '</b></div>' +
+      '<div class="m-sec"><h4>两种角色，两种口吻</h4><p>前五章是占卜师视角：以这次抽出的牌为依据，看现状、关系与内在提示。第六章是跨次元传讯：以牌为通道，顺着你填写的角色性格、说话方式与这次的连接，让 TA 把心里的话说给你听。两段口吻不同，是因为它们本来就在做两件事——一段陪你看清，一段陪你靠近。</p></div>' +
       '<div class="m-sec"><h4>会发送给外部 AI 的内容（仅这些）</h4>' +
         '<div class="m-src">' + rows.map(function (r) {
           return '<div class="m-src__row"><em>' + esc(r.k) + '</em><span>' + esc(r.v) + '</span></div>';
@@ -643,12 +643,12 @@
   function enhanceVoice() {
     if (!window.DA_TRANSMISSION) { toast('增强组件没能加载，请刷新页面。'); return; }
     if (!window.DA_TRANSMISSION.signedIn()) {
-      toast('先点亮星际通行证，才能按角色档案生成更贴合的传讯。');
+      toast('先点亮星际通行证，才能接通 TA 更清晰的声音。');
       if (window.DA_AUTH && window.DA_AUTH.open) window.DA_AUTH.open();
       return;
     }
     var btn = $('voiceBoostBtn');
-    if (btn) { btn.disabled = true; btn.textContent = '正在按角色档案重写…'; }
+    if (btn) { btn.disabled = true; btn.textContent = '正在接通 TA…'; }
     var r = state.result || {};
     var L = state.link || {};
     /* 刷新重开后 result.persona 不在存档里，用档案 + 连接信息现场重建。 */
@@ -688,9 +688,9 @@
         }) || state.record;
       }
       renderHero(); renderRows(); renderTail();
-      toast('已按角色档案重写，这段 TA 的回应更贴近本人了。');
+      toast('接通了。这段话，是 TA 更清楚的心声。');
     }).catch(function (e) {
-      if (btn) { btn.disabled = false; btn.innerHTML = '✧ 让 TA 说得更像本人 <em>（登录可用）</em>'; }
+      if (btn) { btn.disabled = false; btn.innerHTML = '✧ 听 TA 再说一遍 <em>（登录可接通）</em>'; }
       var m = window.DA_PREMIUM && window.DA_PREMIUM.message ? window.DA_PREMIUM.message(e) : '稍后再试';
       toast('这次没生成成功：' + m + '。原来的传讯还在。');
     });

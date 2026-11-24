@@ -922,7 +922,7 @@ window.DA_READING = (function () {
       t: 'quote',
       x: '“当「' + FIRST(coreC.ku, '那件事') + '」真的发生时，你会先放下什么？”'
     });
-    b5.push({ t: 'note', x: '这是象征性的内在提示，不是诊断，也不是预言；以上都只是可能，不是对你或对方的判定。' });
+    b5.push({ t: 'note', x: '这几句是牌面留给你的私人提示。怎么理解，权在你自己。' });
     chapters.push({ key: 'deep', no: 'V', title: '深层讯息', en: 'THE UNDERTOW', blocks: b5 });
 
     /* ══════════════════════════════════════════════════════════
@@ -949,15 +949,13 @@ window.DA_READING = (function () {
 
     b6.push({
       t: 'p',
-      x: '下面这一段不是预言，也不是替谁确认心意。它以这次抽出的牌为媒介，' +
-        '把牌里的情绪当作底色，再按「' + escText(persona.name) + '」的性格与说话方式，' +
-        '试着写出 TA 此刻可能会怎样回应你——是一段想象，不是事实。'
+      x: '牌已经翻开，通道就在这里。静一静，让「' + escText(persona.name) +
+        '」顺着这次的连接，把藏在心里的话说给你听。'
     });
     b6.push({ t: 'quote6', x: scrubVoice(voiceText, cards) });
     b6.push({
       t: 'note',
-      x: '这是以塔罗为媒介的跨次元传讯，用来听见一种可能，不代表对方真实的想法，' +
-        '也不构成关于未来的判断。请看向现实里真实的沟通。'
+      x: '牌替 TA 把那句没说出口的话，送到了你面前。'
     });
     chapters.push({
       key: 'voice', no: 'VI', title: '跨次元传讯 · TA 的回应',
