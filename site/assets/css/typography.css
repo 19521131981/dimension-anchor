@@ -483,3 +483,16 @@ body.it .empty__mark { color: var(--da-gold) !important; }
 .modes      { order: 2; }
 .minor      { order: 3; }
 #daily      { order: 4; }
+
+/* ══ 10. 全站键盘焦点兜底 ═══════════════════════════════════════════
+   仅在键盘操作时显示（:focus-visible），不影响鼠标点击观感。
+   与各组件已有的 :focus 样式共存；此处保证任何可聚焦元素都有最低可见度。 */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #C9A24C;
+  outline-offset: 3px;
+}

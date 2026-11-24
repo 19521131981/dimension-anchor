@@ -457,9 +457,25 @@ window.DA_MAIL = (function () {
     });
   }
 
+  function decUnreadBadge() {
+    /* 读完一封未读信后把入口徽标减一（下限 0）。
+       以前只有 post.js 会清零，从收信厅(incoming.js)读信时徽标不消；
+       这里按「实际从 unread 变为 read」的次数递减，云/本地模式都适用。 */
+    try {
+      var n = parseInt(localStorage.getItem('DA2_MAIL_UNREAD') || '0', 10);
+      if (isNaN(n) || n < 0) n = 0;
+      localStorage.setItem('DA2_MAIL_UNREAD', String(Math.max(0, n - 1)));
+    } catch (e) {}
+  }
+
   function markRead(id) {
     return get(id).then(function (rec) {
-      if (rec && rec.status === 'unread') return patch(id, { status: 'read' });
+      if (rec && rec.status === 'unread') {
+        return patch(id, { status: 'read' }).then(function (r) {
+          decUnreadBadge();
+          return r;
+        });
+      }
       return rec;
     });
   }
@@ -518,8 +534,12 @@ window.DA_MAIL = (function () {
     });
   }
 
-  function setDailyPointer(rec) {
-    try { localStorage.setItem('DA2_DAILY_LETTER', JSON.stringify({ date: LT.dayKey(), id: rec.id })); } catch (e) {}
+  function setDailyPointer(rec, profileId) {
+    /* profileId 一并写入：收信站领取的今日星笺也要记住角色，
+       否则 post.js 的「再抽一张」无法沿用。 */
+    var p = { date: LT.dayKey(), id: rec.id };
+    if (profileId) p.profileId = profileId;
+    try { localStorage.setItem('DA2_DAILY_LETTER', JSON.stringify(p)); } catch (e) {}
   }
 
   function stats() {

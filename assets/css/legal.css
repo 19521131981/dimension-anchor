@@ -1,0 +1,118 @@
+/* ══════════════════════════════════════════════════════════════════════
+   DIMENSION ANCHOR — 合规说明页共用样式（隐私 / 条款 / 未成年人）
+   浅色纸面，深紫文字，遵循 typography.css 的色板。
+   ══════════════════════════════════════════════════════════════════════ */
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body.legal {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+               "Noto Sans CJK SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #51465F;
+  line-height: 1.85;
+  background:
+    radial-gradient(1200px 600px at 15% -10%, rgba(206, 180, 255, .22), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(240, 217, 168, .20), transparent 55%),
+    linear-gradient(180deg, #F7F1FB 0%, #FCFAF7 40%, #F3ECF6 100%);
+  background-attachment: fixed;
+}
+
+.legal-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 56px 24px 96px;
+}
+
+.legal-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #8A6733;
+  font-size: 14px;
+  text-decoration: none;
+  margin-bottom: 30px;
+}
+.legal-back:hover { text-decoration: underline; }
+
+.legal-head {
+  border-bottom: 1px solid rgba(73, 52, 95, .18);
+  padding-bottom: 22px;
+  margin-bottom: 30px;
+}
+.legal-head h1 {
+  margin: 0 0 8px;
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", serif;
+  font-size: 30px;
+  font-weight: 600;
+  color: #49345F;
+  letter-spacing: .04em;
+}
+.legal-head .legal-updated {
+  font-size: 13px;
+  color: #8A6733;
+  letter-spacing: .06em;
+}
+
+.legal-body h2 {
+  font-size: 19px;
+  color: #49345F;
+  margin: 34px 0 10px;
+  padding-left: 12px;
+  border-left: 3px solid rgba(190, 154, 96, .66);
+}
+.legal-body h3 {
+  font-size: 16px;
+  color: #49345F;
+  margin: 22px 0 8px;
+}
+.legal-body p,
+.legal-body li { font-size: 15.5px; color: #51465F; }
+.legal-body p { margin: 10px 0; }
+.legal-body ul,
+.legal-body ol { margin: 10px 0 10px 22px; padding: 0; }
+.legal-body li { margin: 6px 0; }
+.legal-body strong { color: #49345F; }
+.legal-body a { color: #8A6733; }
+
+.legal-note {
+  margin: 26px 0;
+  padding: 18px 22px;
+  background: rgba(255, 255, 255, .72);
+  border: 1px solid rgba(190, 154, 96, .42);
+  border-radius: 14px;
+  font-size: 15px;
+}
+.legal-note.warn {
+  background: rgba(255, 249, 236, .82);
+  border-color: rgba(190, 154, 96, .66);
+}
+
+.legal-foot {
+  margin-top: 46px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(73, 52, 95, .18);
+  font-size: 13px;
+  color: #62556F;
+  text-align: center;
+}
+.legal-foot nav a { color: #8A6733; margin: 0 6px; text-decoration: none; }
+.legal-foot nav a:hover { text-decoration: underline; }
+
+:focus-visible {
+  outline: 2px solid #B08A47;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+@media (max-width: 520px) {
+  .legal-wrap { padding: 40px 18px 72px; }
+  .legal-head h1 { font-size: 25px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

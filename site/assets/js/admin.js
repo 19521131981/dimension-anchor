@@ -97,15 +97,21 @@
   }
 
   function bind() {
+    /* 单例监听：每次登录只保留一个 handler，避免反复点开弹窗累积监听器
+       导致 check() 被多次触发、列表重复请求。 */
+    var authHandler = null;
     $('signBtn').addEventListener('click', function () {
       A.open();
-      document.addEventListener('da:authchange', function once(ev) {
+      if (authHandler) document.removeEventListener('da:authchange', authHandler);
+      authHandler = function (ev) {
         if (ev && ev.detail && ev.detail.signedIn) {
-          document.removeEventListener('da:authchange', once);
+          document.removeEventListener('da:authchange', authHandler);
+          authHandler = null;
           msg($('signMsg'), '已登录：' + (A.name() || '通行证'), 'ok');
           check();
         }
-      });
+      };
+      document.addEventListener('da:authchange', authHandler);
     });
 
     $('claimBtn').addEventListener('click', function () {

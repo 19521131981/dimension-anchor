@@ -632,6 +632,16 @@
     S.complete();
   }
 
+  function makeShareCard() {
+    if (!window.DA_SHARECARD) { toast('分享卡组件未能加载，请刷新页面。'); return; }
+    toast('正在生成分享卡…');
+    window.DA_SHARECARD.make().then(function () {
+      toast('竖版分享卡已生成并下载，可以分享给朋友了。');
+    }).catch(function (e) {
+      toast('生成失败：' + (e && e.message ? e.message : '请稍后重试'));
+    });
+  }
+
   function copyAll() {
     var text = RD.toText(state.result, state.session, state.link);
     var done = function () { toast('六章解读已复制到剪贴板。'); };
@@ -1346,6 +1356,7 @@
   function bind() {
     $('favBtn').addEventListener('click', toggleFav);
     $('copyBtn').addEventListener('click', copyAll);
+    if ($('shareCardBtn')) $('shareCardBtn').addEventListener('click', makeShareCard);
     $('askBtn').addEventListener('click', openAsk);
 
     $('askClose').addEventListener('click', closeAsk);

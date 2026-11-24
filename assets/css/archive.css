@@ -477,3 +477,39 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 html[data-motion="reduced"] .ar-card,
 html[data-motion="reduced"] .ar-btn { transition: none; }
 html[data-motion="reduced"] .ar-seal b { animation: none; }
+
+/* ══ 数据备份工具 ═════════════════════════════════════════════ */
+.da-backup {
+  margin: clamp(26px, 5vh, 48px) auto 0;
+  max-width: 640px;
+  padding: 26px 22px 24px;
+  text-align: center;
+  border-top: 1px solid rgba(190, 176, 220, .18);
+}
+.da-backup__t {
+  margin: 0 0 8px;
+  font-family: var(--serif);
+  font-size: 17px;
+  letter-spacing: .18em;
+  color: rgba(240, 225, 255, .9);
+}
+.da-backup__d {
+  margin: 0 auto 16px;
+  max-width: 480px;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: rgba(206, 198, 232, .66);
+}
+.da-backup__acts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+.da-backup__acts .ar-btn { padding: 10px 22px 8px; }
+.da-backup__hint {
+  margin: 14px 0 0;
+  font-size: 11px;
+  color: rgba(206, 198, 232, .44);
+}
+.da-backup__acts .ar-btn:focus-visible { outline: 2px solid #C9A24C; outline-offset: 3px; }

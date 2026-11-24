@@ -259,7 +259,7 @@
 
     var t0 = Date.now();
     M.generateIncoming(form, { kind: dlgForm.kind, cards: cards }).then(function (rec) {
-      if (dlgForm.kind === 'daily') M.setDailyPointer(rec);
+      if (dlgForm.kind === 'daily') M.setDailyPointer(rec, form.profileId);
       closeDialog();
       todayRec = null;
       return load().then(function () { openReader(rec.id, true); });

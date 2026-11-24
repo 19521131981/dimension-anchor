@@ -467,6 +467,25 @@ window.DA_STORE = (function () {
   function download(name, text, mime) {
     try {
       var blob = new Blob([text], { type: (mime || 'text/plain') + ';charset=utf-8' });
+      return downloadBlob(name, blob);
+    } catch (e) { return false; }
+  }
+
+  /* 二进制 / dataURL 下载（分享卡 PNG 用） */
+  function downloadDataURL(name, dataUrl) {
+    try {
+      var a = document.createElement('a');
+      a.href = dataUrl;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { a.remove(); }, 400);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function downloadBlob(name, blob) {
+    try {
       var a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = name;
@@ -477,9 +496,89 @@ window.DA_STORE = (function () {
     } catch (e) { return false; }
   }
 
+  /* ── 全量备份 / 恢复 ────────────────────────────────────────
+     备份是一份带版本与时间戳的 JSON，包含所有 DA2_* 存档键以及
+     第一阶段只读兼容键。导入前会校验结构，只还原认识到的键，
+     其余一律忽略，避免被恶意文件塞入无关数据。 */
+  var BACKUP_VERSION = 1;
+
+  function exportAll() {
+    var data = {};
+    Object.keys(K).forEach(function (name) {
+      var raw = null;
+      try { raw = localStorage.getItem(K[name]); } catch (e) {}
+      if (raw != null) data[K[name]] = raw; // 存原文字符串，避免二次解析丢字段
+    });
+    // 一并带上散落的偏好键（这些不在 K 里，但属于用户数据）
+    ['DA2_MOTION', 'DA2_MAIL_UNREAD', 'DA2_DAILY_LETTER', 'DA2_DEVICE_ID',
+     'DA_TAROT_MUTE', 'DA_TAROT_VOL', 'DA2_HIDDEN_VISIT', 'DA2_HIDDEN_DAY',
+     'DA2_HIDDEN_MARK', 'DA2_HIDDEN_FAVS', 'DA2_RELAY_PENDING'
+    ].forEach(function (key) {
+      var raw = null;
+      try { raw = localStorage.getItem(key); } catch (e) {}
+      if (raw != null) data[key] = raw;
+    });
+    var payload = {
+      app: 'DIMENSION ANCHOR',
+      type: 'da-backup',
+      version: BACKUP_VERSION,
+      ts: new Date().toISOString(),
+      data: data
+    };
+    var d = new Date();
+    function p2(n) { return n < 10 ? '0' + n : '' + n; }
+    var name = 'da-backup-' + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '.json';
+    return download(name, JSON.stringify(payload, null, 2), 'application/json') ? payload : null;
+  }
+
+  var BACKUP_KEYS = (function () {
+    var s = {};
+    Object.keys(K).forEach(function (name) { s[K[name]] = true; });
+    ['DA2_MOTION', 'DA2_MAIL_UNREAD', 'DA2_DAILY_LETTER', 'DA2_DEVICE_ID',
+     'DA_TAROT_MUTE', 'DA_TAROT_VOL', 'DA2_HIDDEN_VISIT', 'DA2_HIDDEN_DAY',
+     'DA2_HIDDEN_MARK', 'DA2_HIDDEN_FAVS', 'DA2_RELAY_PENDING'
+    ].forEach(function (k) { s[k] = true; });
+    return s;
+  })();
+
+  /* 返回 { ok, restored }：restored 为实际写入的键数量；失败不改动任何数据。 */
+  function importAll(text, mode) {
+    var payload;
+    try { payload = JSON.parse(text); } catch (e) { return { ok: false, error: '文件不是有效的 JSON' }; }
+    if (!payload || payload.type !== 'da-backup' || !payload.data || typeof payload.data !== 'object') {
+      return { ok: false, error: '不是 DIMENSION ANCHOR 的备份文件' };
+    }
+    if (payload.version > BACKUP_VERSION) {
+      return { ok: false, error: '备份版本较新，请先更新网站' };
+    }
+    // 先全量校验每个值都是字符串且可解析（备份里存的是原文 JSON 串）
+    var staged = [];
+    Object.keys(payload.data).forEach(function (key) {
+      if (!BACKUP_KEYS[key]) return;
+      var raw = payload.data[key];
+      if (typeof raw !== 'string') return;
+      try { JSON.parse(raw); } catch (e) { return; } // 跳过损坏条目，不中断整体
+      staged.push([key, raw]);
+    });
+    if (!staged.length) return { ok: false, error: '备份里没有可恢复的数据' };
+    // replace 模式先清空已知键，再写入；merge 模式直接覆盖同名键
+    if (mode === 'replace') {
+      Object.keys(BACKUP_KEYS).forEach(function (key) {
+        try { localStorage.removeItem(key); } catch (e) {}
+      });
+    }
+    var n = 0;
+    staged.forEach(function (pair) {
+      try { localStorage.setItem(pair[0], pair[1]); n++; } catch (e) {}
+    });
+    return { ok: n > 0, restored: n };
+  }
+
   return {
     keys: K,
-    nid: nid, clone: clone, dateCn: dateCn, timeCn: timeCn, download: download,
+    nid: nid, clone: clone, dateCn: dateCn, timeCn: timeCn,
+    download: download, downloadDataURL: downloadDataURL,
+    exportAll: exportAll, importAll: importAll,
     profiles: profiles,
     session: session,
     readings: readings,

@@ -147,6 +147,7 @@ window.DA_COTTAGE = (function () {
       });
     }).catch(function () {
       recentEl.innerHTML = cardRecent(null);
+      recentEl._rec = null; // 清空陈旧引用，避免点空态打开上一封
       unreadEl.innerHTML = cardUnread(0);
       statEl.innerHTML = cardStats(null);
     });

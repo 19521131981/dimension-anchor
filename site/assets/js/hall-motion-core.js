@@ -176,7 +176,9 @@ window.DA_MOTION = (function () {
       var handler = function () {
         /* 用户已经手动选过，就以用户的选择为准 */
         if (readPref()) return;
-        setLevel(mq.matches ? 'reduced' : 'full', false);
+        /* 与初始化策略一致：系统减少动态时降到柔和，而非全关。
+           只有用户在开关里明确选「减少」才全关。 */
+        setLevel(mq.matches ? 'soft' : 'full', false);
       };
       if (mq.addEventListener) mq.addEventListener('change', handler);
       else if (mq.addListener) mq.addListener(handler);

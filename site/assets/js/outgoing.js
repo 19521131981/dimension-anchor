@@ -156,6 +156,9 @@
       if (!rec) { toast('这封信不见了'); return loadSide(); }
       if (rec.status === 'draft') { loadEditor(rec); toast('草稿已铺开，可以继续写'); }
       else openReader(rec);
+    }).catch(function (e) {
+      toast('打不开这封信：' + (typeof ET === 'function' ? ET(e, '请稍后重试') : '请稍后重试'));
+      loadSide();
     });
   });
 

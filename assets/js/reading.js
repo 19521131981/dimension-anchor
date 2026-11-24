@@ -12,6 +12,17 @@
   var E = window.DA_ENGINE;
   var S = window.DA_SOUND;
 
+  /* resize 监听只绑一次：renderDraw 每次刷新时更新当前 fitBoard 引用，
+     避免重复进入抽牌流程时累积监听、旧闭包持有失效 DOM。 */
+  var _fitBoardRef = null;
+  var _fitBoardBound = false;
+  function bindResizeOnce(fn) {
+    _fitBoardRef = fn;
+    if (_fitBoardBound) return;
+    _fitBoardBound = true;
+    window.addEventListener('resize', function () { if (_fitBoardRef) _fitBoardRef(); });
+  }
+
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var view = $('#view');
   var toastEl = $('#toast');
@@ -1140,7 +1151,7 @@
     });
 
     fitBoard();
-    window.addEventListener('resize', fitBoard);
+    bindResizeOnce(fitBoard);
 
     /* ---- 扇形 ---- */
     var FAN_W = 86, FAN_H = 129;
@@ -1505,7 +1516,7 @@
       S.hover();
     });
 
-    window.addEventListener('resize', function () { fitBoard(); });
+    /* resize 已由 bindResizeOnce 统一绑定，这里不再重复注册 */
 
     bindFan();
     layoutFan();

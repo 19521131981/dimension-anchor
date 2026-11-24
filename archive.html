@@ -74,6 +74,17 @@
     </p>
   </section>
 
+  <!-- ══ 数据备份（任何状态可见，数据只在本机） ══ -->
+  <section class="da-backup" aria-label="数据备份与恢复">
+    <h2 class="da-backup__t">带上你的星轨</h2>
+    <p class="da-backup__d">所有记录只存在这台设备的浏览器里。换设备或清缓存前，记得备份一份。</p>
+    <div class="da-backup__acts">
+      <button class="ar-btn ar-btn--ghost" type="button" data-da-export data-da-toast="arToast"><span>导出备份</span></button>
+      <button class="ar-btn ar-btn--ghost" type="button" data-da-import data-da-toast="arToast"><span>恢复备份</span></button>
+    </div>
+    <p class="da-backup__hint">恢复为合并模式（同名覆盖）；如需完全替换，按住 Shift 再点「恢复备份」。</p>
+  </section>
+
   <p class="ar-foot">THE WALL REMEMBERS · DIMENSION ANCHOR</p>
 </main>
 
@@ -95,6 +106,7 @@
 
 <script src="assets/js/da-link.js"></script>
 <script src="assets/js/da-store.js"></script>
+<script src="assets/js/da-backup-ui.js"></script>
 <script src="assets/js/da-archive.js?v=20261108"></script>
 <script src="assets/js/archive.js?v=20261108"></script>
 
