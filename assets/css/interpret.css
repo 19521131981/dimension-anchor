@@ -1720,3 +1720,24 @@ html[data-motion="reduced"] .itbg__spark, html[data-motion="reduced"] .panel__st
     linear-gradient(180deg, rgba(26, 14, 54, .22) 0%, rgba(28, 16, 58, 0) 26%,
                     rgba(22, 12, 46, .14) 66%, rgba(8, 4, 20, .48) 100%);
 }
+
+/* ══ 跨次元传讯 · 角色语气增强按钮 ══════════════════════════════ */
+.voice-boost {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin: 14px 0 2px; padding: 9px 18px;
+  border: 1px solid var(--gold-line, rgba(190,154,96,.42));
+  border-radius: 999px;
+  background: rgba(255,255,255,.55);
+  color: #6B4E86;
+  font-size: 13px; letter-spacing: .03em;
+  cursor: pointer;
+  transition: background .25s, border-color .25s, transform .25s;
+}
+.voice-boost em { font-style: normal; font-size: 11px; opacity: .7; }
+.voice-boost:hover { background: #fff; border-color: #B08A47; transform: translateY(-1px); }
+.voice-boost:disabled { opacity: .6; cursor: default; transform: none; }
+.voice-boost.is-done {
+  display: inline-block; cursor: default;
+  background: transparent; border-color: transparent; color: #8A6733;
+}
+.voice-boost:focus-visible { outline: 2px solid #B08A47; outline-offset: 3px; }

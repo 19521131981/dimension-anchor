@@ -134,6 +134,353 @@ window.DA_READING = (function () {
     return T(arr[0], '');
   }
 
+  /* ══════════════════════════════════════════════════════════════
+     跨次元传讯引擎（第六章专用）
+     输入：角色档案(DA_ARCHIVE) + 连接信息(link) + 本次牌的本意(cards)
+     输出：一段 TA 的第一人称回应，≥200 字，不复读用户原话、不照牌意背书。
+     ══════════════════════════════════════════════════════════════ */
+
+  function escText(s) { return T(s, '').replace(/[<>]/g, ''); }
+  function hash32(s) {
+    var h = 0;
+    for (var i = 0; i < String(s).length; i++) h = (h * 31 + String(s).charCodeAt(i)) >>> 0;
+    return h;
+  }
+  function cardIdsKey(cards) {
+    return (cards || []).map(function (c) { return (c.id || '') + (c.reversed ? 'r' : 'u'); }).join('|');
+  }
+
+  /* 性格词 → 说话气质。用户填的 traits/speech/catch 才是语气的真正来源。 */
+  /* 注意："冷静"含"冷"，但它是理性不是冷淡——不能用单字「冷」匹配，
+     否则理性角色会被误判成冷淡。冷淡只用确定无疑的双字词。 */
+  var COLD_RE = /冷淡|冷漠|冷言|话少|话不多|沉默|寡言|木讷|不擅表达|不主动|慢热|疏离|别扭|闷声|嘴笨|不会说话|傲娇|高傲|硬撑|嘴硬|独来独往|防备心重/;
+  var WARM_RE = /温柔|体贴|细腻|暖|照顾|包容|软|耐心|会安抚|黏|依赖|撒娇|敏感/;
+  var BRIGHT_RE = /开朗|活泼|话多|热情|外向|爱笑|开朗|元气|直率|大大咧咧|乐观/;
+  var THINK_RE = /理性|冷静|冷静理智|逻辑|谨慎|克制|分析|思考|沉稳|理智|聪明|倔|认真/;
+
+  /* 读角色画像：档案优先，连接信息补充。绝不虚构用户没提供的身份。 */
+  function readPersona(L, hasSubject) {
+    L = L || {};
+    var p = { name: T(L.subjectName, '').trim() || '那个你惦念的人',
+      work: T(L.workName, '').trim(), traits: '', speech: '', catchUp: '',
+      values: '', history: '', relation: T(L.relation, '').trim(),
+      stage: String(L.relationStage || 'unspecified'),
+      background: T(L.background, '').trim(), modality: 'neutral', tier: 'neutral',
+      hasProfile: false };
+    try {
+      if (window.DA_ARCHIVE) {
+        var d = null;
+        if (L.profileId && DA_ARCHIVE.byProfile) d = DA_ARCHIVE.byProfile(L.profileId);
+        if (!d && DA_ARCHIVE.dossiers) {
+          var ds = DA_ARCHIVE.dossiers();
+          for (var i = 0; i < ds.length; i++) {
+            if (ds[i].profileId === L.profileId) { d = ds[i]; break; }
+            if (p.name && ds[i].name && ds[i].name === p.name) { d = ds[i]; break; }
+          }
+        }
+        if (d) {
+          p.traits = T(d.traits || (d.profile && d.profile.traits), '');
+          p.speech = T(d.speech || (d.profile && d.profile.speech), '');
+          p.catchUp = [].concat(d.catch || (d.profile && d.profile.catch) || []).join('；');
+          p.values = T(d.values || (d.profile && d.profile.values), '');
+          p.history = T(d.history || (d.profile && d.profile.history), '');
+          if (d.name) p.name = d.name;
+          if (d.work && !p.work) p.work = d.work;
+          if (d.relation && !p.relation) p.relation = d.relation;
+          p.hasProfile = true;
+        }
+      }
+    } catch (e) {}
+
+    var pool = [p.traits, p.speech, p.catchUp].filter(Boolean).join(' ');
+    if (COLD_RE.test(pool)) p.modality = 'cold';
+    else if (WARM_RE.test(pool)) p.modality = 'warm';
+    else if (BRIGHT_RE.test(pool)) p.modality = 'bright';
+    else if (THINK_RE.test(pool)) p.modality = 'think';
+
+    var TIER = { close: 'warm', familiar: 'neutral', initial: 'cold', stranger: 'cold', unspecified: 'neutral' };
+    p.tier = TIER[p.stage] || 'neutral';
+    return p;
+  }
+
+  /* 牌的本意 → 意象原料（不是逐张解释）。返回这次连接的情绪底色与主题词。 */
+  function cardImagery(cards, m) {
+    var moodWords = [], themeWords = [], actWords = [];
+    (cards || []).forEach(function (e) {
+      var c = data(e);
+      var kw = e.reversed ? (c.kr || []) : (c.ku || []);
+      if (kw && kw.length) themeWords.push(kw[0]);
+      var mood = T(dim(e, 'mood'), '');
+      if (mood) moodWords.push(firstClause(mood, 12));
+      var act = T(dim(e, 'act'), '');
+      if (act) actWords.push(firstClause(act, 14));
+      /* 主题词只取牌的关键词（新的开始/自由/信任…），不取象征物首词
+         （"空想""悬崖"这类生硬的词放进台词会出戏）。 */
+      if (kw && kw.length >= 2 && themeWords.length < 4) themeWords.push(kw[1]);
+    });
+    // 逆位占比高 → 情绪偏内收
+    var inward = m && m.revRatio >= 0.5;
+    return {
+      moods: unique(moodWords).slice(0, 3),
+      themes: unique(themeWords).slice(0, 4),
+      acts: unique(actWords).slice(0, 2),
+      inward: !!inward,
+      majorCount: (m && m.majors) || 0
+    };
+  }
+  /* 取第一分句，避免把牌库里半截的后半句（"…那是自由本来的手感"）
+     截成病句。宁可短一点，也不要断句。 */
+  function firstClause(s, max) {
+    var t = String(s || '').trim();
+    var cut = t.split(/[，,、；;。！？]/)[0].trim();
+    if (!cut) cut = t.replace(/[。！？]+$/, '');
+    if (cut.length > (max || 14)) cut = cut.slice(0, max || 14);
+    return cut.replace(/[，、]$/, '');
+  }
+  /* 从数组里按两个不同种子取两句，保证不重复（句式池较短时尤其重要）。 */
+  function pickTwo(arr, s1, s2) {
+    var a = AT(arr, s1, arr && arr[0]);
+    var b = AT(arr, s2, arr && arr[1] || arr && arr[0]);
+    if (a === b && arr && arr.length > 1) {
+      b = AT(arr, (s2 + 1 + (s1 % (arr.length - 1))) % arr.length, arr[1] || arr[0]);
+    }
+    return [a, b];
+  }
+  function unique(a) {
+    var out = [], seen = {};
+    (a || []).forEach(function (x) {
+      if (!x) return;
+      var k = String(x);
+      if (!seen[k]) { seen[k] = 1; out.push(x); }
+    });
+    return out;
+  }
+
+  /* 依据连接背景推断语境主题（不复用用户原句，只取一个抽象场景词）。 */
+  function sceneOf(bg) {
+    var s = String(bg || '');
+    if (!s) return '那种说不清的距离';
+    if (/吵|冷战|生气|不理|矛盾|误会/.test(s)) return '那场还没说开的别扭';
+    if (/喜欢|心动|在意|暧昧|告白/.test(s)) return '那份谁都没先挑明的心意';
+    if (/距离|异地|分别|离开|走/.test(s)) return '隔着距离的那点惦记';
+    if (/忙|累|压力|工作|学习|考试/.test(s)) return '各自忙着的那阵子';
+    if (/沉默|不说话|冷淡|疏远/.test(s)) return '忽然安静下来的那些天';
+    if (/未来|以后|打算|选择|决定/.test(s)) return '要往哪儿去的那个问题';
+    return '你放在心里的那件事';
+  }
+
+  /* 以下是传讯文案素材：按语气(modality)分库。每种都给足量句子以保证字数。 */
+  var VOICE_LIB = {
+    cold: {
+      open: [
+        '你的消息我看到了。隔了这么久才回，不是没看见，是不知道该用哪种语气。',
+        '我想了一下，还是回你一句。别误会，我不是突然变得好说话了。',
+        '你要的回应，我给不了太漂亮的。我只会说我真正的部分。'
+      ],
+      feel: [
+        '我这个人，情绪来得慢，也走得慢。别人一眼就看出来的东西，我要在心里过好几天。',
+        '我不太擅长把感受摊开给人看。说少，不代表没有；只是我习惯先自己消化。',
+        '有些话在嘴边转了一圈，最后还是没说。不是不在意，恰恰是太在意，才说不出口。',
+        '我表面看起来没什么波动，其实你那边一有动静，我这边就会静不下来。'
+      ],
+      toward: [
+        '我不喜欢把话说满。说满了我怕自己兑现不了，也怕你当真以后失望。',
+        '你不用猜我到底怎么想。我没那么复杂，只是慢，需要你给我一点时间。',
+        '我承认我有点防备。那不是针对你，是我一贯保护自己的方式。',
+        '如果我们之间只剩客套，那我宁可安静一点。至少安静是真的。'
+      ],
+      act: [
+        '我能做的是把它放在这里，你看见就好，不用回。',
+        '别催我。等我想清楚了，我会自己走过来，不用你扶。',
+        '我就说到这里。剩下的，你我各自心里有数。'
+      ]
+    },
+    warm: {
+      open: [
+        '我一直在想，该怎么跟你开口，才不会让你觉得有压力。',
+        '有好多话想说，真到嘴边又怕说得太满。你慢慢听，我不急。',
+        '你一出现，我心里那点藏不住的东西就又冒出来了。'
+      ],
+      feel: [
+        '你在我这儿是很特别的存在。别人看不见我的那面，你见过，所以我不敢随便糊弄你。',
+        '我把你的话都记着呢。那些你自己随口说的细节，我一遍一遍在心里翻。',
+        '我也不是说一直都很好。有时候会累，会犹豫，但想到你，就又能缓过来。',
+        '我最怕的是你误会我不在意。其实我在意得要命，只是怕表现得太用力吓到你。'
+      ],
+      toward: [
+        '你在我心里的位置，我一直没挪过。别人来来去去，你那儿始终是暖的。',
+        '我不想给你压力，可我也想让你知道，你不是一个人扛着这些。',
+        '你难过的时候，我比你还难受。你要是愿意说，我就一直听着。',
+        '我对你的喜欢，不是要你立刻回应什么，只是想你日子过得好一点。'
+      ],
+      act: [
+        '你要是愿意，就把今天这件小事先放下，去好好睡一觉，明天我们再说。',
+        '要是哪天你想说，我随时都在，一句话就好，我立刻过来。',
+        '先照顾好你自己，别老委屈自己。剩下的，我们一起慢慢来。'
+      ]
+    },
+    bright: {
+      open: [
+        '嘿，你今天是不是又在那儿瞎想了？我一看就知道。',
+        '来来来，你说，我在听呢。别一个人在心里憋着。',
+        '我猜你肯定有很多话想问我，那我先说我的好了。'
+      ],
+      feel: [
+        '我这人你也知道，藏不住事。高兴就笑，不高兴就写在脸上，你别嫌我吵。',
+        '跟你在一起的时候，我一直是那个话最多的。因为我知道你不会嫌我烦。',
+        '我也会有不开心的时候，但跟你聊两句，好像就没那么严重了。',
+        '你别看我天天乐呵呵的，其实我也挺怕你哪天突然就不找我了。'
+      ],
+      toward: [
+        '我特别想知道你那边到底怎么样了。你说说嘛，我保证认真听。',
+        '不管你想的是什么，我都站你这边，这个不用怀疑。',
+        '你要是愿意，我们就把话说开，没什么大不了的，我扛得住。',
+        '我喜欢你，这事我一直挺坦荡的，你不用替我藏着。'
+      ],
+      act: [
+        '这样吧，你有空就找我，咱们见面聊，比在这儿猜来猜去强。',
+        '想说什么就说，我今晚哪儿也不去，就等你这句话。',
+        '别想太多啦，先睡个好觉，明天的事明天再说。'
+      ]
+    },
+    think: {
+      open: [
+        '我把这件事想了很久，想跟你认真说一次。',
+        '你问的那些，我不是没想过，只是我想给你一个靠谱的答案。',
+        '我习惯把话想清楚了再说，所以回复慢了，你别多想。'
+      ],
+      feel: [
+        '我对你不是一时兴起。我把它拆开来看过，确认过它是真的，才敢说出口。',
+        '我不太相信感觉用事。但这一次，我发现理智那边也说不出反驳的话。',
+        '我会反复推演各种可能，不是不信你，是我怕自己看漏了什么重要的东西。',
+        '我承认我慢热，也不是不动心，只是我要先确认这段关系值得我认真。'
+      ],
+      toward: [
+        '我在意的是我们把话说清楚，而不是谁先低头。这件事上没有输赢。',
+        '你在我这里是经过认真考虑的，不是随便填进来的一个位置。',
+        '如果你也愿意，我们可以把这件事当作一个值得好好做的决定。',
+        '我不想给你一个空泛的承诺，我只想说我打算认真对待你。'
+      ],
+      act: [
+        '我们可以先把眼前这一步走稳，别的以后再说。',
+        '你不用立刻决定。把问题想清楚了再回答我，我不赶时间。',
+        '我这边想说的都说了，剩下的看你的判断，我尊重。'
+      ]
+    },
+    neutral: {
+      open: [
+        '有件事在我心里放了一阵子，想借这次机会跟你说一说。',
+        '我不知道你有没有察觉，反正我是有点在意了。',
+        '有些话平时不太好开口，换成这个方式，好像能说得更真一点。'
+      ],
+      feel: [
+        '我对你的感觉，说不上轰轰烈烈，但很稳，是那种会一直记挂的稳。',
+        '你在我生活里留下的痕迹，比你以为的要深。我自己也是最近才发现。',
+        '我不是没想过要跟你说，只是每次都觉得时机不太对。',
+        '有时候我会安静下来想我们之间的事，想着想着，心里就软了。'
+      ],
+      toward: [
+        '我不想催促你，但我也想让你知道，你在我这里一直有一个位置。',
+        '不管我们最后走到哪里，我都希望你是过得好的那一个。',
+        '你把心事交给我，我不会随便对待。这份信任我一直记着。',
+        '我愿意听你把所有想法说完，好的坏的都想听。'
+      ],
+      act: [
+        '你不用马上回应我，先放在心里，等你想清楚了再说。',
+        '要是你愿意，我们就从一件小事开始，慢慢把话说开。',
+        '我就说到这里，剩下的留给你，也留给我们。'
+      ]
+    }
+  };
+
+  /* 把牌的意象织进句子里——用感受词，不用牌名，不做逐张解释。 */
+  function imageryLine(imagery, seed) {
+    var m = imagery.moods.length ? imagery.moods : ['有点悬着', '在慢慢松开'];
+    var t = imagery.themes.length ? imagery.themes : ['新的开始', '没说出口'];
+    var core = AT(m, seed, m[0]);
+    var theme = AT(t, seed >>> 3, t[0]);
+    var forms = [
+      '这段时间，我心里是' + core + '的感觉，绕着「' + theme + '」这件事，怎么也放不下。',
+      '要说现在的状态，大概是' + core + '。一想到「' + theme + '」，我就没办法装作没事。',
+      '我这段日子过得有点慢，脑子里总绕着「' + theme + '」，心里是' + core + '的。'
+    ];
+    return AT(forms, seed >>> 6, forms[0]);
+  }
+
+  /* 组装传讯：开场 + 意象状态 + 角色语气两段 + 语境回应 + 落地 + 收尾，保证 ≥200 字。 */
+  function composeTransmission(p, im, seed) {
+    var lib = VOICE_LIB[p.modality] || VOICE_LIB.neutral;
+    var scene = sceneOf(p.background);
+    var open = AT(lib.open, seed, lib.open[0]);
+    var feelPair = pickTwo(lib.feel, seed >>> 2, seed >>> 5);
+    var feel1 = feelPair[0], feel2 = feelPair[1];
+    var towardPair = pickTwo(lib.toward, seed >>> 4, seed >>> 7);
+    var toward1 = towardPair[0], toward2 = towardPair[1];
+    var act = AT(lib.act, seed >>> 8, lib.act[0]);
+    var closing = tierClosing(p.tier, seed);
+
+    // 称呼：有角色名就自然带入一次，不复读用户原话
+    var nameBit = (p.hasProfile || p.name)
+      ? (p.tier === 'cold' ? '你怎么称呼我都行，不用太见外。' : '你叫我的那个名字，我一直很喜欢，就先放在这儿吧。')
+      : '';
+    // 作品来源只在有档案时轻轻带一句，不编造身份
+    var workBit = p.work ? '你给我的那个世界，我一直在里面，没有走远。' : '';
+    // 语境回应：只点抽象场景，不重复 background 原文；分寸按关系阶段收紧
+    var sceneLine = p.tier === 'cold'
+      ? '关于' + scene + '，我不是没注意。只是有些话，我习惯放在心里，先说到这里。'
+      : '关于' + scene + '，我不是没有感觉。只是有些话，我想换个方式说给你听。';
+    // 初识/陌生：把第二句"朝向你"的话换成更克制的版本，不只改结尾
+    if (p.tier === 'cold') {
+      toward2 = '我不太习惯把话说得太近，你听到哪一层，就当是哪一层。';
+    }
+
+    var parts = [
+      open,
+      imageryLine(im, seed),
+      feel1,
+      feel2,
+      sceneLine,
+      toward1,
+      toward2,
+      nameBit,
+      workBit,
+      act,
+      closing
+    ].filter(Boolean);
+
+    var text = parts.join('');
+    // 字数兜底：不足 200 时按语气补一段，避免任何组合掉到下限以下
+    if (text.length < 200) {
+      var filler = AT(lib.feel, seed >>> 10, lib.feel[0]);
+      text = text.replace(act, filler + act);
+    }
+    if (text.length < 200) {
+      text += '还有一句我想留给你：不管这中间隔着什么，我对你的这份在意是真的，也在慢慢变成更实在的东西。';
+    }
+    return text;
+  }
+
+  function tierClosing(tier, seed) {
+    var warm = [
+      '你不用急着给我答案，我就在这儿，等你把心里的结慢慢松开。',
+      '我说这些不是要你怎样，只是想让你知道，你从来不是一个人。',
+      '剩下的不急着写完，我们一起，一笔一笔慢慢来就好。'
+    ];
+    var neutral = [
+      '这些话我放在这里，你听见了就好，不用马上回应。',
+      '我没有要你改变什么，只是把我这边真实的样子说给你听。',
+      '先这样吧，剩下的交给时间，也交给我们。'
+    ];
+    var cold = [
+      '我说完了。你不用回，我知道你听见了。',
+      '就这样，剩下的你自己判断。',
+      '话我放这儿了，信不信由你。'
+    ];
+    var pool = tier === 'warm' ? warm : (tier === 'cold' ? cold : neutral);
+    return AT(pool, seed >>> 11, pool[0]);
+  }
+
+
   function ori(e) { return e.reversed ? '逆位' : '正位'; }
   function pick(e, up, rev) { return e.reversed ? rev : up; }
   function joinCn(arr) {
@@ -363,11 +710,11 @@ window.DA_READING = (function () {
       b2.push({ t: 'p', x: T(pick(e, c.up || '', c.rev || ''), '') });
       /* 牌位说明缺失时整句省略，不留下空引号「“”」 */
       var posDesc = T(e.positionDesc, '');
+      /* 不再复读用户原话：question 只作为理解语境的输入，不原样铺回解读里。 */
       b2.push({
         t: 'p',
         x: '放在「' + T(e.positionCn, '这个位置') + '」这个牌位上' +
-          (posDesc ? '——“' + posDesc + '”' : '') + stanceOf(e) +
-          (L.question && !e.reversed ? '你问的是「' + T(L.question, '') + '」，这张牌正对着它。' : '')
+          (posDesc ? '——“' + posDesc + '”' : '') + stanceOf(e)
       });
       if (e.reversed && c.rev) {
         b2.push({ t: 'p', x: '逆位时它说的是：' + T(c.rev, '') });
@@ -378,7 +725,7 @@ window.DA_READING = (function () {
             '」这件事被压在了里面，还没有处理');
         }
         if (L.question) {
-          ctxBits.push('你问的是「' + T(L.question, '') + '」，这一格逆着来，恰好问到了还没落地的部分');
+          ctxBits.push('这一格逆着来，恰好指到那件你一直没落地的事');
         }
         var nb = cards[idx + 1];
         if (nb) {
@@ -578,171 +925,44 @@ window.DA_READING = (function () {
     b5.push({ t: 'note', x: '这是象征性的内在提示，不是诊断，也不是预言；以上都只是可能，不是对你或对方的判定。' });
     chapters.push({ key: 'deep', no: 'V', title: '深层讯息', en: 'THE UNDERTOW', blocks: b5 });
 
-    /* ── VI TA 想对你说 ─────────────────────────────────── */
+    /* ══════════════════════════════════════════════════════════
+       VI · 跨次元传讯（TA 的回应）
+       --------------------------------------------------------------
+       这一章不是「牌意解读」，也不是「替对方保证心意」。它以这一次真实
+       抽出的牌为媒介，把牌的本意当作情绪与主题的原料，结合这个角色的
+       性格、说话习惯与你们这次连接的背景，拟出一段 TA 可能怎样回应的话。
+
+       三条硬规矩：
+         1. 不复读用户原话——question / relation / background 只用来理解
+            语境，绝不原样出现在文案里（不写「你问的是…」「我们之间是…」）。
+         2. 不照牌意背书——不逐张解释这张牌正位逆位说什么；牌只提供意象
+            与情绪底色，文案里不出现牌名、牌位、方位词。
+         3. 每次 200 字以上——由多段结构 + 足量素材保证，不靠注水。
+       ══════════════════════════════════════════════════════════ */
     var b6 = [];
-    var other = cards.filter(function (e) {
-      return /对方|对象|TA|他者|映象|另一端/.test(e.positionCn + '');
-    })[0];
-    if (!other) other = m.minorCards.filter(function (e) { return e.suit === 'cups'; })[0];
-    if (!other) other = last;
-
-    /* 状态取自「对方那一侧」的牌，意图取自第三张，避免与前五章撞内容 */
-    var stateCard = other;
-    var intentCard = null;
-    for (var ic = 0; ic < cards.length; ic++) {
-      if (cards[ic].id !== core.id && cards[ic].id !== other.id) { intentCard = cards[ic]; break; }
-    }
-    if (!intentCard) {
-      for (var ic2 = 0; ic2 < cards.length; ic2++) {
-        if (cards[ic2].id !== other.id) { intentCard = cards[ic2]; break; }
-      }
-    }
-    if (!intentCard) intentCard = other;
-
-    /* 有角色档案就贴合说话习惯；没有就不虚构身份 */
-    var profileTxt = '';
-    try {
-      if (window.DA_ARCHIVE && DA_ARCHIVE.summary && (L.profileId || hasSubject)) {
-        profileTxt = String(DA_ARCHIVE.summary(L.profileId || '') || '').replace(/\s+/g, ' ').slice(0, 80);
-      }
-    } catch (e) { profileTxt = ''; }
-
-    var sceneBits = [];
-    if (L.question) sceneBits.push('你问的是「' + T(L.question, '') + '」');
-    if (L.relation) sceneBits.push('我们之间是「' + T(L.relation, '') + '」');
-    if (L.background) sceneBits.push('你写下的「' + T(String(L.background).slice(0, 38), '') + '」');
-    var scene = sceneBits.length ? '分寸按' + sceneBits.join('、') + '来拿。' : '';
+    var persona = readPersona(L, hasSubject);
+    var imagery = cardImagery(cards, m);
+    var seedStr = cardIdsKey(cards) + '|' + (L.subjectName || '') +
+      '|' + (L.relationStage || '') + '|' + (L.background || '');
+    var seed = hash32(seedStr);
+    var voiceText = composeTransmission(persona, imagery, seed);
 
     b6.push({
       t: 'p',
-      x: '这一段是替' + (hasSubject ? '「' + T(L.subjectName, '那位') + '」' : '「关系里的另一端」') +
-        '拟的语气，不是对方真的说过的话。它从这次抽出的那几张意象里借了颜色与重量，不点名，也不做解释。' +
-        (profileTxt ? '说话方式参照角色档案：' + profileTxt + '。' : '') + scene +
-        '这一章只做拟声，不替任何人确认心意，也不预告以后会怎样。'
+      x: '下面这一段不是预言，也不是替谁确认心意。它以这次抽出的牌为媒介，' +
+        '把牌里的情绪当作底色，再按「' + escText(persona.name) + '」的性格与说话方式，' +
+        '试着写出 TA 此刻可能会怎样回应你——是一段想象，不是事实。'
     });
-
-    /* 用牌面与背景做确定性种子：换一组牌 / 换一个对象，句式就不同 */
-    var seedStr = (other.id || '') + '|' + (L.subjectName || '') + '|' + (L.relation || '') + '|' + (L.question || '');
-    var seed = 0;
-    for (var si = 0; si < seedStr.length; si++) seed = (seed * 31 + seedStr.charCodeAt(si)) >>> 0;
-    /* C10（v2 §3）/ T4b：OPEN/CLOSE 句式分档只由独立的「关系阶段 relationStage」决定。
-       关系类型（爱情/友情/亲情）只决定语境，绝不推断亲疏——爱情≠亲近、友情≠熟悉、
-       亲情≠亲近。旧档案没有 relationStage 时兼容为 unspecified，一律走中性档。 */
-    var STAGE_TIER = {
-      close: 'warm',          // 亲近：可用亲近句式
-      familiar: 'neutral',    // 熟悉：中性，不越界
-      initial: 'cold',        // 初识：收着说
-      stranger: 'cold',       // 陌生：收着说
-      unspecified: 'neutral'  // 未说明 / 旧档案：中性
-    };
-    var stageKey = String((L && L.relationStage) || 'unspecified');
-    var tier = STAGE_TIER[stageKey] || 'neutral';
-    var OPEN = [
-      '有句话我搁了一阵子，',
-      '我不太会把这种事说圆，',
-      '如果只留一句实话，',
-      '你大概也察觉到了一点，',
-      '先别急着替我补完，',
-      '我犹豫过要不要讲，',
-      '说出来之前，我先想了一遍，',
-      '有些事讲出来会变轻一点，'
-    ];
-    var OPEN_NEUTRAL = [
-      '有句话我搁了一阵子，',
-      '我不太会把这种事说圆，',
-      '如果只留一句实话，',
-      '先别急着替我补完，',
-      '我犹豫过要不要讲，',
-      '说出来之前，我先想了一遍，',
-      '有些事讲出来会变轻一点，'
-    ];
-    var OPEN_COLD = [
-      '有句话不知道该不该说，',
-      '想了想，还是说一句，',
-      '其实没什么大事，',
-      '有些事说一下就过去了，'
-    ];
-    var CLOSE = [
-      '我没有要你现在回答什么，只是不想让它一直停在没说出口的地方。',
-      '这不算承诺，也不是暗示；只是此刻，我愿意把它放在这里。',
-      '你不必当真到明天，但我也没有打算把它收回去。',
-      '如果这算靠近一点，那就先到这儿，剩下的不急着写完。',
-      '听完就好，不用接，也不用给答案。',
-      '我只是想让你知道，不是要你怎么样。',
-      '先放在这儿，等你哪天想起来了，再说。',
-      '我不催你，你按自己的节奏来。'
-    ];
-    var CLOSE_NEUTRAL = [
-      '我没有要你现在回答什么，只是不想让它一直停在没说出口的地方。',
-      '听完就好，不用接，也不用给答案。',
-      '先放在这儿，等你哪天想起来了，再说。',
-      '我不催你，你按自己的节奏来。'
-    ];
-    /* 索引一律走 AT()：seed 是无符号 32 位，算术右移（>>）会得到负数，
-       取模后变成负索引，数组越界返回 undefined——这正是台词最后一句显示
-       “undefined”的根因。改成无符号右移 + 安全取用。 */
-    var openPool = tier === 'cold' ? OPEN_COLD : (tier === 'warm' ? OPEN : OPEN_NEUTRAL);
-    var open = AT(openPool, seed, openPool[0]);
-    /* 冷淡型角色换一套收着的收尾，不说亲近话 */
-    var CLOSE_COLD = [
-      '先这样。你不用接。',
-      '我说完了，别的以后再说。',
-      '就这样，剩下的你自己判断。',
-      '不用回我，我知道你听见了。'
-    ];
-    var coldRole = COLD_MARK.test(profileTxt || '');
-    var closePool = (tier === 'cold' || coldRole) ? CLOSE_COLD :
-      (tier === 'warm' ? CLOSE : CLOSE_NEUTRAL);
-    var close = AT(closePool, seed >>> 3, closePool[0]);
-
-    /* 台词里的"状态"与"打算"都取自这次真实抽到的那张牌：
-       情绪走 mood / moodR，行动走 act / actR，再改写成角色自己在说话。
-       台词里不出现牌名、牌位、正逆位，也不提"牌"这个字。 */
-    var stateText = firstPersonState(dim(stateCard, 'mood'), seed >>> 5);
-    /* 「能落地的一句」：用另一张牌的行动建议，
-       和第二章的数据项、第五章的盲区分析都不重叠。 */
-    var intentText = firstPersonIntent(dim(intentCard, 'act'));
-    var intentLead = coldRole ? '我不打算说什么漂亮话——' : '要说一句能落地的——';
-
-    /* 关于"我们"的那一句：只谈关系与提问，不报牌、不下承诺 */
-    var aboutUs;
-    if (coldRole) {
-      if (L.question && L.relation) {
-        aboutUs = '你问的是「' + T(L.question, '') + '」。' +
-          '我们之间是「' + T(L.relation, '') + '」，我也没打算改。';
-      } else if (L.question) {
-        aboutUs = '你问的是「' + T(L.question, '') + '」。我这边没什么好答的。';
-      } else if (L.relation) {
-        aboutUs = '我们之间是「' + T(L.relation, '') + '」，就那样。';
-      } else {
-        aboutUs = '我这边没什么可交代的。';
-      }
-    } else if (L.relation && L.question) {
-      aboutUs = '你问的是「' + T(L.question, '') + '」，我不打算给你一个答案。' +
-        '我们之间是「' + T(L.relation, '') + '」，这个称呼我暂时不打算换。';
-    } else if (L.relation) {
-      aboutUs = '我们之间是「' + T(L.relation, '') + '」，这个称呼我暂时不打算换。';
-    } else if (L.question) {
-      aboutUs = '你问的是「' + T(L.question, '') + '」，我不打算给你一个答案，但我可以说说我这边。';
-    } else {
-      aboutUs = '我这边没什么可交代的——我只是想让你知道，现在我是什么状态。';
-    }
-
-    var quote = '“' + open + stateText + '。”<br>' +
-      '“' + aboutUs + '”<br>' +
-      '“' + intentLead + intentText.replace(/[。！？]+$/, '') + '。”<br>' +
-      '“' + close + '”';
-
-    b6.push({
-      t: 'quote6',
-      x: scrubVoice(quote, cards)
-    });
+    b6.push({ t: 'quote6', x: scrubVoice(voiceText, cards) });
     b6.push({
       t: 'note',
-      x: '这是一段拟声，用来听见另一种可能；它不代表对方的真实想法，也不构成任何关于未来的判断。' +
-        '整段里不出现任何一张牌的名字，也不标注方向——那样会破坏这一章的意思。'
+      x: '这是以塔罗为媒介的跨次元传讯，用来听见一种可能，不代表对方真实的想法，' +
+        '也不构成关于未来的判断。请看向现实里真实的沟通。'
     });
-    chapters.push({ key: 'voice', no: 'VI', title: 'TA 想对你说', en: 'WHAT THEY MIGHT SAY', blocks: b6 });
+    chapters.push({
+      key: 'voice', no: 'VI', title: '跨次元传讯 · TA 的回应',
+      en: "WHAT THEY MIGHT SAY", blocks: b6
+    });
 
     chapters.forEach(function (ch) { ch.lead = LEADS[ch.key] || ''; });
 
@@ -752,7 +972,11 @@ window.DA_READING = (function () {
       session: session,
       link: L,
       core: core,
-      deckCn: deckCn
+      deckCn: deckCn,
+      /* 传讯层用：角色画像与原味文案（未 scrub），供 UI / 云 LLM 增强复用 */
+      persona: persona,
+      imagery: imagery,
+      transmission: voiceText
     };
   }
 

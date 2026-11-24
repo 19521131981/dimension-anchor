@@ -64,6 +64,8 @@
     displaySource: 'local',
     /* 深度探索：只以云数据库返回的状态为准，不在本地存储付费标记 */
     premium: { tier: 'free', active: false, valid_until: null },
+    voiceEnhanced: false,
+    transmission: '',
     askChapter: '',
     feedback: ''
   };
@@ -304,7 +306,10 @@
                         return '<div><em>' + txt(i.k) + '</em><span>' + txt(i.v) + '</span></div>';
                       }).join('') + '</div>';
       case 'quote':  return '<div class="quote">' + txt(b.x) + '</div>';
-      case 'quote6': return '<div class="quote6">' + txt(b.x) + '</div>';
+      case 'quote6': return '<div class="quote6">' + txt(b.x) + '</div>' +
+        (state.voiceEnhanced
+          ? '<div class="voice-boost is-done">✦ 已按角色档案生成，更贴合 TA 的语气</div>'
+          : '<button class="voice-boost" type="button" id="voiceBoostBtn">✧ 让 TA 说得更像本人 <em>（登录可用）</em></button>');
       case 'chips':  return '<div class="chips">' + (b.items || []).map(function (i) {
                         var cls = i.tone === 'plain' ? 'plain' : (i.tone === 'rev' ? 'rev' : (i.tone === 'up' ? 'up' : ''));
                         return '<span' + (cls ? ' class="' + cls + '"' : '') + '>' + txt(i.x) + '</span>';
@@ -453,7 +458,7 @@
     if (!q) (v.blocks || []).forEach(function (b) { if (!q && b.t === 'p') q = b; });
 
     tail.hidden = false;
-    tail.innerHTML = '<div class="tail__cap">TA 想对你说</div><p>' + txt(q ? q.x : '') + '</p>' +
+    tail.innerHTML = '<div class="tail__cap">跨次元传讯 · TA 的回应</div><p>' + txt(q ? q.x : '') + '</p>' +
       exploreHTML('voice', '继续和 TA 聊下去');
   }
 
@@ -540,11 +545,13 @@
       '<h3 class="m-title" id="mTitle">这份解读是怎么来的</h3>' +
       '<p class="m-sub">' +
         (state.source === 'ai'
-          ? '六章文本由 DeepSeek 生成，牌面数据由本地提供'
-          : '六章文本由站内本地规则引擎生成，没有调用大模型') +
+          ? '前五章解读由 DeepSeek 生成，第六章传讯另按角色档案生成；牌面数据由本地提供'
+          : '前五章解读由站内本地规则引擎生成，第六章传讯按角色档案生成') +
       '</p>' +
-      '<div class="m-pos"><b>当前通道：' + (ok ? 'DeepSeek' + (state.model ? ' · ' + state.model : '') : '本地推演') + '</b>' +
-        (ok ? '' : '<br>原因：' + esc(AI.state.lastError || '未接入后端')) + '</div>' +
+      '<div class="m-pos"><b>解读通道：' + (ok ? 'DeepSeek' + (state.model ? ' · ' + state.model : '') : '本地推演') + '</b>' +
+        (ok ? '' : '<br>原因：' + esc(AI.state.lastError || '未接入后端')) +
+        '<br><b>第六章传讯：' + (state.voiceEnhanced ? '已按角色档案增强' : '本地引擎生成（登录可增强）') + '</b></div>' +
+      '<div class="m-sec"><h4>两种角色，两种口吻</h4><p>前五章是「占卜师解读」：以这次真实抽出的牌为依据，讲清现状、关系与内在提示。第六章是「跨次元传讯」：以牌为媒介，按你为这个角色填写的性格、说话方式和你们的连接背景，拟出 TA 可能怎样回应你。传讯是想象，不是对方真实说过的话，也不能当作对未来的判断。</p></div>' +
       '<div class="m-sec"><h4>会发送给外部 AI 的内容（仅这些）</h4>' +
         '<div class="m-src">' + rows.map(function (r) {
           return '<div class="m-src__row"><em>' + esc(r.k) + '</em><span>' + esc(r.v) + '</span></div>';
@@ -630,6 +637,63 @@
     syncFavBtn();
     toast(r.on ? '已收藏。整条梦占记录连同六章解读一起存档。' : '已从收藏夹移除。');
     S.complete();
+  }
+
+  /* 跨次元传讯 · 登录用户的角色语气增强（主动触发，不自动扣额度） */
+  function enhanceVoice() {
+    if (!window.DA_TRANSMISSION) { toast('增强组件没能加载，请刷新页面。'); return; }
+    if (!window.DA_TRANSMISSION.signedIn()) {
+      toast('先点亮星际通行证，才能按角色档案生成更贴合的传讯。');
+      if (window.DA_AUTH && window.DA_AUTH.open) window.DA_AUTH.open();
+      return;
+    }
+    var btn = $('voiceBoostBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '正在按角色档案重写…'; }
+    var r = state.result || {};
+    var L = state.link || {};
+    /* 刷新重开后 result.persona 不在存档里，用档案 + 连接信息现场重建。 */
+    var persona = r.persona;
+    if (!persona || !persona.name) {
+      persona = { name: L.subjectName || '', work: L.workName || '', relation: L.relation || '',
+        stage: L.relationStage || 'unspecified', traits: '', speech: '', catchUp: '', values: '', history: '' };
+      try {
+        if (window.DA_ARCHIVE) {
+          var d = (L.profileId && DA_ARCHIVE.byProfile && DA_ARCHIVE.byProfile(L.profileId)) || null;
+          if (d) {
+            persona.traits = d.traits || ''; persona.speech = d.speech || '';
+            persona.catchUp = [].concat(d.catch || []).join('；');
+            persona.values = d.values || ''; persona.history = d.history || '';
+            if (d.name) persona.name = d.name;
+            if (d.work && !persona.work) persona.work = d.work;
+          } else if (L.profileId && DA_ARCHIVE.summary) {
+            persona.traits = DA_ARCHIVE.summary(L.profileId) || '';
+          }
+        }
+      } catch (e) {}
+    }
+    var ctx = { persona: persona, imagery: r.imagery || {}, scene: L.background || '' };
+    window.DA_TRANSMISSION.enhance(ctx).then(function (text) {
+      var v = chapterOf('voice');
+      if (!v) throw new Error('没有传讯章节');
+      var hit = false;
+      (v.blocks || []).forEach(function (b) {
+        if (b.t === 'quote6') { b.x = text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>'); hit = true; }
+      });
+      if (!hit) throw new Error('传讯正文没找到');
+      state.voiceEnhanced = true;
+      state.transmission = text;
+      if (state.record) {
+        state.record = ST.readings.patch(state.record.id, {
+          chapters: clone(state.result.chapters), voiceEnhanced: true
+        }) || state.record;
+      }
+      renderHero(); renderRows(); renderTail();
+      toast('已按角色档案重写，这段 TA 的回应更贴近本人了。');
+    }).catch(function (e) {
+      if (btn) { btn.disabled = false; btn.innerHTML = '✧ 让 TA 说得更像本人 <em>（登录可用）</em>'; }
+      var m = window.DA_PREMIUM && window.DA_PREMIUM.message ? window.DA_PREMIUM.message(e) : '稍后再试';
+      toast('这次没生成成功：' + m + '。原来的传讯还在。');
+    });
   }
 
   function makeShareCard() {
@@ -1252,6 +1316,8 @@
     state.archiveReadOnly = readOnly;
     if (complete) {
       state.record = rec;                       /* 幂等：刷新/重开不重复写盘 */
+      /* 恢复「已按角色档案增强」标记，刷新后不再显示重写按钮 */
+      if (rec.voiceEnhanced) state.voiceEnhanced = true;
     } else if (!readOnly) {
       state.record = ST.readings.save(
         ST.readings.fromSession(session, link, result, {
@@ -1375,6 +1441,7 @@
       if (!t || !t.closest) return;
       var ex = t.closest('[data-pm-explore]');
       if (ex) { openAsk(ex.getAttribute('data-pm-explore')); return; }
+      if (t.closest('#voiceBoostBtn')) { enhanceVoice(); return; }
       var chip = t.closest('.pm-chip');
       if (chip) {
         $('askInput').value = chip.getAttribute('data-q') || '';
