@@ -224,8 +224,9 @@ window.DA_RELAY = (function () {
     '涉及现实伤害时优先现实的支持。';
 
   var CHARTER =
-    '这是「梦女向」实时传讯：信号另一端，是用户心里那个 TA（梦角）在说话，' +
-    '听的人（用户）就是「你」。这是一场正在进行的对话框聊天，不是写信，不是旁白。\n' +
+    '这是「维度锚点」的「梦女向」实时传讯：你是安静的跨维度传讯载体，信号另一端，' +
+    '是用户心里那个 TA（梦角）的声音，听的人（用户）就是「你」。' +
+    '这是一场正在进行的对话框聊天，不是写信，不是旁白。\n' +
     BASE + '\n' +
     '你不知道任何牌、塔罗、占卜、程序、AI 的存在；除非被问到真实性（按上面的诚实条款回答），' +
     '正文里不出现「作为 AI」「根据设定」「塔罗」「牌」「正位」「逆位」「占卜」这类词，一个都不许。';
@@ -240,7 +241,10 @@ window.DA_RELAY = (function () {
     '4. 不编造对方没说过的事件；不确定的就用你自己的方式反问、绕开，或者沉默半句。\n' +
     '5. 保持这个角色一贯的语言习惯与节奏：档案里有「常说的话」就顺着那个声线，但不要照抄。\n' +
     '6. 如果看到「更早对话的本地摘要」，那是大意、不是原话；不要把摘要内容说成「你说过」的具体哪一句。\n' +
-    '7. 只输出 JSON：{"text":"回复内容"}，不要 Markdown，不要解释。';
+    '7. 像真人聊天：彻底贯彻这个角色的语气、话语长度与情绪克制程度，绝不千人一面，不写流水线式的甜话套路；' +
+    '可以停顿、短句、反问，也可以诚实地说出距离或迟疑，不强行哄好。\n' +
+    '8. 语言干净克制、有留白：不用 emoji、网络流行语，不写舞台动作括号描写（如「（拉住你的手）」）。\n' +
+    '9. 只输出 JSON：{"text":"回复内容"}，不要 Markdown，不要解释。';
 
   var INIT_SYSTEM =
     '深夜的星海信号台接通了一个未知的声音，这个声音要说今晚的第一句话。\n' +
@@ -277,6 +281,9 @@ window.DA_RELAY = (function () {
     return llm(INIT_SYSTEM, user, { temperature: 0.95, maxTokens: 260 }).then(function (t) {
       var j = parseJSON(t);
       var text = j && j.text ? String(j.text).trim() : '';
+      /* 通道已接通但模型返回空白：用一个不冒充本人的温和短句兜底，
+         避免开场就是冷冰冰的报错；真正的通道失败（llm reject）仍走错误提示。 */
+      if (!text) text = '……我在。';
       var err = validate(text);
       if (err) throw new Error(err);
       return { text: text, facts: f };
@@ -355,6 +362,8 @@ window.DA_RELAY = (function () {
     }).then(function (t) {
       var j = parseJSON(t);
       var text = j && j.text ? String(j.text).trim() : '';
+      /* 通道已接通但模型返回空白时的温和兜底，不冒充本人、不编造事件。 */
+      if (!text) text = '……我在听。';
       var err = validate(text, truthy);
       if (err) throw new Error(err);
       return { text: text, card: { id: pick.id, rev: pick.rev } };
