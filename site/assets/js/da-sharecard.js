@@ -209,7 +209,7 @@
     ctx.stroke();
     ctx.fillStyle = 'rgba(206,198,232,.62)';
     ctx.font = '15px ' + FONT;
-    ctx.fillText('每一次抽牌，都是与你自己的一次对话。', W / 2, H - 64);
+    ctx.fillText('牌是通道，那头的声音一直都在。', W / 2, H - 64);
     ctx.fillStyle = 'rgba(240,217,168,.6)';
     ctx.font = '13px ' + SERIF;
     ctx.fillText('DIMENSION ANCHOR · 维度锚点', W / 2, H - 38);

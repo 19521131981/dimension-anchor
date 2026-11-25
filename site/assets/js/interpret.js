@@ -31,7 +31,7 @@
        漏出的 undefined / null 字面量都不允许出现在页面上。 */
     var raw = (s === undefined || s === null) ? '' : String(s);
     raw = raw.replace(/\bundefined\b/g, '').replace(/\bnull\b/g, '');
-    return esc(raw).replace(/&lt;br&gt;/gi, '<br>');
+    return esc(raw).replace(/&lt;br&gt;/gi, '<br>').replace(/\n/g, '<br>');
   }
   function clone(o) { return JSON.parse(JSON.stringify(o || null)); }
   function attr(s) { return String(s == null ? '' : s).replace(/["\\]/g, '\\$&'); }
@@ -675,9 +675,15 @@
     window.DA_TRANSMISSION.enhance(ctx).then(function (text) {
       var v = chapterOf('voice');
       if (!v) throw new Error('没有传讯章节');
+      /* 与本地链路同一道保险闸：云LLM输出也不许带牌名/正逆位/牌位。 */
+      var cards = (state.session && state.session.cards) || [];
+      var clean = RD.scrubVoice ? RD.scrubVoice(text, cards) : text;
+      if (clean.length < 200) clean = text; // 兜底清理若误删过多，宁可保留原文
       var hit = false;
       (v.blocks || []).forEach(function (b) {
-        if (b.t === 'quote6') { b.x = text.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>'); hit = true; }
+        /* 只存纯文本：换行交给 txt() 统一转成 <br>，不在这里预先转义，
+           否则刷新读回存档时 esc() 会二次转义成 &amp;lt; 显示在页面上。 */
+        if (b.t === 'quote6') { b.x = clean; hit = true; }
       });
       if (!hit) throw new Error('传讯正文没找到');
       state.voiceEnhanced = true;
@@ -690,9 +696,11 @@
       renderHero(); renderRows(); renderTail();
       toast('接通了。这段话，是 TA 更清楚的心声。');
     }).catch(function (e) {
-      if (btn) { btn.disabled = false; btn.innerHTML = '✧ 听 TA 再说一遍 <em>（登录可接通）</em>'; }
+      /* 异步期间用户可能切了 tab，原按钮节点已被重渲染替换——必须重新取。 */
+      var fresh = $('voiceBoostBtn');
+      if (fresh) { fresh.disabled = false; fresh.innerHTML = '✧ 听 TA 再说一遍 <em>（登录可接通）</em>'; }
       var m = window.DA_PREMIUM && window.DA_PREMIUM.message ? window.DA_PREMIUM.message(e) : '稍后再试';
-      toast('这次没生成成功：' + m + '。原来的传讯还在。');
+      toast('这次没接通：' + m + '。刚才那段还在。');
     });
   }
 
@@ -1464,8 +1472,8 @@
       if (!$('ask').hidden) closeAsk();
     });
 
-    /* 权益状态每次进页面都重新向服务端查询 */
-    refreshPremium();
+    /* 权益状态已在 bindGlobal() 里统一刷新过（boot 正常路径两者都会调用），
+       这里不再重复发起云端请求。空态路径只走 bindGlobal，也能覆盖。 */
   }
 
   if (document.readyState === 'loading') {

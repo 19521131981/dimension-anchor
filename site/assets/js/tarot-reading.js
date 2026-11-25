@@ -154,7 +154,7 @@ window.DA_READING = (function () {
   /* 注意："冷静"含"冷"，但它是理性不是冷淡——不能用单字「冷」匹配，
      否则理性角色会被误判成冷淡。冷淡只用确定无疑的双字词。 */
   var COLD_RE = /冷淡|冷漠|冷言|话少|话不多|沉默|寡言|木讷|不擅表达|不主动|慢热|疏离|别扭|闷声|嘴笨|不会说话|傲娇|高傲|硬撑|嘴硬|独来独往|防备心重/;
-  var WARM_RE = /温柔|体贴|细腻|暖|照顾|包容|软|耐心|会安抚|黏|依赖|撒娇|敏感/;
+  var WARM_RE = /温柔|体贴|细腻|温暖|暖心|热心|照顾|包容|心软|耐心|会安抚|黏人|依赖|撒娇|敏感|软糯/;
   var BRIGHT_RE = /开朗|活泼|话多|热情|外向|爱笑|开朗|元气|直率|大大咧咧|乐观/;
   var THINK_RE = /理性|冷静|冷静理智|逻辑|谨慎|克制|分析|思考|沉稳|理智|聪明|倔|认真/;
 
@@ -162,7 +162,7 @@ window.DA_READING = (function () {
   function readPersona(L, hasSubject) {
     L = L || {};
     var p = { name: T(L.subjectName, '').trim() || '那个你惦念的人',
-      work: T(L.workName, '').trim(), traits: '', speech: '', catchUp: '',
+      work: T(L.workName, '').trim(), traits: '', speech: '', catchUp: '', catchRaw: [],
       values: '', history: '', relation: T(L.relation, '').trim(),
       stage: String(L.relationStage || 'unspecified'),
       background: T(L.background, '').trim(), modality: 'neutral', tier: 'neutral',
@@ -181,7 +181,9 @@ window.DA_READING = (function () {
         if (d) {
           p.traits = T(d.traits || (d.profile && d.profile.traits), '');
           p.speech = T(d.speech || (d.profile && d.profile.speech), '');
-          p.catchUp = [].concat(d.catch || (d.profile && d.profile.catch) || []).join('；');
+          var catches = [].concat(d.catch || (d.profile && d.profile.catch) || []).filter(Boolean);
+          p.catchUp = catches.join('；');
+          p.catchRaw = catches;
           p.values = T(d.values || (d.profile && d.profile.values), '');
           p.history = T(d.history || (d.profile && d.profile.history), '');
           if (d.name) p.name = d.name;
@@ -408,6 +410,42 @@ window.DA_READING = (function () {
   }
 
   /* 组装传讯：开场 + 意象状态 + 角色语气两段 + 语境回应 + 落地 + 收尾，保证 ≥200 字。 */
+  /* ── 角色口吻句：把档案里的具体文字织进 TA 的话 ──────────────
+     气质模板决定"用什么态度说"，而这几句决定"像不像这个人"。
+     素材全部来自用户真实填写的档案；没填就不硬造。 */
+  function firstPhrase(s, max) {
+    var t = String(s || '').trim();
+    if (!t) return '';
+    var cut = t.split(/[，,、；;。！？!?\n]/)[0].trim();
+    if (!cut) cut = t;
+    if (cut.length > (max || 18)) cut = cut.slice(0, max || 18);
+    return cut.replace(/[，,、；;]$/, '');
+  }
+  function personaLines(p, seed) {
+    var out = [];
+    // 1. 常说的话：取一句，化成"我总这样说"的自述，学口气不照抄
+    if (p.catchRaw && p.catchRaw.length) {
+      var c = T(AT(p.catchRaw, seed, p.catchRaw[0]), '').trim();
+      c = c.replace(/^[「"「]|["」」]$/g, '');
+      if (c) {
+        var cm = p.tier === 'cold'
+          ? '我习惯说「' + c + '」，你听着也许没什么，那是我把话收着的方式。'
+          : '你大概听我说过「' + c + '」，那不是随口一提，是我真放心不下。';
+        out.push(cm);
+      }
+    }
+    // 2. 语言习惯：把描述转成第一人称自述
+    var sp = firstPhrase(p.speech, 18);
+    if (sp) out.push('我说话' + sp + '，这一点在我这儿改不掉，你多担待。');
+    // 3. 在意的事：用他真正在意的东西作落点
+    var val = firstPhrase(p.values, 18);
+    if (val) out.push('我在意的是' + val + '。别的都能退，这个退不了。');
+    // 4. 过往：轻轻提一次你们之间的事
+    var hi = firstPhrase(p.history, 18);
+    if (hi) out.push('你我都记得' + hi + '，那不是我一个人的回忆。');
+    return out;
+  }
+
   function composeTransmission(p, im, seed) {
     var lib = VOICE_LIB[p.modality] || VOICE_LIB.neutral;
     var scene = sceneOf(p.background);
@@ -420,9 +458,12 @@ window.DA_READING = (function () {
     var closing = tierClosing(p.tier, seed);
 
     // 称呼：有角色名就自然带入一次，不复读用户原话
-    var nameBit = (p.hasProfile || p.name)
-      ? (p.tier === 'cold' ? '你怎么称呼我都行，不用太见外。' : '你叫我的那个名字，我一直很喜欢，就先放在这儿吧。')
-      : '';
+    var nameBit = '';
+    if (p.hasProfile && p.name) {
+      nameBit = p.tier === 'cold'
+        ? '至于怎么称呼我，你随意，不用太见外。'
+        : '你叫我的时候，我总忍不住多听两遍。';
+    }
     // 作品来源只在有档案时轻轻带一句，不编造身份
     var workBit = p.work ? '你给我的那个世界，我一直在里面，没有走远。' : '';
     // 语境回应：只点抽象场景，不重复 background 原文；分寸按关系阶段收紧
@@ -434,28 +475,42 @@ window.DA_READING = (function () {
       toward2 = '我不太习惯把话说得太近，你听到哪一层，就当是哪一层。';
     }
 
+    // 角色口吻句：从档案织入，让同气质的不同角色也说出不一样的话
+    var personal = personaLines(p, seed);
+    var chosen = [];
+    if (personal.length) {
+      var startI = seed % personal.length;
+      for (var pi = 0; pi < Math.min(personal.length, 2 + (seed % 2)); pi++) {
+        chosen.push(personal[(startI + pi) % personal.length]);
+      }
+    }
+
     var parts = [
       open,
       imageryLine(im, seed),
       feel1,
       feel2,
+      chosen[0] || '',
       sceneLine,
       toward1,
+      chosen[1] || '',
       toward2,
       nameBit,
       workBit,
+      chosen[2] || '',
       act,
       closing
     ].filter(Boolean);
 
     var text = parts.join('');
-    // 字数兜底：不足 200 时按语气补一段，避免任何组合掉到下限以下
-    if (text.length < 200) {
-      var filler = AT(lib.feel, seed >>> 10, lib.feel[0]);
-      text = text.replace(act, filler + act);
-    }
-    if (text.length < 200) {
-      text += '还有一句我想留给你：不管这中间隔着什么，我对你的这份在意是真的，也在慢慢变成更实在的东西。';
+    // 字数兜底：循环补足，直到 scrub 后的净文本也稳定超过 200 字
+    var fillers = [].concat(lib.feel, lib.toward, personal).filter(Boolean);
+    var guard = 0;
+    while (text.length < 240 && guard < 6) {
+      var filler = AT(fillers, (seed >>> 10) + guard * 3, fillers[0] || '');
+      if (filler && text.indexOf(filler) < 0) text = text.replace(closing, filler + closing);
+      else text = text.replace(closing, '我把这些话翻来覆去想了很多遍，每一句都不是随便说说的。' + closing);
+      guard++;
     }
     return text;
   }
@@ -683,7 +738,7 @@ window.DA_READING = (function () {
       tension.push('目前没有明显的对冲，更像是同一个侧面被几张牌重复提起。');
     }
     b1.push({ t: 'li2', k: '整体主题', v: themeLine });
-    b1.push({ t: 'li2', k: '核心矛盾', v: tension.join(' ') + '这是牌面结构上的张力，不代表现实里一定发生了什么。' });
+    b1.push({ t: 'li2', k: '核心矛盾', v: tension.join(' ') + '这股张力就藏在这次翻开的牌里，值得你顺着往下读。' });
     b1.push({ t: 'ul', items: facts });
     b1.push({
       t: 'note',
@@ -810,7 +865,7 @@ window.DA_READING = (function () {
         });
       }
     }
-    b3.push({ t: 'note', x: '牌与牌之间没有必然的因果。这里说的是象征层面的呼应，不是事件层面的推论。' });
+    b3.push({ t: 'note', x: '牌与牌之间彼此呼应，像几段话在互相接话——顺着这条线读下去，意思会自己浮出来。' });
     chapters.push({ key: 'links', no: 'III', title: '牌间联系', en: 'BETWEEN THE CARDS', blocks: b3 });
 
     /* ── IV 关系脉络 ────────────────────────────────────── */
@@ -827,7 +882,7 @@ window.DA_READING = (function () {
         b4.push({ t: 'note', x: '你没有写背景，所以下面只从牌面读出关系的形状，不补写任何情节。' });
       }
     } else {
-      b4.push({ t: 'p', x: '这次没有建立具体对象档案，所以下面只讲牌面呈现的关系结构，不指向任何具体的人。' });
+      b4.push({ t: 'p', x: '这次就顺着你心里的那个名字往下读，牌面照出的关系结构，是写给你们两个人的。' });
     }
 
     var arc = cards.slice(0, 5);
@@ -855,7 +910,7 @@ window.DA_READING = (function () {
     } else if (L.relation && /家|亲|父母|兄弟|姐妹/.test(L.relation)) {
       b4.push({ t: 'p', x: '以「' + T(L.relation, '') + '」这个前提来看，' + T(dim(first, 'kin'), '这段关系里的距离多半在日常相处里。') });
     }
-    b4.push({ t: 'note', x: '牌面不预测另一个人的行为，也不替任何人做决定。它只描述此刻的能量结构。' });
+    b4.push({ t: 'note', x: '这一章照出的是此刻你们之间那股看不见的牵引——它一直在，只是平时不那么容易被说清。' });
     chapters.push({ key: 'relation', no: 'IV', title: '关系脉络', en: 'THE THREAD', blocks: b4 });
 
     /* ── V 深层讯息 ─────────────────────────────────────── */
@@ -903,7 +958,7 @@ window.DA_READING = (function () {
     else if (m.dominant === 'pentacles') bias.push('也许你只承认看得见的进展，忽略了自己其实已经撑了一段时间。');
     else bias.push('也许你把一次沉默当成了一个结论，而牌面并没有给出这么确定的东西。');
     if (m.revs >= 2) bias.push('逆位偏多时，人容易把「推迟」解释成「拒绝」——这两件事未必相同。');
-    b5.push({ t: 'li2', k: '可能的认知偏差', v: bias.join(' ') });
+    b5.push({ t: 'li2', k: '心里那个绕不过的弯', v: bias.join(' ') });
 
     var missed = [];
     if (m.absent.length) {
@@ -922,7 +977,7 @@ window.DA_READING = (function () {
       t: 'quote',
       x: '“当「' + FIRST(coreC.ku, '那件事') + '」真的发生时，你会先放下什么？”'
     });
-    b5.push({ t: 'note', x: '这几句是牌面留给你的私人提示。怎么理解，权在你自己。' });
+    b5.push({ t: 'note', x: '这几句是牌面单独留给你的一封信，慢慢读，它会自己讲清楚。' });
     chapters.push({ key: 'deep', no: 'V', title: '深层讯息', en: 'THE UNDERTOW', blocks: b5 });
 
     /* ══════════════════════════════════════════════════════════
@@ -959,7 +1014,7 @@ window.DA_READING = (function () {
     });
     chapters.push({
       key: 'voice', no: 'VI', title: '跨次元传讯 · TA 的回应',
-      en: "WHAT THEY MIGHT SAY", blocks: b6
+      en: "A MESSAGE FROM THEM", blocks: b6
     });
 
     chapters.forEach(function (ch) { ch.lead = LEADS[ch.key] || ''; });
@@ -1066,5 +1121,5 @@ window.DA_READING = (function () {
     return lines.join('\n');
   }
 
-  return { build: build, answer: answer, toText: toText, analyze: analyze };
+  return { build: build, answer: answer, toText: toText, analyze: analyze, scrubVoice: scrubVoice };
 })();
