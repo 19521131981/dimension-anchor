@@ -108,6 +108,22 @@
 
     var refresh = $('daCloudRefresh');
     if (refresh) refresh.addEventListener('click', function () { refreshMeta(); });
+
+    var del = $('daCloudDelete');
+    if (del) del.addEventListener('click', function () {
+      if (!CB.signedIn()) { toast(CB.message({ code: 'SIGN_IN_REQUIRED' })); return; }
+      CB.get('main').then(function (row) {
+        if (!row || !row.payload) { toast('云端还没有备份可删除。'); return; }
+        var when = fmt(row.created_at);
+        if (!window.confirm('删除云端备份（' + when + '）？删除后云端将不再保存这份数据，本机数据不受影响，且无法撤销。')) return;
+        del.disabled = true;
+        return CB.remove('main').then(function (r) {
+          toast(r && r.removed ? '云端备份已删除。' : '云端没有可删除的备份。');
+          refreshMeta();
+        }).catch(function (e) { toast(CB.message(e)); })
+          .then(function () { del.disabled = false; });
+      }).catch(function (e) { toast(CB.message(e)); });
+    });
   }
 
   bind();

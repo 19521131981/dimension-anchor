@@ -337,6 +337,13 @@ body.it {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
 }
+.lp-acts__note {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: rgba(232, 216, 255, .55);
+}
 .act {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   height: 40px;

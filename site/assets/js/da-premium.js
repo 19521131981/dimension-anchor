@@ -292,7 +292,8 @@ window.DA_PREMIUM = (function () {
     };
     if (map[c]) return map[c];
     if (/^SERVER_/.test(c)) return '服务端暂时没有回应，稍后再试。';
-    return (e && e.message) || '出了点问题，再试一次。';
+    if (window.DAErrorText) return window.DAErrorText(e, '出了点问题，再试一次。');
+    return '出了点问题，再试一次。';
   }
 
   return {

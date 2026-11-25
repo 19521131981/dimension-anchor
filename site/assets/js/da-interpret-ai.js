@@ -98,7 +98,22 @@
 
   /* 校验并应用：只替换叙述块文本，牌面数据块一律不碰。
      返回新的 chapters 数组；不合法就 throw（调用方保留本地版本）。 */
-  function applyChapters(original, parsed) {
+  /* 第六章禁牌名校验：拦截明确的塔罗术语与带书名号/牌字的牌名，
+     对「星星/月亮/太阳」等日常多义词只在塔罗语境下拦截，避免误伤。 */
+  var CARD_TERMS = /(塔罗|牌阵|牌面|抽牌|翻牌|正位|逆位|大阿尔卡纳|小阿尔卡纳|圣杯|权杖|宝剑|星币|牌[面名阵])/;
+  var MULTI_CARD = /(星星|月亮|太阳|世界|恋人|力量|正义|节制|审判|高塔|死神|皇后|皇帝|教皇|战车|隐者|愚者|魔术师|女祭司)/;
+  function leaksCardName(text, cards) {
+    if (CARD_TERMS.test(text)) return true;
+    /* 书名号只在内容恰好是本次真实牌名时拦截，避免误伤作品名。 */
+    if ((cards || []).some(function (c) { return c && c.cn && text.indexOf('《' + c.cn + '》') >= 0; })) return true;
+    if (MULTI_CARD.test(text)) {
+      /* 多义词：仅当同段出现塔罗语境词才判泄漏，避免误伤日常用法。 */
+      if (/牌|塔罗|张|抽|位/.test(text)) return true;
+    }
+    return false;
+  }
+
+  function applyChapters(original, parsed, cards) {
     if (!Array.isArray(parsed) || parsed.length !== original.length) {
       throw new Error('NUMBER_MISMATCH');
     }
@@ -118,16 +133,27 @@
         var nt = item.texts[k++];
         if (!nt || typeof nt.x !== 'string' || !nt.x.trim()) return; // 单块异常就保留原块
         var text = plain(nt.x);
-        if (b.t === 'quote6' && text.length < 200) throw new Error('VOICE_TOO_SHORT');
+        if (b.t === 'quote6') {
+          if (text.length < 200) throw new Error('VOICE_TOO_SHORT');
+          if (leaksCardName(text, cards)) throw new Error('CARD_NAME_LEAK');
+        }
         b.x = text;
       });
     }
     return out;
   }
 
+  /* 前端防连点冷却：仅防止同一设备误触/重复提交造成无谓的模型调用，
+     不是可靠的服务端限流，不能作为商业化成本保护的依据。 */
+  var lastCallAt = 0;
+  var COOLDOWN_MS = 20000;
+
   /* 生成深化六章。resolve 返回新的 chapters 数组；任何异常都 reject。 */
   function enhance(ctx) {
     if (!signedIn()) return Promise.reject(new Error('SIGN_IN_REQUIRED'));
+    var now = Date.now();
+    if (now - lastCallAt < COOLDOWN_MS) return Promise.reject(new Error('RATE_LIMITED'));
+    lastCallAt = now;
     if (!window.DA_PREMIUM || !window.DA_PREMIUM.ready) return Promise.reject(new Error('CLOUD_UNAVAILABLE'));
 
     var messages = buildMessages(ctx);
@@ -157,7 +183,7 @@
           var parsed;
           try { parsed = JSON.parse(cleaned.slice(start, end + 1)); }
           catch (e) { throw new Error('BAD_JSON'); }
-          return applyChapters(original, parsed);
+          return applyChapters(original, parsed, (ctx.session || {}).cards);
         });
       });
     });
@@ -167,6 +193,7 @@
     enhance: enhance,
     buildMessages: buildMessages,
     applyChapters: applyChapters,
+    leaksCardName: leaksCardName,
     signedIn: signedIn
   };
 })();

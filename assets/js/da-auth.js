@@ -425,7 +425,7 @@ window.DA_AUTH = (function () {
       signOut().then(function () {
         close(); toast('已退出 · 之后收到的信只留在本设备');
       }).catch(function (e) {
-        toast(e.message || '退出失败');
+        toast(window.DAErrorText ? window.DAErrorText(e, '退出失败') : '退出失败');
         out.disabled = false; out.textContent = '退出登录';
       });
     };

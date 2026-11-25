@@ -13,6 +13,17 @@ window.DA_CLOUD_BACKUP = (function () {
   'use strict';
 
   var TABLE = 'da_backups';
+  /* 单份备份上限 1 MiB：超出的备份拒绝上传并给明确提示，避免异常数据
+     把账号备份槽撑爆。正常存档（几十个键的原文 JSON）远小于此。 */
+  var MAX_BYTES = 1024 * 1024;
+
+  function utf8Bytes(text) {
+    if (window.TextEncoder) {
+      try { return new TextEncoder().encode(text).length; } catch (e) {}
+    }
+    /* 兜底： escapes 后按字节估算（中文/emoji 会被算成多字节） */
+    return unescape(encodeURIComponent(text)).length;
+  }
 
   function signedIn() {
     var au = window.DA_AUTH;
@@ -49,11 +60,17 @@ window.DA_CLOUD_BACKUP = (function () {
     if (!c || !c.database) return Promise.reject(new Error('云服务暂时没连上。'));
     var text = String(payloadText || '');
     if (!text) return Promise.reject(new Error('没有可备份的内容。'));
+    var bytes = utf8Bytes(text);
+    if (bytes > MAX_BYTES) {
+      var big = new Error('备份内容过大（超过 1 MB），请先精简本地记录再上传。');
+      big.code = 'TOO_LARGE';
+      return Promise.reject(big);
+    }
     /* 不传 owner_id：DEFAULT auth.uid() + RLS WITH CHECK 负责归属。 */
     var row = {
       slot: String(slot || 'main').slice(0, 32),
       payload: text,
-      byte_size: text.length
+      byte_size: bytes
     };
     return c.database.from(TABLE)
       .upsert(row, { onConflict: 'owner_id,slot' })
@@ -129,7 +146,8 @@ window.DA_CLOUD_BACKUP = (function () {
     var c = e && e.code;
     if (c === 'SIGN_IN_REQUIRED') return '先点亮星际通行证，才能使用云端备份。';
     if (c === '42501') return '没有权限访问这份备份。';
-    return (e && e.message) || '云端备份暂时不可用，稍后再试。';
+    if (window.DAErrorText) return window.DAErrorText(e, '云端备份暂时不可用，稍后再试。');
+    return '云端备份暂时不可用，稍后再试。';
   }
 
   return {

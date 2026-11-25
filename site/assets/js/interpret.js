@@ -741,9 +741,10 @@
       var fresh = $('aiDeepenBtn'), fl = $('aiDeepenTxt');
       if (fresh) fresh.disabled = false;
       if (fl) fl.textContent = '让 AI 深化解读';
-      var m = e && e.message === 'SIGN_IN_REQUIRED' ? '请先登录' :
-        (e && e.message === 'TOO_SHORT' || e && e.message === 'VOICE_TOO_SHORT' ? '这次结果不完整' :
-        (e && e.message) || '稍后再试');
+      var code = e && e.message;
+      var m = code === 'SIGN_IN_REQUIRED' ? '请先登录' :
+        (code === 'TOO_SHORT' || code === 'VOICE_TOO_SHORT' || code === 'BAD_JSON' || code === 'NUMBER_MISMATCH' || code === 'SHAPE_MISMATCH' || code === 'BLOCK_MISMATCH' || code === 'CARD_NAME_LEAK' ? '这次结果不完整' :
+        (window.DAErrorText ? window.DAErrorText(e, '稍后再试') : '稍后再试'));
       toast('这次没深化成功：' + m + '。原来的解读还在。');
     });
   }
@@ -754,7 +755,7 @@
     window.DA_SHARECARD.make().then(function () {
       toast('竖版分享卡已生成并下载，可以分享给朋友了。');
     }).catch(function (e) {
-      toast('生成失败：' + (e && e.message ? e.message : '请稍后重试'));
+      toast('生成失败：' + (window.DAErrorText ? window.DAErrorText(e, '请稍后重试') : '请稍后重试'));
     });
   }
 

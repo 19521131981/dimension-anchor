@@ -25,9 +25,11 @@
   function reasonText(r) {
     var m = {
       ok: '兑换成功', invalid: '码不存在', expired: '已过期', used: '次数用尽',
-      disabled: '已停用', SIGN_IN_REQUIRED: '未登录'
+      disabled: '已停用', SIGN_IN_REQUIRED: '未登录', ADMIN_REQUIRED: '当前账号没有管理权限'
     };
-    return m[r] || r || '—';
+    if (m[r]) return m[r];
+    if (r && window.DAErrorText) return window.DAErrorText(String(r));
+    return r ? '状态异常，稍后再试。' : '—';
   }
 
   function showConsole(on) {
