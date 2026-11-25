@@ -77,12 +77,27 @@
   <!-- ══ 数据备份（任何状态可见，数据只在本机） ══ -->
   <section class="da-backup" aria-label="数据备份与恢复">
     <h2 class="da-backup__t">带上你的星轨</h2>
-    <p class="da-backup__d">所有记录只存在这台设备的浏览器里。换设备或清缓存前，记得备份一份。</p>
+    <p class="da-backup__d">所有记录先存在这台设备的浏览器里。换设备或清缓存前，记得备份一份。</p>
     <div class="da-backup__acts">
       <button class="ar-btn ar-btn--ghost" type="button" data-da-export data-da-toast="arToast"><span>导出备份</span></button>
       <button class="ar-btn ar-btn--ghost" type="button" data-da-import data-da-toast="arToast"><span>恢复备份</span></button>
     </div>
     <p class="da-backup__hint">恢复为合并模式（同名覆盖）；如需完全替换，按住 Shift 再点「恢复备份」。</p>
+
+    <div class="da-cloud" id="daCloud">
+      <div class="da-cloud__head">
+        <h3 class="da-cloud__t">云端备份</h3>
+        <span class="da-cloud__state" id="daCloudState">本机模式</span>
+      </div>
+      <p class="da-cloud__d" id="daCloudDesc">登录星际通行证后，可把备份存到云端，换设备也能取回。备份只有你自己能读。</p>
+      <div class="da-cloud__acts" id="daCloudActs" hidden>
+        <button class="ar-btn ar-btn--ghost" type="button" id="daCloudPut"><span>上传到云端</span></button>
+        <button class="ar-btn ar-btn--ghost" type="button" id="daCloudRestore"><span>从云端恢复</span></button>
+        <button class="ar-btn ar-btn--ghost" type="button" id="daCloudRefresh"><span>刷新状态</span></button>
+      </div>
+      <button class="ar-btn" type="button" id="daCloudSign" hidden><span>点亮通行证</span></button>
+      <p class="da-backup__hint" id="daCloudMeta" hidden></p>
+    </div>
   </section>
 
   <p class="ar-foot">THE WALL REMEMBERS · DIMENSION ANCHOR</p>
@@ -104,9 +119,14 @@
 
 <div class="ar-toast" id="arToast" role="status" aria-live="polite"></div>
 
+<script src="assets/js/workbuddy-cloud-sdk.global.js"></script>
+<script src="assets/js/da-cloud-config.js?v=20261113b"></script>
 <script src="assets/js/da-link.js"></script>
 <script src="assets/js/da-store.js"></script>
+<script src="assets/js/da-auth.js"></script>
+<script src="assets/js/da-cloud-backup.js"></script>
 <script src="assets/js/da-backup-ui.js"></script>
+<script src="assets/js/da-cloud-backup-ui.js"></script>
 <script src="assets/js/da-archive.js?v=20261108"></script>
 <script src="assets/js/archive.js?v=20261108"></script>
 

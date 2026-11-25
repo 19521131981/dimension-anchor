@@ -704,6 +704,50 @@
     });
   }
 
+  /* 六章 AI 深化：登录用户主动触发，失败静默保留本地六章。
+     牌面数据块由 da-interpret-ai 的 applyChapters 严格保护，模型碰不到。 */
+  function deepenAI() {
+    if (!window.DA_INTERPRET_AI) { toast('深化组件未能加载，请刷新页面。'); return; }
+    if (!window.DA_INTERPRET_AI.signedIn()) {
+      toast('先点亮星际通行证，才能让 AI 深化这次解读。');
+      if (window.DA_AUTH && window.DA_AUTH.open) window.DA_AUTH.open();
+      return;
+    }
+    var label = $('aiDeepenTxt'), btn = $('aiDeepenBtn');
+    if (btn) btn.disabled = true;
+    if (label) label.textContent = '正在深化六章…';
+    var r = state.result || {};
+    var L = state.link || {};
+    var ctx = {
+      session: state.session || {},
+      link: L,
+      chapters: clone(r.chapters || []),
+      persona: r.persona || null
+    };
+    window.DA_INTERPRET_AI.enhance(ctx).then(function (newChapters) {
+      state.result.chapters = newChapters;
+      state.source = 'ai';
+      state.model = '云端深化';
+      if (state.record) {
+        state.record = ST.readings.patch(state.record.id, {
+          chapters: clone(newChapters), source: 'ai', model: '云端深化'
+        }) || state.record;
+      }
+      try { persistSession(); } catch (e) {}
+      renderHero(); renderRows(); renderTail();
+      if (label) label.textContent = '已由 AI 深化';
+      toast('六章已深化，牌面保持原样。');
+    }).catch(function (e) {
+      var fresh = $('aiDeepenBtn'), fl = $('aiDeepenTxt');
+      if (fresh) fresh.disabled = false;
+      if (fl) fl.textContent = '让 AI 深化解读';
+      var m = e && e.message === 'SIGN_IN_REQUIRED' ? '请先登录' :
+        (e && e.message === 'TOO_SHORT' || e && e.message === 'VOICE_TOO_SHORT' ? '这次结果不完整' :
+        (e && e.message) || '稍后再试');
+      toast('这次没深化成功：' + m + '。原来的解读还在。');
+    });
+  }
+
   function makeShareCard() {
     if (!window.DA_SHARECARD) { toast('分享卡组件未能加载，请刷新页面。'); return; }
     toast('正在生成分享卡…');
@@ -1431,6 +1475,7 @@
     $('favBtn').addEventListener('click', toggleFav);
     $('copyBtn').addEventListener('click', copyAll);
     if ($('shareCardBtn')) $('shareCardBtn').addEventListener('click', makeShareCard);
+    if ($('aiDeepenBtn')) $('aiDeepenBtn').addEventListener('click', deepenAI);
     $('askBtn').addEventListener('click', openAsk);
 
     $('askClose').addEventListener('click', closeAsk);

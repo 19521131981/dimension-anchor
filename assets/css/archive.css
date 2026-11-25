@@ -513,3 +513,19 @@ html[data-motion="reduced"] .ar-seal b { animation: none; }
   color: rgba(206, 198, 232, .44);
 }
 .da-backup__acts .ar-btn:focus-visible { outline: 2px solid #C9A24C; outline-offset: 3px; }
+
+/* ══ 云端备份区 ═══════════════════════════════════════════════════ */
+.da-cloud {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid rgba(214, 182, 120, .24);
+}
+.da-cloud__head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.da-cloud__t { margin: 0; font-size: 16px; font-weight: 600; color: #6B4E86; letter-spacing: .04em; }
+.da-cloud__state {
+  font-size: 11px; letter-spacing: .06em; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid rgba(214,182,120,.34); color: #8A6733;
+}
+.da-cloud__state.is-on { color: #fff; background: #6B4E86; border-color: #6B4E86; }
+.da-cloud__d { margin: 10px 0 0; font-size: 13px; line-height: 1.7; color: #7A6B8F; }
+.da-cloud__acts { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.da-cloud__acts[hidden], #daCloudSign[hidden], #daCloudMeta[hidden] { display: none; }

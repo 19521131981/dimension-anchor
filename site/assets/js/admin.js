@@ -34,7 +34,25 @@
     $('console').hidden = !on;
     $('claimCard').hidden = on;
     $('signCard').hidden = on;
-    if (on) { loadCodes(); loadRedemptions(); }
+    if (on) { loadStats(); loadCodes(); loadRedemptions(); }
+  }
+
+  /* 运营概览：只读聚合，服务端只认管理员；失败不阻塞其它管理功能。 */
+  function loadStats() {
+    if (!P.adminStats) return;
+    P.adminStats().then(function (r) {
+      if (!r || !r.ok) { msg($('statsMsg'), P.message({ code: (r && r.reason) || 'SERVER_ERROR' }), 'err'); return; }
+      var set = function (id, v) { var el = $(id); if (el) el.textContent = (v == null ? '—' : String(v)); };
+      set('stUsers', r.users_cloud);
+      set('stPremium', r.users_premium);
+      set('stLetters', r.letters_total);
+      set('stLettersToday', r.letters_today);
+      set('stCodes', r.codes_total);
+      set('stRedeem', r.redeem_ok);
+      set('stAsk', r.ask_consumed);
+      set('stAskToday', r.ask_today);
+      msg($('statsMsg'), '数据读取于 ' + fmt(r.generated_at), 'ok');
+    }).catch(function (e) { msg($('statsMsg'), P.message(e), 'err'); });
   }
 
   function loadCodes() {
@@ -149,7 +167,7 @@
         .then(function () { b.disabled = false; });
     });
 
-    $('reloadBtn').addEventListener('click', function () { loadCodes(); loadRedemptions(); });
+    $('reloadBtn').addEventListener('click', function () { loadStats(); loadCodes(); loadRedemptions(); });
 
     $('codeRows').addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('[data-toggle]') : null;

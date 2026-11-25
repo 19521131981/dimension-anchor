@@ -38,6 +38,22 @@
 
   <!-- 控制台 -->
   <div id="console" hidden>
+    <section class="pm-card" id="statsCard">
+      <h2>运营概览</h2>
+      <p>全站聚合数据，账号信息已脱敏。仅管理员可见，每次进入控制台时向服务端读取。</p>
+      <div class="da-stats" id="statsGrid">
+        <div class="da-stat"><span>云端账号</span><b id="stUsers">—</b></div>
+        <div class="da-stat"><span>有效会员</span><b id="stPremium">—</b></div>
+        <div class="da-stat"><span>信件总数</span><b id="stLetters">—</b></div>
+        <div class="da-stat"><span>今日信件</span><b id="stLettersToday">—</b></div>
+        <div class="da-stat"><span>占卜码</span><b id="stCodes">—</b></div>
+        <div class="da-stat"><span>成功兑换</span><b id="stRedeem">—</b></div>
+        <div class="da-stat"><span>深度探索调用</span><b id="stAsk">—</b></div>
+        <div class="da-stat"><span>今日调用</span><b id="stAskToday">—</b></div>
+      </div>
+      <p class="pm-msg" id="statsMsg"></p>
+    </section>
+
     <section class="pm-card">
       <h2>批量生成占卜码</h2>
       <p>码由服务端安全随机生成，只存哈希；明文仅在生成当次显示一次。</p>

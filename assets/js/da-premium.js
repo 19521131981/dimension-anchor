@@ -268,6 +268,7 @@ window.DA_PREMIUM = (function () {
     return rpc('da_admin_disable_code', { p_id: Number(id), p_disabled: !!disabled });
   }
   function adminRedemptions() { return rpc('da_admin_redemptions'); }
+  function adminStats() { return rpc('da_admin_stats'); }
 
   /* 错误码 → 用户读得懂的一句话 */
   function message(e) {
@@ -300,6 +301,7 @@ window.DA_PREMIUM = (function () {
     buildMessages: buildMessages, message: message,
     adminStatus: adminStatus, adminClaim: adminClaim,
     adminGenerate: adminGenerate, adminList: adminList,
-    adminDisable: adminDisable, adminRedemptions: adminRedemptions
+    adminDisable: adminDisable, adminRedemptions: adminRedemptions,
+    adminStats: adminStats
   };
 })();
