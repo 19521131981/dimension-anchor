@@ -274,6 +274,9 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
    只把「会变的那一行」换成真实文本，底下垫一层柔边遮罩抹掉原字。 */
 .cards { display: contents; }
 
+/* 产品定位一句话：桌面端主视觉已足够，默认不占位；手机端显式展示。 */
+.tagline { display: none; }
+
 .card { position: absolute; z-index: 4; }
 
 .card--moon {
@@ -883,8 +886,45 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   }
   .tabbar a.is-active::after { width: 62%; }
 
-  /* 手机端不展示月相卡与今日主题卡（信息合并进五大入口） */
-  .cards { display: none; }
+  /* 手机端：月相卡信息次要，收起；今日主题卡改为流内展示，
+     给第一次来的人一个明确的「下一步」。 */
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 3.2vw;
+  }
+  .card--moon { display: none; }
+  .card--theme {
+    position: static;
+    width: auto;
+    height: auto;
+    left: auto;
+    top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3vw;
+    padding: 5vw 6vw;
+    border-radius: 3vw;
+    border: 1px solid rgba(240, 222, 190, .22);
+    background:
+      radial-gradient(90% 70% at 50% 0%, rgba(238, 222, 244, .16), transparent 72%),
+      linear-gradient(170deg, rgba(56, 45, 84, .84), rgba(32, 26, 52, .9));
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 250, 240, .12);
+    animation: none;
+  }
+  .tagline {
+    display: block;
+    margin: 0;
+    text-align: center;
+    font-family: var(--serif);
+    font-size: 3.4vw;
+    letter-spacing: .06em;
+    line-height: 1.6;
+    color: rgba(246, 236, 252, .82);
+    text-shadow: 0 .4vw 1.6vw rgba(24, 16, 40, .5);
+  }
 
   .moon-ico { display: block; width: 38%; margin: 0 auto 3vw; }
   .moon-ico svg { display: block; width: 100%; }

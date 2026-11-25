@@ -481,6 +481,10 @@ html:not([data-motion="full"]) .ps-chart, html:not([data-motion="full"]) .ps-car
   .ps-card { left: 60%; top: 6%; width: 11%; }
   .ps-mail__light { left: 40%; top: 15%; width: 20%; height: 7%; }
   .ps-mail__flap { left: 42%; top: 15.6%; width: 16%; }
+  /* 信笺在手机小卡里只会变成两块灰白噪点（原 bottom:12% 甚至掉进铭牌区），
+     直接收掉；桌面保留升起动画。信封主体（flap/light）仍保留。 */
+  .ps-mail__note,
+  .ps-mail__note--2 { display: none; }
   .ps-cottage__warm { top: 14%; width: 40%; height: 22%; }
   .ps-cottage__veil { top: 2%; height: 20%; }
   .ps-page { top: 8%; height: 7%; }
