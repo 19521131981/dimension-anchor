@@ -1305,7 +1305,9 @@
       if (legacy && !da2List.some(function (r) { return r.id === legacy.id; })) {
         var newest = 0;
         da2List.forEach(function (r) { if ((r.at || 0) > newest) newest = r.at || 0; });
-        if (!da2List.length || (legacy.at || 0) >= newest) {
+        /* board 页写入的 legacy 可能只有 createdAt（无 at）——这里必须兜底，
+           否则存档里有任何一条记录后，新抽牌永远不再迁移（页面显示旧解读）。 */
+        if (!da2List.length || ((legacy.at || legacy.createdAt || 0) >= newest)) {
           ST.readings.save(fromLegacy(legacy));
           var nowRaw = rawOf(ST.keys.readings);
           if (nowRaw.valid && Array.isArray(nowRaw.value)) da2List = nowRaw.value.filter(usableRecord);

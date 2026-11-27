@@ -1639,6 +1639,7 @@
     try {
       var rec = JSON.parse(JSON.stringify(sess));
       rec.spreadCn = sess.spreadCn;
+      rec.at = Date.now();
       rec.dateCn = new Date().toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
       rec.link = L;
       localStorage.setItem('DA_LAST_READING', JSON.stringify(rec));
