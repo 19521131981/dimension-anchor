@@ -31,6 +31,17 @@
        漏出的 undefined / null 字面量都不允许出现在页面上。 */
     var raw = (s === undefined || s === null) ? '' : String(s);
     raw = raw.replace(/\bundefined\b/g, '').replace(/\bnull\b/g, '');
+    /* 沉浸铁律：任何来源漏出的 AI/模型/程序字眼都在渲染前抹除——
+       用户看到的永远是「塔罗师」与「TA」。只处理中文语境，
+       不碰英文单词内部的字母（如 DAILY / AVAILABLE）。 */
+    raw = raw
+      .replace(/作为\s*AI/g, '作为塔罗师')
+      .replace(/AI\s*(生成|解读|创作|提供|模型|助手|写作|写出)/g, '塔罗师$1')
+      .replace(/(生成|解读|创作|提供|写出|来自|由)\s*AI/g, '$1塔罗师')
+      .replace(/人工智能|大模型|语言模型|DeepSeek|deepseek/g, '塔罗师')
+      /* 独立 AI 只在中文语境（一侧是中文/标点）时替换，英文句子不误伤 */
+      .replace(/(^|[\u4e00-\u9fa5。！？，：；「」『』（）\s])\s*AI\s*([\u4e00-\u9fa5。！？，：；「」『』（）]|$)/g, '$1塔罗师$2')
+      .replace(/模型/g, '塔罗师');
     return esc(raw).replace(/&lt;br&gt;/gi, '<br>').replace(/\n/g, '<br>');
   }
   function clone(o) { return JSON.parse(JSON.stringify(o || null)); }

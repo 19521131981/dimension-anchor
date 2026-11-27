@@ -1647,7 +1647,22 @@
 
     $('#startRead').addEventListener('click', function () {
       S.complete();
-      location.href = window.DA_LINK ? DA_LINK.fix('interpretation.html') : 'interpretation.html';
+      /* 转场反馈：弱网下解读页 JS 加载需要时间，立刻给出品牌遮罩，
+         避免「点了没反应=卡住」的体感。 */
+      try {
+        var ov = document.createElement('div');
+        ov.style.cssText = 'position:fixed;inset:0;z-index:9999;pointer-events:none;' +
+          'background:radial-gradient(120% 90% at 50% 10%, #2A2148 0%, #171017 70%);' +
+          'display:grid;place-content:center;color:#EFE7DC;text-align:center;' +
+          'opacity:0;transition:opacity .35s ease;';
+        ov.innerHTML = '<div><div style="font-size:10px;letter-spacing:.34em;opacity:.55">DIMENSION ANCHOR</div>' +
+          '<div style="margin-top:12px;font-size:14px;letter-spacing:.18em">正在展开这次解读…</div></div>';
+        document.body.appendChild(ov);
+        requestAnimationFrame(function () { ov.style.opacity = '1'; });
+      } catch (e) {}
+      setTimeout(function () {
+        location.href = window.DA_LINK ? DA_LINK.fix('interpretation.html') : 'interpretation.html';
+      }, 420);
     });
   }
 
