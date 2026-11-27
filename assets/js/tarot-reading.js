@@ -29,12 +29,14 @@ window.DA_READING = (function () {
 
   /* 每章的导语（只描述这一章在讲什么，不预设结论） */
   var LEADS = {
+    analysis: '资深塔罗师顺着牌面，读你们的现状、张力与走向',
+    voice: '有些话没有说出口，但它确实存在',
+    /* 旧版六章存档的兼容映射 */
     overview: '在不确定中寻找方向的星光',
     cards: '每一张牌，都在说同一件事的另一个侧面',
     links: '牌与牌之间，有一条还没被说出口的线',
     relation: '关系不是谁对谁错，是两股力量的夹角',
-    deep: '答案通常不在更远的地方，而在更近的一层',
-    voice: '有些话没有说出口，但它确实存在'
+    deep: '答案通常不在更远的地方，而在更近的一层'
   };
 
   var SUITS = {
@@ -744,9 +746,12 @@ window.DA_READING = (function () {
       t: 'note',
       x: '以上每一条都能在这 ' + m.n + ' 张牌的真实字段里对上：花色、正逆位、牌位、翻牌顺序。下面是逐张的展开。'
     });
-    chapters.push({ key: 'overview', no: 'I', title: '整体能量', en: 'OVERVIEW', blocks: b1 });
-
-    /* ── II 单牌解析 ─────────────────────────────────────── */
+    /* ══════════════════════════════════════════════════════════
+       I · 关系分析（原五章合并为一章，以小节推进，塔罗师视角）
+       结构：整体 → 逐张的牌 → 牌与牌之间 → 你们之间 → 深层讯息
+       ══════════════════════════════════════════════════════════ */
+    var bA = b1;
+    bA.push({ t: 'h', x: '逐张的牌' });
     var b2 = [];
     cards.forEach(function (e, idx) {
       var c = D.byId(e.id) || {};
@@ -808,9 +813,10 @@ window.DA_READING = (function () {
           '下面每张逆位的读法，都要放回你这次的提问和牌位里看才成立。'
       });
     }
-    chapters.push({ key: 'cards', no: 'II', title: '单牌解析', en: 'THE CARDS', blocks: b2 });
+    bA = bA.concat(b2);
 
     /* ── III 牌间联系 ───────────────────────────────────── */
+    bA.push({ t: 'h', x: '牌与牌之间' });
     var b3 = [];
     if (m.n === 1) {
       b3.push({ t: 'p', x: '单牌阵没有牌与牌之间的关系可讲。这一张就是全部——《' + T(first.cn, '这张牌') + '》' + ori(first) + '。' });
@@ -866,9 +872,10 @@ window.DA_READING = (function () {
       }
     }
     b3.push({ t: 'note', x: '牌与牌之间彼此呼应，像几段话在互相接话——顺着这条线读下去，意思会自己浮出来。' });
-    chapters.push({ key: 'links', no: 'III', title: '牌间联系', en: 'BETWEEN THE CARDS', blocks: b3 });
+    bA = bA.concat(b3);
 
     /* ── IV 关系脉络 ────────────────────────────────────── */
+    bA.push({ t: 'h', x: '你们之间' });
     var b4 = [];
     var hasSubject = !!(L.subjectName && String(L.subjectName).trim());
     if (hasSubject) {
@@ -911,9 +918,10 @@ window.DA_READING = (function () {
       b4.push({ t: 'p', x: '以「' + T(L.relation, '') + '」这个前提来看，' + T(dim(first, 'kin'), '这段关系里的距离多半在日常相处里。') });
     }
     b4.push({ t: 'note', x: '这一章照出的是此刻你们之间那股看不见的牵引——它一直在，只是平时不那么容易被说清。' });
-    chapters.push({ key: 'relation', no: 'IV', title: '关系脉络', en: 'THE THREAD', blocks: b4 });
+    bA = bA.concat(b4);
 
     /* ── V 深层讯息 ─────────────────────────────────────── */
+    bA.push({ t: 'h', x: '牌面深处的讯息' });
     var b5 = [];
     b5.push({
       t: 'p',
@@ -978,7 +986,8 @@ window.DA_READING = (function () {
       x: '“当「' + FIRST(coreC.ku, '那件事') + '」真的发生时，你会先放下什么？”'
     });
     b5.push({ t: 'note', x: '这几句是牌面单独留给你的一封信，慢慢读，它会自己讲清楚。' });
-    chapters.push({ key: 'deep', no: 'V', title: '深层讯息', en: 'THE UNDERTOW', blocks: b5 });
+    bA = bA.concat(b5);
+    chapters.push({ key: 'analysis', no: 'I', title: '关系分析', en: 'RELATIONSHIP READING', blocks: bA });
 
     /* ══════════════════════════════════════════════════════════
        VI · 跨次元传讯（TA 的回应）
@@ -1013,8 +1022,8 @@ window.DA_READING = (function () {
       x: '牌替 TA 把那句没说出口的话，送到了你面前。'
     });
     chapters.push({
-      key: 'voice', no: 'VI', title: '跨次元传讯 · TA 的回应',
-      en: "A MESSAGE FROM THEM", blocks: b6
+      key: 'voice', no: 'II', title: 'TA 想对你说的话',
+      en: "A MESSAGE FROM TA", blocks: b6
     });
 
     chapters.forEach(function (ch) { ch.lead = LEADS[ch.key] || ''; });
@@ -1117,7 +1126,7 @@ window.DA_READING = (function () {
       lines.push('');
     });
     lines.push('—— 说明 ——');
-    lines.push('本页六章由本地规则引擎依据本次真实牌面字段组合生成，未调用大模型。');
+    lines.push('本页解读由站内塔罗规则顺着本次真实抽出的牌面推演而成。');
     return lines.join('\n');
   }
 

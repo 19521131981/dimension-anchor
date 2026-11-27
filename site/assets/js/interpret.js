@@ -43,14 +43,14 @@
     return faceCache[card.i];
   }
 
-  var ICON = { overview: '✦', cards: '❖', links: '⁂', relation: '♡', deep: '☾', voice: '✧' };
+  var ICON = { analysis: '✦', overview: '✦', cards: '❖', links: '⁂', relation: '♡', deep: '☾', voice: '✧' };
 
   var state = {
     session: null,
     link: null,
     result: null,
     record: null,
-    tab: 'overview',
+    tab: 'analysis',
     openRow: null,
     supp: [],
     suppLocked: false,
@@ -156,7 +156,7 @@
     return '<div class="pm-explore-wrap">' +
       '<button class="pm-explore" type="button" data-pm-explore="' + attr(key) + '">' +
       '<i>✧</i>' + esc(label || '继续探索这一章') + '</button>' +
-      '<span class="pm-explore__note">带着本次牌阵、正逆位与六章解读继续问</span></div>';
+      '<span class="pm-explore__note">带着本次牌阵、正逆位与完整解读继续问</span></div>';
   }
 
   function fmtDate(v) {
@@ -349,12 +349,16 @@
   function chapterNo(ch) {
     var list = (state.result && state.result.chapters) || [];
     var i = list.indexOf(ch);
-    return '第 ' + String(i + 1).padStart(2, '0') + ' 章 ·';
+    return '第 ' + String(i + 1).padStart(2, '0') + ' 部分 ·';
   }
 
   function renderTabs() {
     var box = $('tabs');
     box.innerHTML = '';
+    /* 两章结构/旧六章存档兼容：当前 tab 不存在时归一到第一部分 */
+    if (!(state.result.chapters || []).some(function (c) { return c.key === state.tab; })) {
+      state.tab = (state.result.chapters[0] || {}).key || 'analysis';
+    }
     state.result.chapters.forEach(function (ch) {
       var b = document.createElement('button');
       b.type = 'button';
@@ -458,7 +462,7 @@
     if (!q) (v.blocks || []).forEach(function (b) { if (!q && b.t === 'p') q = b; });
 
     tail.hidden = false;
-    tail.innerHTML = '<div class="tail__cap">跨次元传讯 · TA 的回应</div><p>' + txt(q ? q.x : '') + '</p>' +
+    tail.innerHTML = '<div class="tail__cap">TA 想对你说的话</div><p>' + txt(q ? q.x : '') + '</p>' +
       exploreHTML('voice', '继续和 TA 聊下去');
   }
 
@@ -545,18 +549,18 @@
       '<h3 class="m-title" id="mTitle">这份解读是怎么来的</h3>' +
       '<p class="m-sub">' +
         (state.source === 'ai'
-          ? '前五章的占卜师解读已由 DeepSeek 加深，第六章的传讯则顺着 TA 的性格接通；牌面始终来自这一次真实抽出的牌'
-          : '前五章由站内占卜规则推演，第六章顺着 TA 的性格与你们的连接接通；牌面始终来自这一次真实抽出的牌') +
+          ? '关系分析由塔罗师顺着你们的牌与故事深读，TA 的话按 TA 的性格与你们的连接接通；牌面始终来自这一次真实抽出的牌'
+          : '关系分析由站内塔罗规则推演，TA 的话顺着 TA 的性格与你们的连接接通；牌面始终来自这一次真实抽出的牌') +
       '</p>' +
-      '<div class="m-pos"><b>解读通道：' + (ok ? 'DeepSeek' + (state.model ? ' · ' + state.model : '') : '星轨推演') + '</b>' +
+      '<div class="m-pos"><b>解读通道：' + (ok ? '塔罗师深读' : '星轨推演') + '</b>' +
         (ok ? '' : '<br>说明：' + esc(AI.state.lastError || '本地推演')) +
-        '<br><b>第六章传讯：' + (state.voiceEnhanced ? 'TA 的声音已清晰接通' : '已接通（登录可听得更清楚）') + '</b></div>' +
-      '<div class="m-sec"><h4>两种角色，两种口吻</h4><p>前五章是占卜师视角：以这次抽出的牌为依据，看现状、关系与内在提示。第六章是跨次元传讯：以牌为通道，顺着你填写的角色性格、说话方式与这次的连接，让 TA 把心里的话说给你听。两段口吻不同，是因为它们本来就在做两件事——一段陪你看清，一段陪你靠近。</p></div>' +
-      '<div class="m-sec"><h4>会发送给外部 AI 的内容（仅这些）</h4>' +
+        '<br><b>TA 的传讯：' + (state.voiceEnhanced ? 'TA 的声音已清晰接通' : '已接通（登录可听得更清楚）') + '</b></div>' +
+      '<div class="m-sec"><h4>两种声音，两种口吻</h4><p>关系分析是塔罗师视角：以这次抽出的牌为依据，结合你填写的角色与故事，看你们之间的现状、张力与走向。TA 的话是跨次元传讯：以牌为通道，顺着你填写的角色性格、说话方式与这次的连接，让 TA 把心里的话说给你听。两段口吻不同，是因为它们本来就在做两件事——一段陪你看清，一段陪你靠近。</p></div>' +
+      '<div class="m-sec"><h4>解读所依据的内容（仅这些）</h4>' +
         '<div class="m-src">' + rows.map(function (r) {
           return '<div class="m-src__row"><em>' + esc(r.k) + '</em><span>' + esc(r.v) + '</span></div>';
         }).join('') + '</div></div>' +
-      '<div class="m-sec"><h4>不会发送的内容</h4><p>你的浏览行为、其他档案、其他梦占记录、浏览器信息，都不会随请求发出。API Key 只存在服务端进程的环境变量里，前端代码里没有任何一处包含它。</p></div>' +
+      '<div class="m-sec"><h4>不会离开这台设备的内容</h4><p>你的浏览行为、其他档案、其他梦占记录、浏览器信息，都不会离开这台设备。</p></div>' +
       '<div class="m-sec"><h4>数据管理</h4><p>所有记录都存在你这台设备的浏览器里。你可以到「我的观测档案」里修改标题、添加备注、删除单条记录、导出文本，或者一次性清空全部本地数据。</p></div>';
 
     $('modal').hidden = false;
@@ -635,7 +639,7 @@
       }
     });
     syncFavBtn();
-    toast(r.on ? '已收藏。整条梦占记录连同六章解读一起存档。' : '已从收藏夹移除。');
+    toast(r.on ? '已收藏。整条梦占记录连同完整解读一起存档。' : '已从收藏夹移除。');
     S.complete();
   }
 
@@ -709,13 +713,13 @@
   function deepenAI() {
     if (!window.DA_INTERPRET_AI) { toast('深化组件未能加载，请刷新页面。'); return; }
     if (!window.DA_INTERPRET_AI.signedIn()) {
-      toast('先点亮星际通行证，才能让 AI 深化这次解读。');
+      toast('先点亮星际通行证，才能请塔罗师深读这次解读。');
       if (window.DA_AUTH && window.DA_AUTH.open) window.DA_AUTH.open();
       return;
     }
     var label = $('aiDeepenTxt'), btn = $('aiDeepenBtn');
     if (btn) btn.disabled = true;
-    if (label) label.textContent = '正在深化六章…';
+    if (label) label.textContent = '塔罗师正在深读…';
     var r = state.result || {};
     var L = state.link || {};
     var ctx = {
@@ -735,12 +739,12 @@
       }
       try { persistSession(); } catch (e) {}
       renderHero(); renderRows(); renderTail();
-      if (label) label.textContent = '已由 AI 深化';
+      if (label) label.textContent = '塔罗师已深读';
       toast('六章已深化，牌面保持原样。');
     }).catch(function (e) {
       var fresh = $('aiDeepenBtn'), fl = $('aiDeepenTxt');
       if (fresh) fresh.disabled = false;
-      if (fl) fl.textContent = '让 AI 深化解读';
+      if (fl) fl.textContent = '请塔罗师深读这次解读';
       var code = e && e.message;
       var m = code === 'SIGN_IN_REQUIRED' ? '请先登录' :
         (code === 'TOO_SHORT' || code === 'VOICE_TOO_SHORT' || code === 'BAD_JSON' || code === 'NUMBER_MISMATCH' || code === 'SHAPE_MISMATCH' || code === 'BLOCK_MISMATCH' || code === 'CARD_NAME_LEAK' ? '这次结果不完整' :
@@ -1042,7 +1046,7 @@
     if (state.busy || state.displaySource === 'ai') return;
     if (state.archiveReadOnly) { setSrc('本地推演'); return; }
     state.busy = true;
-    setSrc('DeepSeek 正在解读', true);
+    setSrc('塔罗师正在为你解读', true);
 
     AI.interpret(ctxOf()).then(function (j) {
       var n = mergeAI(j.chapters);
@@ -1052,7 +1056,7 @@
       state.displaySource = 'ai';
       state.source = 'ai';
       state.model = j.model || AI.state.model;
-      setSrc('DeepSeek 生成');
+      setSrc('塔罗师深读完成');
 
       if (state.record) {
         state.record = ST.readings.patch(state.record.id, {
@@ -1066,7 +1070,7 @@
       renderHero();
       renderRows();
       renderTail();
-      toast('六章已由 DeepSeek 重写。牌面、正逆位、牌位仍取自这一次真实抽出的牌。');
+      toast('解读已由塔罗师重新读过。牌面、正逆位、牌位仍取自这一次真实抽出的牌。');
       /* §7.1 三态日志：ai_normal / local_template / abnormal（不存用户原文） */
       try { console.log('[interpret] ai_normal · chapters=' + n + ' · model=' + (state.model || '')); } catch (e) {}
       S.complete();
@@ -1203,7 +1207,8 @@
   }
   function chaptersComplete(r) {
     var cs = r && r.chapters;
-    return Array.isArray(cs) && cs.length === 6 && cs.every(function (c) {
+    /* 两章（analysis+voice）与旧版六章均视为完整 */
+    return Array.isArray(cs) && (cs.length === 2 || cs.length === 6) && cs.every(function (c) {
       return c && typeof c.key === 'string' && Array.isArray(c.blocks);
     });
   }
@@ -1329,19 +1334,19 @@
       if (recoveredChapters) {
         if (!backupRaw('AI_RECORD_' + rec.id, rec)) {
           readOnly = true;
-          setStatus({ state: 'backup_failed', detail: rec.id + ' 的 AI 缺章恢复已停止：备份写入失败', originalSource: 'ai', contentStatus: 'ai_incomplete_unrecoverable', displaySource: 'local' });
-          storageNotice('AI 六章不完整，但备份失败，已停止自动恢复；原始存档未被覆盖。下面显示本地推演。');
+          setStatus({ state: 'backup_failed', detail: rec.id + ' 的深读版缺章恢复已停止：备份写入失败', originalSource: 'ai', contentStatus: 'ai_incomplete_unrecoverable', displaySource: 'local' });
+          storageNotice('深读版不完整，但备份失败，已停止自动恢复；原始存档未被覆盖。下面显示本地推演。');
         } else {
           ST.readings.patch(rec.id, { chapters: recoveredChapters });
           rec = ST.readings.get(rec.id) || rec;
           complete = chaptersComplete(rec);
-          setStatus({ state: 'ai_recovered', detail: '已从兼容存档恢复 ' + rec.id + ' 的 AI 六章', originalSource: 'ai', contentStatus: 'ai_complete', displaySource: 'ai' });
-          storageNotice('检测到 AI 六章不完整，已从旧版存档恢复；原始记录已完整留底。');
+          setStatus({ state: 'ai_recovered', detail: '已从兼容存档恢复 ' + rec.id + ' 的深读版', originalSource: 'ai', contentStatus: 'ai_complete', displaySource: 'ai' });
+          storageNotice('检测到深读版不完整，已从旧版存档恢复；原始记录已完整留底。');
         }
       } else {
         readOnly = true;
-        setStatus({ state: 'ai_incomplete_unrecoverable', detail: rec.id + ' 标记 AI 但六章不完整，无兼容数据可恢复', originalSource: 'ai', contentStatus: 'ai_incomplete_unrecoverable', displaySource: 'local' });
-        storageNotice('这份记录的 AI 六章不完整，也没有可验证的旧版数据可恢复。下面显示的是本地规则推演，原始存档未被覆盖。');
+        setStatus({ state: 'ai_incomplete_unrecoverable', detail: rec.id + ' 标记深读但内容不完整，无兼容数据可恢复', originalSource: 'ai', contentStatus: 'ai_incomplete_unrecoverable', displaySource: 'local' });
+        storageNotice('这份记录的深读版不完整，也没有可验证的旧版数据可恢复。下面显示的是本地规则推演，原始存档未被覆盖。');
       }
     }
 
@@ -1415,7 +1420,7 @@
 
     AI.probe().then(function (s) {
       /* 展示来源只由「原始 source + 内容完整性」决定，探活不得改写它 */
-      if (state.displaySource === 'ai') { setSrc('DeepSeek 生成'); return; }
+      if (state.displaySource === 'ai') { setSrc('塔罗师深读完成'); return; }
       if (!s.ok || state.archiveReadOnly) { setSrc('本地推演'); return; }
       upgrade();
     });
