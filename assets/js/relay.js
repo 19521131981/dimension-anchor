@@ -38,6 +38,65 @@ window.DA_RELAY = (function () {
     retryText: ''         // 发送失败后暂存的消息
   };
 
+  /* ── 剩余次数：每成功发送 2 条用户消息消耗 1 次 ─────────────────
+     计数存在本机，跨会话累计；扣费在发送第 2 条前进行，
+     回复失败则退回本次消耗并回滚计数，重试不重复扣费。 */
+  var MSG_KEY = 'DA_RELAY_MSG';
+  function sentCount() {
+    try { var n = Number(localStorage.getItem(MSG_KEY)) || 0; return n > 0 ? n : 0; }
+    catch (e) { return 0; }
+  }
+  function setSentCount(n) {
+    try { localStorage.setItem(MSG_KEY, String(Math.max(0, n))); } catch (e) {}
+  }
+  function quotaLeft() {
+    var A = window.DA_ACCESS;
+    return A ? A.status().left : 0;
+  }
+  function refreshQuota() {
+    var left = quotaLeft();
+    var q = $('#rlQuota');
+    if (q) q.textContent = '✦ 剩余次数 ' + left + ' 次';
+    var n = $('#chatQuotaNum');
+    if (n) n.textContent = left;
+    var g = $('#rlGateLeft');
+    if (g) g.textContent = left;
+  }
+
+  /* ════════════ 剩余次数 / 兑换 ════════════ */
+  function openGate() {
+    refreshQuota();
+    var g = $('#rlGate');
+    if (!g) return;
+    g.hidden = false;
+    var st = $('#rlGateState');
+    if (st) { st.textContent = ''; st.className = 'pm-gate__state'; }
+    setTimeout(function () { var i = $('#rlGateCode'); if (i) i.focus(); }, 80);
+  }
+  function closeGate() { var g = $('#rlGate'); if (g) g.hidden = true; }
+  function doRedeem() {
+    var A = window.DA_ACCESS;
+    var st = $('#rlGateState'), btn = $('#rlGateRedeem');
+    if (!A || !st || !btn) return;
+    st.className = 'pm-gate__state is-busy';
+    st.textContent = '正在验证占卜码…';
+    btn.disabled = true;
+    var r = A.redeem($('#rlGateCode') ? $('#rlGateCode').value : '');
+    setTimeout(function () {
+      if (r && r.ok) {
+        st.className = 'pm-gate__state is-ok';
+        st.textContent = '兑换成功 · 已增加 ' + r.uses + ' 次';
+        refreshQuota();
+        var code = $('#rlGateCode'); if (code) code.value = '';
+        setTimeout(closeGate, 1600);
+      } else {
+        st.className = 'pm-gate__state is-err';
+        st.textContent = A.message(r);
+      }
+      btn.disabled = false;
+    }, 260);
+  }
+
   /* ════════════ toast ════════════ */
   function toast(msg) {
     var el = $('#rlToast');
@@ -633,10 +692,23 @@ window.DA_RELAY = (function () {
   function sendMsg(text) {
     text = String(text || '').trim();
     if (!text || state.busy || !state.thread) return;
+
+    /* 计费：每 2 条消息共享 1 次，在新一组开始时（第 1 条）先预扣，
+       这样次数归零能立刻拦住，不会白送第 1 条。第 2 条不再扣。 */
+    var A = window.DA_ACCESS;
+    var willCharge = (sentCount() % 2 === 0);
+    if (willCharge) {
+      if (!A || !A.canUse()) { toast('剩余次数已用完，输入占卜码后可继续传讯。'); openGate(); return; }
+      var c = A.consume();
+      if (!c.ok) { toast(A.message(c)); openGate(); return; }
+    }
+
     state.busy = true;
     state.retryText = text;
     $('#chatErr').hidden = true;
     S.threads.append(state.thread.id, { role: 'me', text: text });
+    setSentCount(sentCount() + 1);
+    refreshQuota();
     appendMsg();
     SND.flip();
     var input = $('#chatInput');
@@ -654,11 +726,14 @@ window.DA_RELAY = (function () {
         });
         appendMsg();
         state.busy = false;
+        if (willCharge && A) A.settle();
         SND.hover();
       }, wait);
     }).catch(function (e) {
       hideTyping();
       state.busy = false;
+      /* 回复失败：退回本次消耗并回滚计数，重试不重复扣费 */
+      if (willCharge && A) { A.refund(); setSentCount(sentCount() - 1); refreshQuota(); }
       var err = $('#chatErr');
       $('#chatErrText').textContent = '信号在星海里中断了（' + ET(e, '未知原因') + '）';
       err.hidden = false;
@@ -759,6 +834,19 @@ window.DA_RELAY = (function () {
     });
     $('#chatSend').addEventListener('click', function () { sendMsg($('#chatInput').value); });
     $('#chatRetry').addEventListener('click', retrySend);
+    if ($('#rlQuota')) $('#rlQuota').addEventListener('click', openGate);
+    if ($('#rlGateRedeem')) $('#rlGateRedeem').addEventListener('click', doRedeem);
+    var gate = $('#rlGate');
+    if (gate) gate.addEventListener('click', function (e) {
+      if (e.target.closest('[data-gate-close]')) closeGate();
+    });
+    if ($('#rlGateCopy')) $('#rlGateCopy').addEventListener('click', function () {
+      var t = 'liangyefei12345678';
+      var done = function () { toast('微信号已复制'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t).then(done).catch(function () { toast(t); });
+      } else toast(t);
+    });
     $('#chatCardBtn').addEventListener('click', openInfo);
     $('#rlInfo').addEventListener('click', function (e) {
       if (e.target.closest('[data-info-close]')) $('#rlInfo').hidden = true;
@@ -785,6 +873,7 @@ window.DA_RELAY = (function () {
   function boot() {
     if (window.DA_AUTH && window.DA_AUTH.init) window.DA_AUTH.init().catch(function () {});
     bind();
+    refreshQuota();
     var q = new URLSearchParams(location.search);
     if (q.get('fresh') === '1' && q.get('card')) {
       renderJudge();

@@ -642,7 +642,7 @@
     view.innerHTML = [
       '<div class="pane">',
       '<div class="hd">',
-      '<p class="hd__kicker">Free Description</p>',
+      '<p class="hd__kicker">Soul Description</p>',
       '<h1 class="hd__title">那你说，他/她是什么样的人</h1>',
       '<p class="hd__desc">不用管牌了。想到什么写什么，越具体越好。这段话会成为这次连接的背景。</p>',
       '<div class="hd__rule"></div>',

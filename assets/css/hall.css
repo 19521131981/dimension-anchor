@@ -374,13 +374,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-radius: 999px;
   /* 水晶按钮：星轨玻璃生图材质 + 金边，与全站按钮同一语言；
      划光用背景层实现（背景自动裁进按钮，不影响 ::before 光晕补丁） */
-  background-image:
-    linear-gradient(100deg, transparent 12%, rgba(255, 241, 218, .38) 50%, transparent 88%),
-    url("../media/btn-gem-pill.webp?v=20261128a");
-  background-size: 44% 220%, cover;
-  background-position: -70% 50%, center;
+  /* 专属生图：紫水晶切面 + 鎏金星轨玻璃按钮，材质本身自带高光，
+     不再叠加划光渐变，避免把生图纹理冲淡成「廉价塑料感」。 */
+  background-image: url("../media/btn-gem-daily.webp?v=20261128f");
+  background-size: cover;
+  background-position: center;
   background-repeat: no-repeat;
-  animation: themeShine 5.2s var(--ease) infinite;
   border: 1px solid rgba(228, 208, 255, .5);
   box-shadow: 0 0 22px rgba(198, 170, 255, .35), inset 0 0 0 1px rgba(255, 245, 225, .08);
   font-size: .82cqw;
@@ -389,10 +388,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: #FFF7E6;
   text-shadow: 0 1px 10px rgba(28, 13, 62, .65);
   transition: color .45s var(--ease), border-color .45s var(--ease), box-shadow .45s var(--ease);
-}
-@keyframes themeShine {
-  0%   { background-position: -70% 50%, center; }
-  100% { background-position: 250% 50%, center; }
 }
 .theme-go::before {
   content: "";

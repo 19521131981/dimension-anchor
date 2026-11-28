@@ -186,9 +186,8 @@
     var on = st.active === true;
     var badge = $('pmBadge');
     if (badge) {
-      badge.classList.toggle('is-free', !on);
-      badge.innerHTML = on ? '<i>✦</i> 剩 ' + st.left + ' 次' : '<i>✦</i> 已用完';
-      badge.title = on ? '还剩 ' + st.left + ' 次深度解读' : '点击输入占卜码';
+      badge.innerHTML = '<i>✦</i> 剩余次数 ' + st.left + ' 次';
+      badge.title = '查看/补充剩余次数';
     }
     if ($('pmLockBar')) $('pmLockBar').classList.toggle('is-on', !on);
     var head = document.querySelector('.ask__src');
@@ -919,7 +918,7 @@
     /* 本机深度次数：免费 2 次用完 / 兑换次数用完后，引导输入占卜码 */
     var A = window.DA_ACCESS;
     if (!A || !A.canUse()) {
-      pushBot('这一问属于深度探索。免费 2 次已经用完，输入占卜码后我会带着完整牌阵继续陪你往下看。', '观测站');
+      pushBot('这一问属于深度探索。剩余次数已经用完，输入占卜码后我会带着完整牌阵继续陪你往下看。', '观测站');
       openGate();
       finish();
       return;
@@ -1498,7 +1497,7 @@
     if (badge) badge.addEventListener('click', function () {
       var A = window.DA_ACCESS;
       var st = A ? A.status() : null;
-      if (st && st.active) toast('本机深度解读还剩 ' + st.left + ' 次' + (st.freeLeft ? '（含免费 ' + st.freeLeft + ' 次）' : ''));
+      if (st) toast('剩余次数 ' + st.left + ' 次');
       else openGate();
     });
     if ($('unlockBtn')) $('unlockBtn').addEventListener('click', openGate);

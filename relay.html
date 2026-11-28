@@ -18,9 +18,9 @@
 <meta name="twitter:description" content="一张牌接通一段信号，开始一场只属于你们的对话。" />
 <meta name="twitter:image" content="https://www.dimanchor.xyz/assets/media/observatory-desktop.webp?v=20261128a" />
 <meta name="description" content="DIMENSION ANCHOR 实时传讯：一张牌接通一段信号，判断像不像，然后开始一场只属于你们的对话。">
-<link rel="stylesheet" href="assets/css/relay.css?v=20261128e">
-<link rel="stylesheet" href="assets/css/ambient.css?v=20261128e">
-<link rel="stylesheet" href="assets/css/typography.css?v=20261128e">
+<link rel="stylesheet" href="assets/css/relay.css?v=20261128f">
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261128f">
+<link rel="stylesheet" href="assets/css/typography.css?v=20261128f">
 </head>
 <body class="rl" data-phase="entry">
 
@@ -45,7 +45,7 @@
     <span class="rl-top__sigil">✦</span>
     <span class="rl-top__name">LIVE TRANSMISSION</span>
   </div>
-  <span class="rl-top__spacer"></span>
+  <button class="rl-quota" id="rlQuota" type="button" title="查看/补充剩余次数">✦ 剩余次数 2 次</button>
 </header>
 
 <main class="rl-main">
@@ -145,6 +145,8 @@
       <span class="rl-chat__spacer"></span>
     </div>
 
+    <div class="rl-quota__bar" id="chatQuotaBar">✦ 剩余次数 <b id="chatQuotaNum">2</b> 次 · 每 2 条消息消耗 1 次</div>
+
     <div class="rl-chat__list" id="chatList" aria-live="polite"></div>
 
     <div class="rl-chat__err" id="chatErr" hidden>
@@ -186,20 +188,51 @@
   </div>
 </div>
 
+<!-- 剩余次数 / 占卜码兑换 -->
+<div class="rl-gate" id="rlGate" hidden>
+  <div class="rl-gate__scrim" data-gate-close></div>
+  <div class="rl-gate__box" role="dialog" aria-modal="true" aria-label="剩余次数">
+    <button class="rl-gate__x" type="button" data-gate-close aria-label="关闭">✕</button>
+    <p class="rl-gate__kicker">REMAINING</p>
+    <h2 class="rl-gate__t">剩余次数 <span id="rlGateLeft">2</span> 次</h2>
+    <p class="rl-gate__d">每发送 2 条消息消耗 1 次。次数用完后，输入占卜码即可继续与 TA 传讯。</p>
+    <div class="pm-contact">
+      <span>微信</span><b>liangyefei12345678</b>
+      <button class="pm-contact__copy" type="button" id="rlGateCopy">复制</button>
+    </div>
+    <div class="pm-price">
+      <div class="pm-price__head">占卜码 · 价格</div>
+      <div class="pm-price__row"><span>9 次</span><b>¥5.99</b></div>
+      <div class="pm-price__row"><span>31 次</span><b>¥18</b></div>
+      <div class="pm-price__row"><span>39 次</span><b>¥19.99</b></div>
+      <div class="pm-price__row"><span>80 次</span><b>¥39.99</b></div>
+      <div class="pm-price__row"><span>99 次</span><b>¥44.99</b></div>
+      <p class="pm-price__note">制作不易，多多支持 ✦</p>
+    </div>
+    <label class="pm-gate__label" for="rlGateCode">占卜码</label>
+    <input class="pm-gate__input" id="rlGateCode" type="text" inputmode="text"
+           autocomplete="off" spellcheck="false" placeholder="DA-XXXX-XXXX-XXXX" maxlength="40">
+    <button class="pm-gate__btn" id="rlGateRedeem" type="button">兑换并继续</button>
+    <p class="pm-gate__state" id="rlGateState" role="status" aria-live="polite"></p>
+  </div>
+</div>
+
 <div class="rl-toast" id="rlToast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/da-link.js?v=20261128e"></script>
-<script src="assets/js/da-error-text.js?v=20261128e"></script>
-<script src="assets/js/tarot-deck.js?v=20261128e"></script>
-<script src="assets/js/tarot-deck-reversed.js?v=20261128e"></script>
-<script src="assets/js/tarot-engine.js?v=20261128e"></script>
-<script src="assets/js/tarot-sound.js?v=20261128e"></script>
-<script src="assets/js/da-store.js?v=20261128e"></script>
-<script src="assets/js/da-archive.js?v=20261128e"></script>
-<script src="assets/js/da-cloud-config.js?v=20261128e"></script>
+<script src="assets/js/da-codes.js?v=20261128f"></script>
+<script src="assets/js/da-access.js?v=20261128f"></script>
+<script src="assets/js/da-link.js?v=20261128f"></script>
+<script src="assets/js/da-error-text.js?v=20261128f"></script>
+<script src="assets/js/tarot-deck.js?v=20261128f"></script>
+<script src="assets/js/tarot-deck-reversed.js?v=20261128f"></script>
+<script src="assets/js/tarot-engine.js?v=20261128f"></script>
+<script src="assets/js/tarot-sound.js?v=20261128f"></script>
+<script src="assets/js/da-store.js?v=20261128f"></script>
+<script src="assets/js/da-archive.js?v=20261128f"></script>
+<script src="assets/js/da-cloud-config.js?v=20261128f"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
-<script src="assets/js/da-auth.js?v=20261128e"></script>
-<script src="assets/js/relay.js?v=20261128e"></script>
+<script src="assets/js/da-auth.js?v=20261128f"></script>
+<script src="assets/js/relay.js?v=20261128f"></script>
 
 <script>
 /* 与大厅同一策略：明确选"减少"才停；系统减少动态默认降到柔和 */
@@ -211,6 +244,6 @@ try {
   if (m === 'reduced') document.querySelectorAll('video').forEach(function (v) { v.pause(); });
 } catch (e) {}
 </script>
-<script src="assets/js/media-lazy.js?v=20261128e" defer></script>
+<script src="assets/js/media-lazy.js?v=20261128f" defer></script>
 </body>
 </html>
