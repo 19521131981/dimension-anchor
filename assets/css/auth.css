@@ -86,3 +86,43 @@
   pointer-events: none;
 }
 .avatar__dot[hidden] { display: none; }
+
+/* ── 通行证里的选填资料：昵称 + 头像符号 ── */
+.auth__profile {
+  margin-top: 20px; padding-top: 16px;
+  border-top: 1px solid var(--pm-line);
+}
+.auth__profile-h {
+  margin: 0 0 12px; font-size: 15px !important; font-weight: 600 !important;
+  color: var(--pm-ink-strong) !important;
+}
+.auth__profile-h em {
+  margin-left: 6px; font-style: normal; font-size: 12px !important; font-weight: 400 !important;
+  color: var(--pm-gold) !important;
+}
+.auth__avatars { display: flex; gap: 10px; flex-wrap: wrap; }
+.auth__avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid var(--pm-gold-line); background: #FFFDF9;
+  font-family: var(--serif); font-size: 22px !important; line-height: 1;
+  color: var(--pm-ink) !important; cursor: pointer;
+  transition: border-color .25s, background .25s, transform .25s;
+}
+.auth__avatar:hover { transform: translateY(-2px); border-color: var(--pm-gold); }
+.auth__avatar.is-on {
+  border-color: var(--pm-gold); background: #F3ECF6;
+  box-shadow: 0 0 0 2px rgba(190, 154, 96, .28);
+  color: var(--pm-ink-strong) !important;
+}
+.auth__profile-save { width: 100%; margin-top: 4px; }
+
+/* 大厅头像里的自定义符号：盖在默认人像上 */
+.avatar__glyph {
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  font-family: var(--serif); font-size: 21px;
+  color: #FFFDF6; text-shadow: 0 1px 5px rgba(24, 12, 52, .7);
+  pointer-events: none;
+}
+.avatar.has-glyph .avatar__glyph { display: flex; }
+.avatar.has-glyph > svg { opacity: .5; }

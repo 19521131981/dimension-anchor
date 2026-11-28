@@ -292,6 +292,17 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: 13.4%;
   height: calc(var(--uh) * 17.85);
 }
+/* 每日探索背景板：最近生成的水晶星轨图做半透明底纹。
+   不设 z-index，让 ::before 作为首个绘制层，主题文案与抽牌按钮自然盖在图上方。 */
+.card--theme::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: url("../media/btn-gem-daily.webp?v=20261128f") center / cover no-repeat;
+  opacity: .42;
+  pointer-events: none;
+}
 
 .lived {
   position: absolute;
@@ -890,7 +901,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   }
   .card--moon { display: none; }
   .card--theme {
-    position: static;
+    position: relative;
     width: auto;
     height: auto;
     left: auto;

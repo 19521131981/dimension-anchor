@@ -36,6 +36,26 @@ window.DA_ARCHIVE_UI = (function () {
       month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
   }
+  /* 一次占卜的牌面：正位 / 逆位 + 牌名 */
+  function cardsOf(r) {
+    return (r.cards || []).filter(function (c) { return !c.supp; }).map(function (c) {
+      return (c.reversed ? '逆·' : '正·') + (c.cn || '牌');
+    });
+  }
+  /* 一次占卜的解读摘要：取正文第一段 */
+  function gistOf(r) {
+    var chs = r.chapters || [];
+    for (var i = 0; i < chs.length; i++) {
+      var blocks = (chs[i] && chs[i].blocks) || [];
+      for (var j = 0; j < blocks.length; j++) {
+        var b = blocks[j];
+        if ((b.t === 'p' || b.t === 'note' || b.t === 'quote' || b.t === 'quote6') && b.x) {
+          return String(b.x).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+        }
+      }
+    }
+    return '';
+  }
 
   function toast(msg) {
     var el = $('#arToast');
@@ -100,6 +120,23 @@ window.DA_ARCHIVE_UI = (function () {
         ? '<span class="ar-card__sec" style="margin-top:10px;display:block">常说的话</span>' +
           '<ul class="ar-card__quotes">' +
           d.catch.slice(0, 2).map(function (q) { return '<li>' + esc(oneLine(q, 22)) + '</li>'; }).join('') +
+          '</ul>'
+        : '') +
+      /* 每次占卜的具体信息：日期 · 牌阵 · 牌面（正逆位） */
+      ((d.readings || []).length
+        ? '<span class="ar-card__sec" style="margin-top:10px;display:block">占卜记录</span>' +
+          '<ul class="ar-card__reads">' +
+          d.readings.slice(0, 2).map(function (r) {
+            var cs = cardsOf(r);
+            return '<li>' +
+              '<span class="ar-card__read-h">' + esc(fmtDate(r.at)) + ' · ' +
+                esc(oneLine(r.spreadCn || '塔罗牌阵', 10)) + '</span>' +
+              (r.question ? '<span class="ar-card__read-q">问：' + esc(oneLine(r.question, 20)) + '</span>' : '') +
+              (cs.length ? '<span class="ar-card__read-c">' + esc(oneLine(cs.join(' / '), 46)) + '</span>' : '') +
+              '</li>';
+          }).join('') +
+          ((d.readings || []).length > 2
+            ? '<li class="ar-card__read-more">还有 ' + (d.readings.length - 2) + ' 次，翻档案看 →</li>' : '') +
           '</ul>'
         : '') +
       '<span class="ar-card__times">' + esc(times.join(' · ') || '刚刚开始的一段记录') + '</span>' +
@@ -170,13 +207,17 @@ window.DA_ARCHIVE_UI = (function () {
       });
     }
 
-    /* 占卜历史 */
+    /* 占卜历史：每次的日期、牌阵、问题、牌面（正逆位）与解读摘要 */
     if (d.times.readings) {
       html += sec('占卜历史');
       d.readings.slice(0, 4).forEach(function (r) {
         html += '<p class="arp__li">' +
           '<b>' + fmtDate(r.at) + '</b>　' + esc(r.spreadCn || '塔罗牌阵') +
           (r.question ? '　<em>问：</em>' + esc(oneLine(r.question, 40)) : '') + '</p>';
+        var cs = cardsOf(r);
+        if (cs.length) html += '<p class="arp__cards">' + esc(cs.join(' · ')) + '</p>';
+        var gist = gistOf(r);
+        if (gist) html += '<p class="arp__gist">' + esc(oneLine(gist, 60)) + '</p>';
       });
       if (d.times.readings > 4) {
         html += '<p class="arp__li"><em>以及更早的 ' + (d.times.readings - 4) + ' 次……</em></p>';

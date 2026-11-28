@@ -52,11 +52,35 @@ window.DA_AUTH = (function () {
     return d.slice(0, 3) + '****' + d.slice(-4);
   }
   function name() {
+    var p = profile();
+    if (p.nickname) return p.nickname;
     var u = u0();
     if (u.name) return u.name;
     if (u.email) return String(u.email).split('@')[0];
     if (u.phone || u.phoneNumber) return maskPhone(u.phone || u.phoneNumber);
     return '';
+  }
+
+  /* ── 可选的个人资料：昵称 + 头像符号，按通行证隔离，仅存本机 ──
+     不参与登录流程，不填也能正常使用；只是让头像/称呼更像自己。 */
+  var PROFILE_KEY = 'DA2_PROFILE';
+  function profile() {
+    try {
+      var all = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+      var id = uid() || 'guest';
+      var p = all[id] || {};
+      return { nickname: String(p.nickname || ''), avatar: String(p.avatar || '') };
+    } catch (e) { return { nickname: '', avatar: '' }; }
+  }
+  function saveProfile(p) {
+    var id = uid() || 'guest';
+    var all = {};
+    try { all = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') || {}; } catch (e) {}
+    all[id] = { nickname: String(p.nickname || '').trim().slice(0, 16), avatar: String(p.avatar || '') };
+    try { localStorage.setItem(PROFILE_KEY, JSON.stringify(all)); } catch (e) {}
+    notify();
+    paintChip();
+    try { window.DA_ARCHIVE_UI && DA_ARCHIVE_UI.refresh && DA_ARCHIVE_UI.refresh(); } catch (e) {}
   }
 
   /* ── 未完成的挑战：跨刷新保留 ─────────────────────────────── */
@@ -411,14 +435,53 @@ window.DA_AUTH = (function () {
   function viewAccount() {
     var b = build();
     var id = email() || maskPhone(phone());
+    var pf = profile();
+    var AVATARS = [
+      { k: 'moon', t: '☾', label: '月' },
+      { k: 'star', t: '✦', label: '星' },
+      { k: 'gem',  t: '◇', label: '晶' },
+      { k: 'rose', t: '❀', label: '花' },
+      { k: 'sun',  t: '☀', label: '日' }
+    ];
+    var avatarHtml = AVATARS.map(function (a) {
+      return '<button type="button" class="auth__avatar' + (pf.avatar === a.k ? ' is-on' : '') +
+        '" data-av="' + a.k + '" aria-label="' + a.label + '头像" title="' + a.label + '">' + a.t + '</button>';
+    }).join('');
+
     b.title.textContent = '已登录';
     b.body.innerHTML =
       '<p class="auth__lead">这封信柜属于 <b>' + esc(name() || '你') + '</b>' + (id ? '（' + esc(id) + '）' : '') + '。</p>' +
-      '<p class="hint">之后收到的信都会存进这个账号，任何设备登录都能读到。</p>';
+      '<p class="hint">之后收到的信都会存进这个账号，任何设备登录都能读到。</p>' +
+      '<div class="auth__profile">' +
+        '<p class="auth__profile-h">个人资料 <em>选填 · 只保存在这台设备</em></p>' +
+        '<div class="field"><label for="authNick">想让我怎么称呼你</label>' +
+          '<input id="authNick" type="text" maxlength="16" placeholder="留空就用账号名" value="' + esc(pf.nickname) + '"></div>' +
+        '<div class="field"><label>挑一个头像</label>' +
+          '<div class="auth__avatars">' + avatarHtml + '</div></div>' +
+        '<button class="btn btn--plate auth__profile-save" type="button" id="authProfileSave">保存资料</button>' +
+      '</div>';
     b.foot.innerHTML =
       '<button class="btn btn--quiet" type="button" data-auth-cancel>关闭</button>' +
       '<button class="btn btn--plate" type="button" id="authOut">退出登录</button>';
     b.foot.querySelector('[data-auth-cancel]').onclick = close;
+
+    var chosen = pf.avatar;
+    Array.prototype.forEach.call(b.body.querySelectorAll('.auth__avatar'), function (btn) {
+      btn.addEventListener('click', function () {
+        chosen = btn.getAttribute('data-av');
+        Array.prototype.forEach.call(b.body.querySelectorAll('.auth__avatar'), function (x) {
+          x.classList.toggle('is-on', x === btn);
+        });
+      });
+    });
+    var save = b.body.querySelector('#authProfileSave');
+    save.addEventListener('click', function () {
+      var nick = b.body.querySelector('#authNick').value.trim().slice(0, 16);
+      saveProfile({ nickname: nick, avatar: chosen });
+      toast('资料已保存');
+      viewAccount();
+    });
+
     var out = b.foot.querySelector('#authOut');
     out.onclick = function () {
       out.disabled = true; out.textContent = '正在退出…';
@@ -494,6 +557,7 @@ window.DA_AUTH = (function () {
   return {
     init: init, client: client, open: open, close: close,
     uid: uid, email: email, phone: phone, name: name, maskPhone: maskPhone,
+    profile: profile, saveProfile: saveProfile,
     session: function () { return session; },
     sendCode: sendCode, verifyCode: verifyCode,
     sendPhoneCode: sendPhoneCode, verifyPhoneCode: verifyPhoneCode,

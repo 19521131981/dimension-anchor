@@ -216,6 +216,23 @@
       btn.setAttribute('aria-label', label);
       btn.classList.toggle('is-in', on);
       if (dot) dot.hidden = !on;
+      /* 选填头像：把用户挑的符号画进头像中心，没挑就保留原图 */
+      var av = on && auth.profile ? (auth.profile().avatar || '') : '';
+      var glyph = btn.querySelector('.avatar__glyph');
+      var MAP = { moon: '☾', star: '✦', gem: '◇', rose: '❀', sun: '☀' };
+      if (MAP[av]) {
+        if (!glyph) {
+          glyph = document.createElement('span');
+          glyph.className = 'avatar__glyph';
+          glyph.setAttribute('aria-hidden', 'true');
+          btn.appendChild(glyph);
+        }
+        glyph.textContent = MAP[av];
+        btn.classList.add('has-glyph');
+      } else {
+        if (glyph) glyph.remove();
+        btn.classList.remove('has-glyph');
+      }
     }
 
     btn.addEventListener('click', function () {
