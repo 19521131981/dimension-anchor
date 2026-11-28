@@ -5,6 +5,7 @@
 
   var P = window.DA_PREMIUM;
   var A = window.DA_AUTH;
+  var U = window.DA_USERCODE;
   function $(id) { return document.getElementById(id); }
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
@@ -36,7 +37,7 @@
     $('console').hidden = !on;
     $('claimCard').hidden = on;
     $('signCard').hidden = on;
-    if (on) { loadStats(); loadCodes(); loadRedemptions(); }
+    if (on) { loadStats(); loadCodes(); loadRedemptions(); loadGrants(); loadPayCfg(); }
   }
 
   /* 运营概览：只读聚合，服务端只认管理员；失败不阻塞其它管理功能。 */
@@ -87,6 +88,83 @@
       }).join('') : '<tr><td colspan="4">暂时没有兑换记录。</td></tr>';
       msg($('redeemMsg'), '最近 ' + rows.length + ' 条。', 'ok');
     }).catch(function (e) { msg($('redeemMsg'), P.message(e), 'err'); });
+  }
+
+  /* ── 专属编码：每日统一发放与收款配置 ───────────────────────── */
+  function loadGrants() {
+    if (!U || !U.adminStats) return;
+    U.adminStats().then(function (rows) {
+      rows = Array.isArray(rows) ? rows : [];
+      $('grantRows').innerHTML = rows.length ? rows.map(function (g) {
+        return '<tr><td>' + esc(g.id) + '</td><td><b>' + esc(g.code_mask) + '</b></td>' +
+          '<td>' + esc(g.uses) + '</td><td>' + esc(g.batch || '—') + '</td>' +
+          '<td>' + esc(g.claimed) + '</td><td>' + fmt(g.created_at) + '</td></tr>';
+      }).join('') : '<tr><td colspan="6">还没有发放记录。</td></tr>';
+    }).catch(function (e) { msg($('grantMsg'), U.message(e), 'err'); });
+  }
+
+  function doGrant() {
+    if (!U || !U.adminGrant) return;
+    var b = $('grantBtn'); b.disabled = true;
+    msg($('grantMsg'), '正在发放…');
+    U.adminGrant($('grantLines').value, $('grantBatch').value).then(function (r) {
+      if (!r || !r.ok) { msg($('grantMsg'), U.message({ code: (r && r.reason) || 'SERVER_ERROR' }), 'err'); return; }
+      var tips = [];
+      if (r.unknown && r.unknown.length) tips.push('未找到编码：' + r.unknown.join('、'));
+      if (r.invalid && r.invalid.length) tips.push('格式不对：' + r.invalid.join('、'));
+      msg($('grantMsg'), '已发放 ' + r.granted + ' 条 / 共 ' + r.lines + ' 行。' + tips.join('；'), tips.length ? 'err' : 'ok');
+      if (r.granted > 0) $('grantLines').value = '';
+      loadGrants();
+    }).catch(function (e) { msg($('grantMsg'), U.message(e), 'err'); })
+      .then(function () { b.disabled = false; });
+  }
+
+  function readQr(file) {
+    return new Promise(function (resolve, reject) {
+      if (!file) { resolve(''); return; }
+      if (file.size > 8 * 1024 * 1024) { reject(new Error('图片太大，请换一张小一点的二维码')); return; }
+      var fr = new FileReader();
+      fr.onerror = function () { reject(new Error('图片读取失败')); };
+      fr.onload = function () {
+        var img = new Image();
+        img.onerror = function () { reject(new Error('图片读取失败')); };
+        img.onload = function () {
+          var max = 600, scale = Math.min(1, max / Math.max(img.width, img.height));
+          var c = document.createElement('canvas');
+          c.width = Math.max(1, Math.round(img.width * scale));
+          c.height = Math.max(1, Math.round(img.height * scale));
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+          resolve(c.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function showQr(data) {
+    $('qrPreview').innerHTML = data ? '<img src="' + data + '" alt="收款二维码" style="width:120px;height:120px;object-fit:contain;background:#fff;border:1px solid #CBB08A;border-radius:8px">' : '';
+  }
+  function loadPayCfg() {
+    if (!U || !U.payConfig) return;
+    U.payConfig().then(function (c) {
+      $('payWechat').value = c.wechat || 'liangyefei12345678';
+      showQr(c.qr || '');
+    }).catch(function () {});
+  }
+  function savePayCfg() {
+    if (!U || !U.adminSetPayConfig) return;
+    var b = $('payCfgBtn'); b.disabled = true;
+    msg($('payCfgMsg'), '正在保存…');
+    readQr($('qrFile').files && $('qrFile').files[0]).then(function (qr) {
+      return U.adminSetPayConfig(qr, $('payWechat').value).then(function (r) {
+        if (!r || !r.ok) { msg($('payCfgMsg'), U.message({ code: (r && r.reason) || 'SERVER_ERROR' }), 'err'); return; }
+        msg($('payCfgMsg'), '已保存，用户端弹窗会显示这张二维码。', 'ok');
+        showQr(qr);
+      });
+    }).catch(function (e) {
+      msg($('payCfgMsg'), e && e.message ? e.message : U.message(e), 'err');
+    }).then(function () { b.disabled = false; });
   }
 
   function check() {
@@ -169,7 +247,9 @@
         .then(function () { b.disabled = false; });
     });
 
-    $('reloadBtn').addEventListener('click', function () { loadStats(); loadCodes(); loadRedemptions(); });
+    $('reloadBtn').addEventListener('click', function () { loadStats(); loadCodes(); loadRedemptions(); loadGrants(); });
+    if ($('grantBtn')) $('grantBtn').addEventListener('click', doGrant);
+    if ($('payCfgBtn')) $('payCfgBtn').addEventListener('click', savePayCfg);
 
     $('codeRows').addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('[data-toggle]') : null;

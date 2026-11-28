@@ -71,7 +71,29 @@ window.DA_RELAY = (function () {
     g.hidden = false;
     var st = $('#rlGateState');
     if (st) { st.textContent = ''; st.className = 'pm-gate__state'; }
+    refreshUcHint();
     setTimeout(function () { var i = $('#rlGateCode'); if (i) i.focus(); }, 80);
+  }
+  function refreshUcHint() {
+    var U = window.DA_USERCODE, st = $('#rlGateUcState');
+    if (!U || !st) return;
+    st.textContent = '';
+    if (!U.signedIn()) { st.textContent = '点亮通行证可获得专属编码，付款备注写「编码 + 次数」。'; return; }
+    U.myCode().then(function (code) {
+      st.textContent = code ? ('我的编码 ' + U.pretty(code) + ' · 付款备注写「编码 + 次数」') : '';
+    }).catch(function () {});
+  }
+  function syncUc() {
+    var U = window.DA_USERCODE, st = $('#rlGateUcState'), btn = $('#rlGateSync');
+    if (!U || !st || !btn) return;
+    st.textContent = '正在同步云端到账…';
+    btn.disabled = true;
+    U.claimAll().then(function (r) {
+      btn.disabled = false;
+      if (r && r.reason === 'SIGN_IN_REQUIRED') { st.textContent = U.message({ code: 'SIGN_IN_REQUIRED' }); return; }
+      if (r && r.added > 0) { refreshQuota(); st.textContent = '到账 ' + r.added + ' 次，可以继续传讯了。'; }
+      else st.textContent = '暂时没有新到账；付款后会在当天统一发放。';
+    }).catch(function (e) { btn.disabled = false; st.textContent = U.message(e); });
   }
   function closeGate() { var g = $('#rlGate'); if (g) g.hidden = true; }
   function doRedeem() {
@@ -836,6 +858,7 @@ window.DA_RELAY = (function () {
     $('#chatRetry').addEventListener('click', retrySend);
     if ($('#rlQuota')) $('#rlQuota').addEventListener('click', openGate);
     if ($('#rlGateRedeem')) $('#rlGateRedeem').addEventListener('click', doRedeem);
+    if ($('#rlGateSync')) $('#rlGateSync').addEventListener('click', syncUc);
     var gate = $('#rlGate');
     if (gate) gate.addEventListener('click', function (e) {
       if (e.target.closest('[data-gate-close]')) closeGate();

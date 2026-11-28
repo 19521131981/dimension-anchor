@@ -214,9 +214,70 @@
     var st = $('pmState');
     st.textContent = '';
     st.className = 'pm-gate__state';
+    refreshUc();
     setTimeout(function () { $('pmCode').focus(); }, 60);
   }
   function closeGate() { if ($('pmGate')) $('pmGate').hidden = true; }
+
+  /* ══ 专属编码 / 扫码付款 / 统一到账 ═════════════════════════════ */
+  function paintUcCode(code) {
+    var U = window.DA_USERCODE;
+    if (!U) return;
+    var pretty = U.pretty(code);
+    if ($('ucIdBox')) $('ucIdBox').hidden = !pretty;
+    if ($('ucSignIn')) $('ucSignIn').hidden = !!pretty;
+    if ($('ucMemoBox')) $('ucMemoBox').hidden = !pretty;
+    if (pretty && $('ucCode')) $('ucCode').textContent = pretty;
+    updateUcMemo();
+  }
+  function updateUcMemo() {
+    var U = window.DA_USERCODE;
+    if (!U || !$('ucMemo')) return;
+    $('ucMemo').textContent = U.note(U.code(), $('ucUses') ? $('ucUses').value : 9);
+  }
+  function refreshUc() {
+    var U = window.DA_USERCODE;
+    if (!U) return;
+    U.payConfig().then(function (cfg) {
+      if ($('ucWechat')) $('ucWechat').textContent = cfg.wechat || 'liangyefei12345678';
+      if ($('ucQrBox')) {
+        $('ucQrBox').hidden = !cfg.qr;
+        if (cfg.qr) $('ucQr').src = cfg.qr;
+      }
+    });
+    if (U.signedIn()) {
+      U.myCode().then(paintUcCode).catch(function () { paintUcCode(''); });
+    } else paintUcCode('');
+  }
+  function syncUc() {
+    var U = window.DA_USERCODE, st = $('ucState'), btn = $('ucSync');
+    if (!U || !st || !btn) return;
+    st.className = 'pm-gate__state is-busy';
+    st.textContent = '正在同步云端到账…';
+    btn.disabled = true;
+    U.claimAll().then(function (r) {
+      btn.disabled = false;
+      if (r && r.reason === 'SIGN_IN_REQUIRED') {
+        st.className = 'pm-gate__state is-err';
+        st.textContent = U.message({ code: 'SIGN_IN_REQUIRED' });
+        return;
+      }
+      if (r && r.added > 0) {
+        var s = window.DA_ACCESS ? window.DA_ACCESS.status() : { left: 0 };
+        st.className = 'pm-gate__state is-ok';
+        st.textContent = '到账 ' + r.added + ' 次，现在共剩 ' + s.left + ' 次';
+        refreshPremium();
+        setTimeout(closeGate, 1800);
+      } else {
+        st.className = 'pm-gate__state';
+        st.textContent = '暂时没有新到账；付款后会在当天统一发放，晚点再同步即可。';
+      }
+    }).catch(function (e) {
+      btn.disabled = false;
+      st.className = 'pm-gate__state is-err';
+      st.textContent = U.message(e);
+    });
+  }
 
   function doRedeem() {
     var A = window.DA_ACCESS;
@@ -1510,6 +1571,32 @@
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(wx).then(done).catch(fail);
       else legacyCopy(wx) ? done() : fail();
     });
+    var copyText = function (text, ok) {
+      if (!text) return;
+      var done = function () { toast(ok); };
+      var fail = function () { toast('请手动复制：' + text); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done).catch(fail);
+      else legacyCopy(text) ? done() : fail();
+    };
+    if ($('ucCodeCopy')) $('ucCodeCopy').addEventListener('click', function () {
+      copyText($('ucCode') && $('ucCode').textContent.trim(), '专属编码已复制');
+    });
+    if ($('ucMemoCopy')) $('ucMemoCopy').addEventListener('click', function () {
+      copyText($('ucMemo') && $('ucMemo').textContent.trim(), '付款备注已复制');
+    });
+    if ($('ucWxCopy')) $('ucWxCopy').addEventListener('click', function () {
+      copyText($('ucWechat') && $('ucWechat').textContent.trim(), '微信号已复制');
+    });
+    if ($('ucUses')) $('ucUses').addEventListener('change', updateUcMemo);
+    if ($('ucSignIn')) $('ucSignIn').addEventListener('click', function () {
+      var U = window.DA_USERCODE;
+      if (!U) return;
+      U.ensureCode().then(function (code) {
+        paintUcCode(code);
+        toast('专属编码已生成：' + U.pretty(code));
+      }).catch(function (e) { toast(U.message(e)); });
+    });
+    if ($('ucSync')) $('ucSync').addEventListener('click', syncUc);
     if ($('pmGateX')) $('pmGateX').addEventListener('click', closeGate);
     if ($('pmGate')) $('pmGate').querySelectorAll('[data-pm-close]').forEach(function (el) {
       el.addEventListener('click', closeGate);

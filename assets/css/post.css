@@ -1197,3 +1197,5 @@ html[data-motion="reduced"] .scene__img, html[data-motion="reduced"] .gen__env, 
   .nav__mode ~ .im-quota { margin-left: 0; }
   .im-quota { order: 2; margin-left: auto; }
 }
+
+.im-gate .uc-divider { margin: 8px 0; text-align: center; font-size: 12px; color: #A18CB4; letter-spacing: .1em; }

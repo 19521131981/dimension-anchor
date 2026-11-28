@@ -279,3 +279,63 @@ body.pm-admin #toast[hidden] { display: none; }
   border: 1px solid rgba(255,236,200,.5);
 }
 .pm-contact__copy:active { transform: translateY(1px); }
+
+/* ══ 专属编码 / 扫码付款 / 统一发放 ═══════════════════════════════ */
+.uc-pay {
+  margin: 0 0 14px; padding: 14px;
+  border: 1px solid rgba(201,162,104,.5); border-radius: 12px;
+  background: linear-gradient(165deg, rgba(255,252,244,.97), rgba(240,232,252,.93));
+}
+.uc-pay__head {
+  margin: 0 0 7px; font-size: 13px !important; font-weight: 700 !important;
+  letter-spacing: .1em; color: #6B4A9E !important;
+}
+.uc-pay__hint { margin: 0 0 12px; font-size: 12.5px !important; line-height: 1.7 !important; color: #5A4673 !important; }
+.uc-pay__id {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 9px;
+  padding: 10px; margin-bottom: 10px; border-radius: 10px;
+  background: rgba(201,162,104,.12);
+}
+.uc-pay__id span { font-size: 12.5px; color: #6B4A9E; }
+.uc-pay__id b {
+  font-size: 21px !important; letter-spacing: .16em; color: #8A6B32 !important;
+  -webkit-user-select: all; user-select: all;
+}
+.uc-pay__mini {
+  padding: 4px 10px; border-radius: 999px; cursor: pointer;
+  font-size: 11.5px; color: #FFF6E2;
+  background: linear-gradient(180deg, #8A6B32, #6E5226);
+  border: 1px solid rgba(255,236,200,.5);
+}
+.uc-pay__mini:active { transform: translateY(1px); }
+.pm-gate__btn--ghost {
+  background: transparent; color: #6B4A9E !important;
+  border-color: rgba(107,74,158,.45); font-size: 15px !important; min-height: 44px;
+}
+.uc-pay__qr {
+  width: 152px; height: 152px; margin: 12px auto; padding: 7px;
+  border-radius: 10px; background: #fff;
+  border: 1px solid rgba(201,162,104,.55);
+}
+.uc-pay__qr img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.uc-pay__note { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+.uc-pay__note label { flex: 0 0 auto; font-size: 13px; color: #6B4A9E; }
+.uc-pay__note select {
+  flex: 1; min-width: 0; padding: 9px 10px; min-height: 42px;
+  border: 1px solid var(--pm-gold-line); border-radius: 10px;
+  background: #FFFDF9; color: #3A2760; font-size: 15px;
+}
+.uc-pay__memo {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px;
+  padding: 9px; border-radius: 10px; background: rgba(107,74,158,.08);
+  border: 1px dashed rgba(201,162,104,.45);
+}
+.uc-pay__memo span { font-size: 12px; color: #6B4A9E; }
+.uc-pay__memo b {
+  font-size: 15px !important; color: #3A2760 !important; letter-spacing: .05em;
+  -webkit-user-select: all; user-select: all;
+}
+.uc-pay__contact { margin: 11px 0 0; text-align: center; font-size: 13px !important; color: #6B4A9E !important; }
+.uc-pay__contact b { color: #3A2760 !important; -webkit-user-select: all; user-select: all; }
+.uc-pay .pm-gate__state { margin: 8px 0 0; min-height: 20px; font-size: 13px !important; }
+.uc-divider { margin: 0 0 10px; text-align: center; font-size: 12px !important; color: #9B86B0 !important; letter-spacing: .12em; }

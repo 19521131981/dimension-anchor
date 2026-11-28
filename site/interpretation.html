@@ -23,7 +23,7 @@
 <link rel="stylesheet" href="assets/css/cards.css?v=20261128f">
 <link rel="stylesheet" href="assets/css/ambient.css?v=20261128f">
 <link rel="stylesheet" href="assets/css/typography.css?v=20261128f">
-<link rel="stylesheet" href="assets/css/premium.css?v=20261128f">
+<link rel="stylesheet" href="assets/css/premium.css?v=20261128n">
 </head>
 <body class="it">
 
@@ -196,7 +196,7 @@
     <button class="pm-gate__x" type="button" id="pmGateX" aria-label="关闭">✕</button>
     <p class="pm-gate__kicker">DEEP EXPLORATION</p>
     <h2 class="pm-gate__t" id="pmGateT">解锁深度探索</h2>
-    <p class="pm-gate__d">每位访客初始都有 2 次完整体验机会（含深度解读）。用完之后，输入占卜码即可继续追问与深读。</p>
+    <p class="pm-gate__d">每位访客初始都有 2 次完整体验机会（含深度解读）。用完之后，按下面的方式补充次数即可继续追问与深读。</p>
     <div class="pm-price">
       <div class="pm-price__head">深度探索 · 占卜码</div>
       <div class="pm-price__row"><span>9 次</span><b>¥5.99</b></div>
@@ -206,11 +206,35 @@
       <div class="pm-price__row"><span>99 次</span><b>¥44.99</b></div>
       <p class="pm-price__note">制作不易，多多支持 ✦</p>
     </div>
-    <div class="pm-contact">
-      <span>购买 / 咨询</span>
-      <b id="pmWechat"> liangyefei12345678</b>
-      <button class="pm-contact__copy" id="pmWxCopy" type="button">复制微信号</button>
+    <div class="uc-pay">
+      <div class="uc-pay__head">① 专属编码 · 扫码付款</div>
+      <p class="uc-pay__hint">点亮通行证后会生成你的专属编码。付款备注写「编码 + 次数」，每天统一发放。</p>
+      <div class="uc-pay__id" id="ucIdBox" hidden>
+        <span>我的编码</span><b id="ucCode">—</b>
+        <button class="uc-pay__mini" id="ucCodeCopy" type="button">复制</button>
+      </div>
+      <button class="pm-gate__btn pm-gate__btn--ghost" id="ucSignIn" type="button">点亮通行证，获取我的编码</button>
+      <div class="uc-pay__qr" id="ucQrBox" hidden><img id="ucQr" alt="收款二维码"></div>
+      <div class="uc-pay__note">
+        <label for="ucUses">要兑换的次数</label>
+        <select id="ucUses">
+          <option value="9">9 次 · ¥5.99</option>
+          <option value="31">31 次 · ¥18</option>
+          <option value="39">39 次 · ¥19.99</option>
+          <option value="80">80 次 · ¥39.99</option>
+          <option value="99">99 次 · ¥44.99</option>
+        </select>
+      </div>
+      <div class="uc-pay__memo" id="ucMemoBox" hidden>
+        <span>付款备注</span><b id="ucMemo">DA-XXXXXX + 9次</b>
+        <button class="uc-pay__mini" id="ucMemoCopy" type="button">复制备注</button>
+      </div>
+      <p class="uc-pay__contact">微信 <b id="ucWechat">liangyefei12345678</b>
+        <button class="uc-pay__mini" id="ucWxCopy" type="button">复制</button></p>
+      <button class="pm-gate__btn" id="ucSync" type="button">同步到账</button>
+      <p class="pm-gate__state" id="ucState" role="status" aria-live="polite"></p>
     </div>
+    <div class="uc-divider">— 已有占卜码？ —</div>
     <label class="pm-gate__label" for="pmCode">占卜码</label>
     <input class="pm-gate__input" id="pmCode" type="text" inputmode="text"
            autocomplete="off" spellcheck="false" placeholder="DA-XXXX-XXXX-XXXX" maxlength="40">
@@ -251,11 +275,12 @@
 <script src="assets/js/da-error-text.js?v=20261128f"></script>
 <script src="assets/js/da-auth.js?v=20261128g"></script>
 <script src="assets/js/da-codes.js?v=20261128h"></script>
-<script src="assets/js/da-access.js?v=20261128h"></script>
+<script src="assets/js/da-access.js?v=20261128n"></script>
 <script src="assets/js/da-premium.js?v=20261128f"></script>
+<script src="assets/js/da-usercode.js?v=20261128n"></script>
 <script src="assets/js/da-transmission.js?v=20261128f"></script>
 <script src="assets/js/da-interpret-ai.js?v=20261128f"></script>
-<script src="assets/js/interpret.js?v=20261128f"></script>
+<script src="assets/js/interpret.js?v=20261128n"></script>
 <script src="assets/js/da-sharecard.js?v=20261128f"></script>
 <script src="assets/js/motion-init.js?v=20261128f"></script>
 <div style="text-align:center;font-size:10px;letter-spacing:.08em;opacity:.45;padding:14px 0 18px;">仅供娱乐，不构成任何专业建议。</div>

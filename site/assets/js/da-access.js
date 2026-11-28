@@ -15,7 +15,7 @@ window.DA_ACCESS = (function () {
   var FREE_TIMES = 2;
 
   function blank() {
-    return { freeLeft: FREE_TIMES, paidLeft: 0, used: [], pending: null, batch: null, updatedAt: 0 };
+    return { freeLeft: FREE_TIMES, paidLeft: 0, used: [], pending: null, batch: null, grants: [], updatedAt: 0 };
   }
   function load() {
     try {
@@ -30,6 +30,8 @@ window.DA_ACCESS = (function () {
       /* batch：批量扣费明细（如收信一次扣 2 次），{free:n, paid:n} */
       var b = s.batch;
       s.batch = (b && typeof b === 'object' && (b.free || b.paid)) ? { free: b.free || 0, paid: b.paid || 0 } : null;
+      /* grants：云端统一下发记录的本机去重表，一条发放只计一次 */
+      s.grants = Array.isArray(s.grants) ? s.grants : [];
       return s;
     } catch (e) { return blank(); }
   }
@@ -103,6 +105,20 @@ window.DA_ACCESS = (function () {
     return true;
   }
 
+  /* 云端统一下发到账：发放记录 id 在本机去重，同一条只加一次 */
+  function grant(uses, grantId) {
+    var n = Math.max(0, Number(uses) || 0);
+    if (!n) return { ok: false, reason: 'EMPTY_GRANT', left: status().left };
+    var s = load();
+    s.grants = Array.isArray(s.grants) ? s.grants : [];
+    var id = (grantId === null || grantId === undefined) ? '' : String(grantId);
+    if (id && s.grants.indexOf(id) >= 0) return { ok: false, reason: 'ALREADY', left: s.freeLeft + s.paidLeft };
+    s.paidLeft += n;
+    if (id) s.grants.push(id);
+    save(s);
+    return { ok: true, uses: n, left: s.freeLeft + s.paidLeft };
+  }
+
   /* 只读检查：还有没有次数 */
   function canUse() { return status().left > 0; }
 
@@ -156,8 +172,8 @@ window.DA_ACCESS = (function () {
   function reset() { save(blank()); return status(); }
 
   return {
-    status: status, canUse: canUse, canUseN: canUseN, redeem: redeem, consume: consume,
-    refund: refund, settle: settle,
+    status: status, canUse: canUse, canUseN: canUseN, redeem: redeem, grant: grant,
+    consume: consume, refund: refund, settle: settle,
     consumeBatch: consumeBatch, refundBatch: refundBatch, settleBatch: settleBatch,
     message: message, reset: reset, FREE_TIMES: FREE_TIMES
   };

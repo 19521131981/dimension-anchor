@@ -8,7 +8,7 @@
 <title>来自星际的来信 · 收信站｜DIMENSION ANCHOR</title>
 <meta name="description" content="收信站：今日星笺、未读与历史来信，来自你设定的角色。信件保存在你自己的档案里。" />
 <link rel="preload" as="image" href="assets/media/post/incoming-hall.webp?v=20261128a" />
-<link rel="stylesheet" href="assets/css/post.css?v=20261128h" />
+<link rel="stylesheet" href="assets/css/post.css?v=20261128n" />
 <link rel="stylesheet" href="assets/css/ambient.css?v=20261128f" />
 <link rel="stylesheet" href="assets/css/typography.css?v=20261128f" />
 </head>
@@ -169,6 +169,9 @@
       <span>微信</span><b>liangyefei12345678</b>
       <button class="im-contact__copy" type="button" id="imWxCopy">复制</button>
     </div>
+    <button class="im-gate__btn" id="imUcSync" type="button">同步专属编码到账</button>
+    <p class="im-gate__state" id="imUcState" role="status" aria-live="polite"></p>
+    <div class="uc-divider">— 已有占卜码？ —</div>
     <label class="im-gate__label" for="imCode">占卜码</label>
     <input class="im-gate__input" id="imCode" type="text" inputmode="text"
            autocomplete="off" spellcheck="false" placeholder="DA-XXXX-XXXX-XXXX" maxlength="40">
@@ -180,7 +183,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <script src="assets/js/da-codes.js?v=20261128h"></script>
-<script src="assets/js/da-access.js?v=20261128h"></script>
+<script src="assets/js/da-access.js?v=20261128n"></script>
 <script src="assets/js/da-link.js?v=20261128f"></script>
 <script src="assets/js/da-error-text.js?v=20261128f"></script>
 <script src="assets/js/da-store.js?v=20261128f"></script>
@@ -193,8 +196,9 @@
 <script src="assets/js/da-cloud-config.js?v=20261128f"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
 <script src="assets/js/da-auth.js?v=20261128g"></script>
+<script src="assets/js/da-usercode.js?v=20261128n"></script>
 <script src="assets/js/da-mail.js?v=20261128f"></script>
-<script src="assets/js/incoming.js?v=20261128h"></script>
+<script src="assets/js/incoming.js?v=20261128n"></script>
 <script src="assets/js/motion-init.js?v=20261128f"></script>
 <script src="assets/js/media-lazy.js?v=20261128f" defer></script>
 </body>

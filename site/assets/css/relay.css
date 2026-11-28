@@ -657,3 +657,4 @@ html[data-motion="reduced"] .rl-bub--typing i { animation: none; }
 .rl-gate .pm-gate__state { min-height: 20px; margin: 10px 0 0; text-align: center; font-size: 12px; color: var(--rl-ink-2); }
 .rl-gate .pm-gate__state.is-ok { color: #B7E4C4; }
 .rl-gate .pm-gate__state.is-err { color: #F0A6A6; }
+.rl-gate .uc-divider { margin: 8px 0; text-align: center; font-size: 12px; color: var(--rl-ink-2); letter-spacing: .1em; }

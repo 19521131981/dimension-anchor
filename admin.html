@@ -7,7 +7,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>占卜码管理 · DIMENSION ANCHOR</title>
 <link rel="stylesheet" href="assets/css/typography.css?v=20261128f">
-<link rel="stylesheet" href="assets/css/premium.css?v=20261128f">
+<link rel="stylesheet" href="assets/css/premium.css?v=20261128n">
 </head>
 <body class="pm-admin">
 <main class="pm-wrap">
@@ -92,6 +92,38 @@
       </div>
       <p class="pm-msg" id="redeemMsg"></p>
     </section>
+
+    <section class="pm-card" id="dailyCard">
+      <h2>每日统一发放 · 专属编码</h2>
+      <p>直接粘贴微信付款备注，一行一条，例如「DA-AB12CD 9次」。格式：编码 + 次数；系统只认已生成的专属编码，找不到的会在结果里列出来。</p>
+      <div class="pm-grid">
+        <div style="grid-column:1/-1">
+          <label for="grantLines">付款备注清单</label>
+          <textarea id="grantLines" rows="8" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid #CBB08A;border-radius:8px;font:14px/1.6 inherit" placeholder="DA-AB12CD 9次&#10;DA-XY78ZQ 31次"></textarea>
+        </div>
+        <div><label for="grantBatch">批次备注</label><input id="grantBatch" type="text" maxlength="40" placeholder="例如：2026-11-28"></div>
+      </div>
+      <button class="pm-btn" type="button" id="grantBtn">统一发放</button>
+      <p class="pm-msg" id="grantMsg"></p>
+      <div class="pm-scroll" style="margin-top:12px">
+        <table class="pm-table">
+          <thead><tr><th>编号</th><th>编码</th><th>次数</th><th>批次</th><th>到账</th><th>时间</th></tr></thead>
+          <tbody id="grantRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="pm-card" id="payCard">
+      <h2>收款二维码</h2>
+      <p>上传你自己的收款二维码，会显示在用户的补充次数弹窗里；不上传时只显示微信号。</p>
+      <div class="pm-grid">
+        <div><label for="payWechat">微信号</label><input id="payWechat" type="text" maxlength="40" value="liangyefei12345678"></div>
+        <div><label for="qrFile">二维码图片</label><input id="qrFile" type="file" accept="image/*"></div>
+      </div>
+      <div id="qrPreview" style="margin:12px 0;min-height:20px"></div>
+      <button class="pm-btn" type="button" id="payCfgBtn">保存收款配置</button>
+      <p class="pm-msg" id="payCfgMsg"></p>
+    </section>
   </div>
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
@@ -101,6 +133,7 @@
 <script src="assets/js/da-error-text.js?v=20261128f"></script>
 <script src="assets/js/da-auth.js?v=20261128g"></script>
 <script src="assets/js/da-premium.js?v=20261128f"></script>
-<script src="assets/js/admin.js?v=20261128f"></script>
+<script src="assets/js/da-usercode.js?v=20261128n"></script>
+<script src="assets/js/admin.js?v=20261128n"></script>
 </body>
 </html>
