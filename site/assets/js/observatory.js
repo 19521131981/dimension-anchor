@@ -91,6 +91,8 @@
   var linkState = $('#linkState');
   var linkText = $('#linkStateText');
   var startRitual = $('#startRitual');
+  var switchPerson = $('#switchPerson');
+  var stageFootNote = $('#stageFootNote');
 
   function readSession() {
     try {
@@ -112,6 +114,17 @@
     linkText.textContent = '已连接 · ' + who + ' · ' + rel;
     startRitual.setAttribute('href', 'reading.html?step=spread');
     startRitual.lastChild.textContent = '继续这次探索';
+    // 已有连接时，额外给出「换一个人」入口：解除当前连接，重新走一次仪式
+    if (switchPerson) {
+      switchPerson.hidden = false;
+      switchPerson.addEventListener('click', function () {
+        try { localStorage.removeItem('DA_LINK_SESSION'); } catch (e) {}
+        S.page();
+        var target = 'reading.html?step=ritual';
+        location.href = window.DA_LINK ? DA_LINK.fix(target) : target;
+      });
+    }
+    if (stageFootNote) stageFootNote.textContent = '想换一个人问？从新的连接仪式开始。';
   }
 
   /* ---------- 继续上次探索 ---------- */

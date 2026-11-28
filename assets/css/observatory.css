@@ -389,6 +389,38 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .cta:active { transform: translateY(0) scale(.995); }
 .cta__ico { font-size: .82em; opacity: .95; }
 
+/* 已有连接时的次级入口：换一个人连接。弱于主 CTA，但清晰可点 */
+.switch-person[hidden] { display: none; }
+.switch-person {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-family: var(--serif);
+  font-size: 12px;
+  letter-spacing: .13em;
+  color: rgba(255, 246, 230, .86);
+  text-shadow: 0 1px 8px rgba(24, 12, 52, .62);
+  border: 1px solid rgba(226, 206, 255, .3);
+  background: rgba(40, 28, 74, .5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: transform .32s var(--ease), border-color .32s var(--ease),
+              background .32s var(--ease), color .32s var(--ease);
+}
+.switch-person span { font-size: .9em; opacity: .9; }
+.switch-person:hover {
+  transform: translateY(-1px);
+  color: #FFF7E6;
+  border-color: rgba(242, 228, 255, .68);
+  background: rgba(58, 42, 104, .66);
+}
+.switch-person:active { transform: translateY(0) scale(.985); }
+
 .stage__foot-note {
   font-size: 11px;
   letter-spacing: .06em;
