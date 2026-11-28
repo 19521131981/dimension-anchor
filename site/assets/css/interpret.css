@@ -1977,7 +1977,8 @@ html[data-motion="reduced"] .itbg__spark, html[data-motion="reduced"] .panel__st
 .panel--scroll .src__dot { background: #B98F4E; }
 
 /* 收起态 / 展开态 */
-.js .panel--scroll:not(.is-open) { max-height: 168px; }
+.js .panel--scroll:not(.is-open) { max-height: 168px; align-self: start; }
+.js .panel--scroll:not(.is-open) .rbody { overflow: hidden; }
 .panel--scroll .tabbar,
 .panel--scroll .rbody,
 .panel--scroll .verdict,
