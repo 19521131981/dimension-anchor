@@ -181,36 +181,31 @@
   }
 
   function paintPremium() {
-    var on = state.premium.active === true;
+    var A = window.DA_ACCESS;
+    var st = A ? A.status() : { left: 0, active: false, tier: 'none' };
+    var on = st.active === true;
     var badge = $('pmBadge');
     if (badge) {
       badge.classList.toggle('is-free', !on);
-      badge.innerHTML = on ? '<i>✦</i> Premium' : '<i>✦</i> Free';
-      badge.title = on ? ('深度探索有效至 ' + fmtDate(state.premium.valid_until)) : '点击解锁深度探索';
+      badge.innerHTML = on ? '<i>✦</i> 剩 ' + st.left + ' 次' : '<i>✦</i> 已用完';
+      badge.title = on ? '还剩 ' + st.left + ' 次深度解读' : '点击输入占卜码';
     }
     if ($('pmLockBar')) $('pmLockBar').classList.toggle('is-on', !on);
     var head = document.querySelector('.ask__src');
     if (head) {
       head.textContent = on
-        ? '已解锁 · 每次都带上完整牌阵'
-        : '基础解读已开放 · 追问需解锁';
+        ? ('深度探索 · 本机还剩 ' + st.left + ' 次')
+        : '深度次数已用完 · 输入占卜码继续';
     }
   }
 
   function refreshPremium() {
-    var P = window.DA_PREMIUM;
-    if (!P) { paintPremium(); return; }
-    return P.status().then(function (s) {
-      state.premium = {
-        tier: (s && s.tier) || 'free',
-        active: !!(s && s.active),
-        valid_until: (s && s.valid_until) || null
-      };
-      paintPremium();
-    }).catch(function () {
-      state.premium = { tier: 'free', active: false, valid_until: null };
-      paintPremium();
-    });
+    var A = window.DA_ACCESS;
+    if (!A) { paintPremium(); return Promise.resolve(); }
+    var st = A.status();
+    state.premium = { tier: st.tier || 'free', active: !!st.active, valid_until: null, left: st.left };
+    paintPremium();
+    return Promise.resolve();
   }
 
   function openGate() {
@@ -225,27 +220,25 @@
   function closeGate() { if ($('pmGate')) $('pmGate').hidden = true; }
 
   function doRedeem() {
-    var P = window.DA_PREMIUM;
+    var A = window.DA_ACCESS;
     var st = $('pmState'), btn = $('pmRedeem');
-    if (!P || !st || !btn) return;
+    if (!A || !st || !btn) return;
     st.className = 'pm-gate__state is-busy';
-    st.textContent = '正在向服务端验证占卜码…';
+    st.textContent = '正在验证占卜码…';
     btn.disabled = true;
-    P.redeem($('pmCode').value).then(function (r) {
-      if (r && r.ok) {
-        st.className = 'pm-gate__state is-ok';
-        st.textContent = '解锁成功 · 深度探索有效至 ' + fmtDate(r.valid_until);
-        S.flip();
-        refreshPremium();
-        setTimeout(closeGate, 1900);
-      } else {
-        st.className = 'pm-gate__state is-err';
-        st.textContent = P.message({ code: (r && r.reason) || 'INVALID' });
-      }
-    }).catch(function (e) {
+    var r = A.redeem($('pmCode').value);
+    if (r && r.ok) {
+      st.className = 'pm-gate__state is-ok';
+      st.textContent = '兑换成功 · 增加 ' + r.uses + ' 次深度探索，现在共剩 ' + r.left + ' 次';
+      S.flip();
+      $('pmCode').value = '';
+      refreshPremium();
+      setTimeout(closeGate, 1900);
+    } else {
       st.className = 'pm-gate__state is-err';
-      st.textContent = P.message(e);
-    }).then(function () { btn.disabled = false; });
+      st.textContent = A.message(r || { reason: 'INVALID' });
+    }
+    btn.disabled = false;
   }
 
   /* ══ 牌阵网格 ══════════════════════════════════════════════ */
@@ -309,11 +302,11 @@
   }
 
   /* ══ 章节渲染 ══════════════════════════════════════════════ */
-  function blockHTML(b) {
+  function blockHTML(b, tone) {
     switch (b.t) {
       case 'p':      return '<p>' + txt(b.x) + '</p>';
       case 'note':   return '<p class="note">' + txt(b.x) + '</p>';
-      case 'h':      return '<div class="h"' + (b.card != null ? ' data-card="' + attr(b.card) + '"' : '') + '>' + txt(b.x) + '</div>';
+      case 'h':      return '<div class="h tone-' + (tone % 6) + '"' + (b.card != null ? ' data-card="' + attr(b.card) + '"' : '') + '>' + txt(b.x) + '</div>';
       case 'ul':     return '<ul>' + (b.items || []).map(function (i) { return '<li>' + txt(i) + '</li>'; }).join('') + '</ul>';
       case 'li2':    return '<div class="li2"><b>' + txt(b.k) + '</b><span>' + txt(b.v) + '</span></div>';
       case 'kv':     return '<div class="kv">' + (b.items || []).map(function (i) {
@@ -335,7 +328,7 @@
 
   /* 单牌解析按牌分组，点左侧牌才能精确高亮 */
   function blocksHTML(blocks, group) {
-    var out = [], openCard = null;
+    var out = [], openCard = null, tone = 0;
     function close() { if (openCard != null) { out.push('</div>'); openCard = null; } }
 
     (blocks || []).forEach(function (b) {
@@ -348,7 +341,8 @@
       } else if (openCard != null) {
         close();
       }
-      out.push(blockHTML(b));
+      if (b.t === 'h') out.push(blockHTML(b, tone++));
+      else out.push(blockHTML(b, tone));
     });
     close();
     return out.join('');
@@ -389,7 +383,7 @@
         renderTabs();
         renderHero();
         renderRows();
-        renderTail();
+        renderTail(); renderSummary();
         $('rbody').scrollTop = 0;
       });
       box.appendChild(b);
@@ -460,6 +454,19 @@
     });
   }
 
+  /* 本次总述：像塔罗师收尾的一句话，读完全部解读后给出 */
+  function renderSummary() {
+    var box = $('verdict');
+    if (!box) return;
+    var s = state.result && state.result.summary;
+    if (!s) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    box.innerHTML =
+      '<div class="verdict__orn" aria-hidden="true"><span></span>✦<span></span></div>' +
+      '<div class="verdict__cap">本次总述</div>' +
+      '<p>' + txt(s) + '</p>';
+  }
+
   function renderTail() {
     var tail = $('tail');
     var v = chapterOf('voice');
@@ -498,7 +505,7 @@
       renderTabs();
       renderHero();
       renderRows();
-      renderTail();
+      renderTail(); renderSummary();
     }
     requestAnimationFrame(function () {
       var sec = document.querySelector('#hero .csec[data-card="' + attr(entry.id) + '"]');
@@ -660,6 +667,9 @@
   /* 跨次元传讯 · 登录用户的角色语气增强（主动触发，不自动扣额度） */
   function enhanceVoice() {
     if (!window.DA_TRANSMISSION) { toast('增强组件没能加载，请刷新页面。'); return; }
+    if (!window.DA_ACCESS || !window.DA_ACCESS.canUse()) {
+      toast('深度次数已用完，输入占卜码后继续。'); openGate(); return;
+    }
     if (!window.DA_TRANSMISSION.signedIn()) {
       toast('先点亮星际通行证，才能接通 TA 更清晰的声音。');
       if (window.DA_AUTH && window.DA_AUTH.open) window.DA_AUTH.open();
@@ -704,6 +714,7 @@
         if (b.t === 'quote6') { b.x = clean; hit = true; }
       });
       if (!hit) throw new Error('传讯正文没找到');
+      if (window.DA_ACCESS) { window.DA_ACCESS.consume(); window.DA_ACCESS.settle(); refreshPremium(); }
       state.voiceEnhanced = true;
       state.transmission = text;
       if (state.record) {
@@ -711,7 +722,7 @@
           chapters: clone(state.result.chapters), voiceEnhanced: true
         }) || state.record;
       }
-      renderHero(); renderRows(); renderTail();
+      renderHero(); renderRows(); renderTail(); renderSummary();
       toast('接通了。这段话，是 TA 更清楚的心声。');
     }).catch(function (e) {
       /* 异步期间用户可能切了 tab，原按钮节点已被重渲染替换——必须重新取。 */
@@ -726,6 +737,9 @@
      牌面数据块由 da-interpret-ai 的 applyChapters 严格保护，模型碰不到。 */
   function deepenAI() {
     if (!window.DA_INTERPRET_AI) { toast('深化组件未能加载，请刷新页面。'); return; }
+    if (!window.DA_ACCESS || !window.DA_ACCESS.canUse()) {
+      toast('深度次数已用完，输入占卜码后继续。'); openGate(); return;
+    }
     if (!window.DA_INTERPRET_AI.signedIn()) {
       toast('先点亮星际通行证，才能深读这次解读。');
       if (window.DA_AUTH && window.DA_AUTH.open) window.DA_AUTH.open();
@@ -743,6 +757,7 @@
       persona: r.persona || null
     };
     window.DA_INTERPRET_AI.enhance(ctx).then(function (newChapters) {
+      if (window.DA_ACCESS) { window.DA_ACCESS.consume(); window.DA_ACCESS.settle(); refreshPremium(); }
       state.result.chapters = newChapters;
       state.source = 'ai';
       state.model = '云端深化';
@@ -752,7 +767,7 @@
         }) || state.record;
       }
       try { persistSession(); } catch (e) {}
-      renderHero(); renderRows(); renderTail();
+      renderHero(); renderRows(); renderTail(); renderSummary();
       if (label) label.textContent = '深读完成';
       toast('六章已深化，牌面保持原样。');
     }).catch(function (e) {
@@ -901,28 +916,32 @@
     state.busy = true;
     $('sendBtn').disabled = true;
 
-    /* Free 身份：不发起任何追问调用，直接引导解锁 */
-    if (!window.DA_PREMIUM || !state.premium.active) {
-      pushBot('这一问属于深度探索。解锁之后，我会带着这次的完整牌阵、六章解读和刚才的对话，继续陪你往下看。', '观测站');
+    /* 本机深度次数：免费 2 次用完 / 兑换次数用完后，引导输入占卜码 */
+    var A = window.DA_ACCESS;
+    if (!A || !A.canUse()) {
+      pushBot('这一问属于深度探索。免费 2 次已经用完，输入占卜码后我会带着完整牌阵继续陪你往下看。', '观测站');
       openGate();
       finish();
       return;
     }
+    /* 先占用一次额度，联网失败时退回，不白扣次数 */
+    A.consume();
+    refreshPremium();
 
-    window.DA_PREMIUM.ask(fullContext(chapterKey, q, feedback)).then(function (j) {
+    var P = window.DA_PREMIUM;
+    if (!P || typeof P.askDirect !== 'function') { localAnswer(q); finish(); return; }
+    P.askDirect(fullContext(chapterKey, q, feedback)).then(function (j) {
+      if (!j || !j.text) throw new Error('EMPTY_ANSWER');
+      if (window.DA_ACCESS && typeof window.DA_ACCESS.settle === 'function') window.DA_ACCESS.settle();
       pushBot(j.text, '观测站 · 深度探索', true);
       state.thread.push({ role: 'bot', text: j.text, at: Date.now() });
       state.source = 'ai';
       S.flip();
-    }).catch(function (e) {
-      if (e && e.code === 'PREMIUM_REQUIRED') {
-        refreshPremium();
-        pushBot('权益已经失效，请重新输入一张有效的占卜码。', '观测站');
-        openGate();
-      } else {
-        toast(window.DA_PREMIUM.message(e));
-        localAnswer(q);   /* 网络异常时才回落到本地推演，不冒充 AI 追问 */
-      }
+    }).catch(function () {
+      /* 网络异常才回落到本地推演，并退回刚才占用的次数 */
+      if (window.DA_ACCESS && typeof window.DA_ACCESS.refund === 'function') window.DA_ACCESS.refund();
+      refreshPremium();
+      localAnswer(q);
     }).then(finish);
 
     function finish() {
@@ -1083,7 +1102,7 @@
       renderTabs();
       renderHero();
       renderRows();
-      renderTail();
+      renderTail(); renderSummary();
       toast('解读已重新读过。牌面、正逆位、牌位仍取自这一次真实抽出的牌。');
       /* §7.1 三态日志：ai_normal / local_template / abnormal（不存用户原文） */
       try { console.log('[interpret] ai_normal · chapters=' + n + ' · model=' + (state.model || '')); } catch (e) {}
@@ -1416,7 +1435,7 @@
     renderTabs();
     renderHero();
     renderRows();
-    renderTail();
+    renderTail(); renderSummary();
     syncFavBtn();
 
     /* 回填历史追问 */
@@ -1477,11 +1496,21 @@
     /* 权益入口在任何状态下都可用（含空态） */
     var badge = $('pmBadge');
     if (badge) badge.addEventListener('click', function () {
-      if (state.premium.active) toast('深度探索有效至 ' + fmtDate(state.premium.valid_until));
+      var A = window.DA_ACCESS;
+      var st = A ? A.status() : null;
+      if (st && st.active) toast('本机深度解读还剩 ' + st.left + ' 次' + (st.freeLeft ? '（含免费 ' + st.freeLeft + ' 次）' : ''));
       else openGate();
     });
     if ($('unlockBtn')) $('unlockBtn').addEventListener('click', openGate);
     if ($('pmLockBtn')) $('pmLockBtn').addEventListener('click', openGate);
+    if ($('pmWxCopy')) $('pmWxCopy').addEventListener('click', function () {
+      var wx = ($('pmWechat') && $('pmWechat').textContent || '').trim();
+      if (!wx) return;
+      var done = function () { toast('微信号已复制：' + wx); };
+      var fail = function () { toast('请手动复制微信号：' + wx); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(wx).then(done).catch(fail);
+      else legacyCopy(wx) ? done() : fail();
+    });
     if ($('pmGateX')) $('pmGateX').addEventListener('click', closeGate);
     if ($('pmGate')) $('pmGate').querySelectorAll('[data-pm-close]').forEach(function (el) {
       el.addEventListener('click', closeGate);

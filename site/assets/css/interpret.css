@@ -1871,3 +1871,51 @@ html[data-motion="reduced"] .itbg__spark, html[data-motion="reduced"] .panel__st
 .stats .stat b { color: #FFF8E8 !important; }
 .stats .stat em { color: #BFE6C9 !important; }
 .stats .stat i { color: #E8B9C9 !important; }
+
+/* ══ 小节分色 + 本次总述（20261128d）══════════════════════════
+   每个小解读 part 的标题用一种颜色/字形区分，读起来不再是一片同色字；
+   全部解读读完后，用一张独立卡片给出塔罗师口吻的收尾总述。 */
+.hero .h.tone-0 { color: #8A6B32; text-shadow: 0 1px 0 rgba(255,255,255,.8); }
+.hero .h.tone-1 { color: #6B4A9E; text-shadow: 0 1px 0 rgba(255,255,255,.8); font-style: italic; }
+.hero .h.tone-2 { color: #2E7D74; text-shadow: 0 1px 0 rgba(255,255,255,.8); }
+.hero .h.tone-3 { color: #A64163; text-shadow: 0 1px 0 rgba(255,255,255,.8); font-style: italic; }
+.hero .h.tone-4 { color: #3A6BA8; text-shadow: 0 1px 0 rgba(255,255,255,.8); }
+.hero .h.tone-5 { color: #93621C; text-shadow: 0 1px 0 rgba(255,255,255,.8); font-style: italic; }
+.hero .h.tone-0::before { background: linear-gradient(180deg, #C9A268, rgba(201,162,104,.35)); box-shadow: none; }
+.hero .h.tone-1::before { background: linear-gradient(180deg, #6B4A9E, rgba(107,74,158,.35)); box-shadow: none; }
+.hero .h.tone-2::before { background: linear-gradient(180deg, #2E7D74, rgba(46,125,116,.35)); box-shadow: none; }
+.hero .h.tone-3::before { background: linear-gradient(180deg, #A64163, rgba(166,65,99,.35)); box-shadow: none; }
+.hero .h.tone-4::before { background: linear-gradient(180deg, #3A6BA8, rgba(58,107,168,.35)); box-shadow: none; }
+.hero .h.tone-5::before { background: linear-gradient(180deg, #93621C, rgba(147,98,28,.35)); box-shadow: none; }
+
+/* 总述卡：金线装帧 + 居中装饰，和下方 TA 的话区分开 */
+.verdict {
+  margin: 18px 0 16px;
+  padding: 20px 22px 22px;
+  border-radius: 14px;
+  text-align: center;
+  position: relative;
+  background: linear-gradient(168deg, rgba(255,252,244,.94), rgba(240,232,252,.9));
+  border: 1px solid rgba(201,162,104,.62);
+  box-shadow: 0 16px 34px -22px rgba(48,24,90,.5), inset 0 1px 0 rgba(255,255,255,.96);
+}
+.verdict[hidden] { display: none; }
+.verdict__orn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: #A9863F; font-size: 13px;
+}
+.verdict__orn span { width: 46px; height: 1px; background: linear-gradient(90deg, transparent, rgba(169,134,63,.75)); }
+.verdict__orn span:last-child { background: linear-gradient(270deg, transparent, rgba(169,134,63,.75)); }
+.verdict__cap {
+  margin: 8px 0 8px; font-size: 11px; letter-spacing: .34em;
+  color: #8A6B32;
+}
+.verdict p {
+  margin: 0; font-family: var(--serif);
+  font-size: 14.5px; line-height: 2; text-align: left;
+  color: #3A2760; text-shadow: 0 1px 0 rgba(255,255,255,.8);
+}
+@media (max-width: 640px) {
+  .verdict { padding: 18px 16px; }
+  .verdict p { font-size: 13.5px; }
+}

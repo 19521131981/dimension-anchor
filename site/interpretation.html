@@ -18,12 +18,12 @@
 <meta name="twitter:title" content="解读结果 · 塔罗观测站 — DIMENSION ANCHOR">
 <meta name="twitter:description" content="六章解读：整体能量、单牌解析、牌间联系、关系脉络、深层讯息，以及 TA 跨次元传来的那一段话。">
 <meta name="twitter:image" content="https://www.dimanchor.xyz/assets/media/observatory-desktop.webp?v=20261128a">
-<link rel="stylesheet" href="assets/css/observatory.css?v=20261128c">
-<link rel="stylesheet" href="assets/css/interpret.css?v=20261128c">
-<link rel="stylesheet" href="assets/css/cards.css?v=20261128c">
-<link rel="stylesheet" href="assets/css/ambient.css?v=20261128c">
-<link rel="stylesheet" href="assets/css/typography.css?v=20261128c">
-<link rel="stylesheet" href="assets/css/premium.css?v=20261128c">
+<link rel="stylesheet" href="assets/css/observatory.css?v=20261128e">
+<link rel="stylesheet" href="assets/css/interpret.css?v=20261128e">
+<link rel="stylesheet" href="assets/css/cards.css?v=20261128e">
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261128e">
+<link rel="stylesheet" href="assets/css/typography.css?v=20261128e">
+<link rel="stylesheet" href="assets/css/premium.css?v=20261128e">
 </head>
 <body class="it">
 
@@ -145,6 +145,7 @@
       <div class="rbody" id="rbody">
         <article class="hero" id="hero"></article>
         <div class="rows" id="rows"></div>
+        <div class="verdict" id="verdict" hidden></div>
         <div class="tail" id="tail"></div>
       </div>
     </section>
@@ -195,18 +196,27 @@
     <button class="pm-gate__x" type="button" id="pmGateX" aria-label="关闭">✕</button>
     <p class="pm-gate__kicker">DEEP EXPLORATION</p>
     <h2 class="pm-gate__t" id="pmGateT">解锁深度探索</h2>
-    <p class="pm-gate__d">基础六章解读对所有人都开放。输入一张有效的占卜码，可以把这次牌阵继续问下去。</p>
-    <ul class="pm-gate__list">
-      <li>连续追问，始终带着最初的问题、全部牌面与完整解读</li>
-      <li>章节深入解释、补充背景、纠正分析与关系二次探索</li>
-      <li>权益绑定到你的星际通行证账号，换设备也在</li>
-    </ul>
+    <p class="pm-gate__d">每位访客都能免费完整体验 2 次（含深度解读）。用完之后，输入占卜码即可继续追问与深读。</p>
+    <div class="pm-price">
+      <div class="pm-price__head">深度探索 · 占卜码</div>
+      <div class="pm-price__row"><span>9 次</span><b>¥5.99</b></div>
+      <div class="pm-price__row"><span>31 次</span><b>¥18</b></div>
+      <div class="pm-price__row"><span>39 次</span><b>¥19.99</b></div>
+      <div class="pm-price__row"><span>80 次</span><b>¥39.99</b></div>
+      <div class="pm-price__row"><span>99 次</span><b>¥44.99</b></div>
+      <p class="pm-price__note">制作不易，多多支持 ✦</p>
+    </div>
+    <div class="pm-contact">
+      <span>购买 / 咨询</span>
+      <b id="pmWechat"> liangyefei12345678</b>
+      <button class="pm-contact__copy" id="pmWxCopy" type="button">复制微信号</button>
+    </div>
     <label class="pm-gate__label" for="pmCode">占卜码</label>
     <input class="pm-gate__input" id="pmCode" type="text" inputmode="text"
            autocomplete="off" spellcheck="false" placeholder="DA-XXXX-XXXX-XXXX" maxlength="40">
     <button class="pm-gate__btn" id="pmRedeem" type="button">验证并解锁</button>
     <p class="pm-gate__state" id="pmState" role="status" aria-live="polite"></p>
-    <p class="pm-gate__foot">验证在服务端完成：过期、次数用尽、已停用的占卜码都会被拒绝。账户未登录时会先请你点亮通行证。</p>
+    <p class="pm-gate__foot">兑换后次数计入本机；一个占卜码只能使用一次。免费 2 次用完后，深度解读与连续追问需要占卜码。</p>
   </div>
 </div>
 
@@ -222,31 +232,33 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/da-link.js?v=20261128c"></script>
-<script src="assets/js/tarot-deck.js?v=20261128c"></script>
-<script src="assets/js/tarot-deck-reversed.js?v=20261128c"></script>
-<script src="assets/js/tarot-art.js?v=20261128c"></script>
-<script src="assets/js/tarot-scenes.js?v=20261128c"></script>
-<script src="assets/js/tarot-images.js?v=20261128c"></script>
-<script src="assets/js/da-card.js?v=20261128c"></script>
-<script src="assets/js/tarot-spreads.js?v=20261128c"></script>
-<script src="assets/js/tarot-engine.js?v=20261128c"></script>
-<script src="assets/js/tarot-sound.js?v=20261128c"></script>
-<script src="assets/js/tarot-reading.js?v=20261128c"></script>
-<script src="assets/js/da-store.js?v=20261128c"></script>
-<script src="assets/js/da-archive.js?v=20261128c"></script>
-<script src="assets/js/da-ai.js?v=20261128c"></script>
-<script src="assets/js/workbuddy-cloud-sdk.global.js?v=20261128c"></script>
-<script src="assets/js/da-cloud-config.js?v=20261128c"></script>
-<script src="assets/js/da-error-text.js?v=20261128c"></script>
-<script src="assets/js/da-auth.js?v=20261128c"></script>
-<script src="assets/js/da-premium.js?v=20261128c"></script>
-<script src="assets/js/da-transmission.js?v=20261128c"></script>
-<script src="assets/js/da-interpret-ai.js?v=20261128c"></script>
-<script src="assets/js/interpret.js?v=20261128c"></script>
-<script src="assets/js/da-sharecard.js?v=20261128c"></script>
-<script src="assets/js/motion-init.js?v=20261128c"></script>
+<script src="assets/js/da-link.js?v=20261128e"></script>
+<script src="assets/js/tarot-deck.js?v=20261128e"></script>
+<script src="assets/js/tarot-deck-reversed.js?v=20261128e"></script>
+<script src="assets/js/tarot-art.js?v=20261128e"></script>
+<script src="assets/js/tarot-scenes.js?v=20261128e"></script>
+<script src="assets/js/tarot-images.js?v=20261128e"></script>
+<script src="assets/js/da-card.js?v=20261128e"></script>
+<script src="assets/js/tarot-spreads.js?v=20261128e"></script>
+<script src="assets/js/tarot-engine.js?v=20261128e"></script>
+<script src="assets/js/tarot-sound.js?v=20261128e"></script>
+<script src="assets/js/tarot-reading.js?v=20261128e"></script>
+<script src="assets/js/da-store.js?v=20261128e"></script>
+<script src="assets/js/da-archive.js?v=20261128e"></script>
+<script src="assets/js/da-ai.js?v=20261128e"></script>
+<script src="assets/js/workbuddy-cloud-sdk.global.js?v=20261128e"></script>
+<script src="assets/js/da-cloud-config.js?v=20261128e"></script>
+<script src="assets/js/da-error-text.js?v=20261128e"></script>
+<script src="assets/js/da-auth.js?v=20261128e"></script>
+<script src="assets/js/da-codes.js?v=20261128e"></script>
+<script src="assets/js/da-access.js?v=20261128e"></script>
+<script src="assets/js/da-premium.js?v=20261128e"></script>
+<script src="assets/js/da-transmission.js?v=20261128e"></script>
+<script src="assets/js/da-interpret-ai.js?v=20261128e"></script>
+<script src="assets/js/interpret.js?v=20261128e"></script>
+<script src="assets/js/da-sharecard.js?v=20261128e"></script>
+<script src="assets/js/motion-init.js?v=20261128e"></script>
 <div style="text-align:center;font-size:10px;letter-spacing:.08em;opacity:.45;padding:14px 0 18px;">仅供娱乐，不构成任何专业建议。</div>
-<script src="assets/js/media-lazy.js?v=20261128c" defer></script>
+<script src="assets/js/media-lazy.js?v=20261128e" defer></script>
 </body>
 </html>

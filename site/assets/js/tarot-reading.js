@@ -575,6 +575,29 @@ window.DA_READING = (function () {
     return m;
   }
 
+  /* ── 本次总述：解读全部读完后，塔罗师收尾的一句话 ──────────
+     只从这一次真实牌面推导，不空泛、不预设定论、不出现程序字眼。 */
+  function buildSummary(m, core, themeKw) {
+    var coreName = T(core && core.cn, '');
+    var kw = T(themeKw, '') || coreName || '这件事';
+    var first = '这一次的牌，把「' + kw + '」放在了最中央。';
+    var middle;
+    if (m.revRatio >= 0.5) {
+      middle = '逆位过半，提醒你先别急着往外走，看清心里还没松开的那一部分，再决定下一步。';
+    } else if (m.revRatio >= 0.25) {
+      middle = '有正有逆，说明这件事推得动，只是你和目标之间的节奏还没对齐。';
+    } else {
+      middle = '牌面几乎都朝着同一个方向，路是通的，你要做的只是别再怀疑自己。';
+    }
+    var suitLine = m.dominant && SUITS[m.dominant]
+      ? (SUITS[m.dominant].cn + '的力量反复出现——' + T(DOMINANT[m.dominant], '它在提醒你留意这一处。'))
+      : '';
+    var ending = coreName
+      ? '《' + coreName + '》' + ((core && core.reversed) ? '逆位' : '正位') + '留下的那句话，值得你带在身上，慢慢走。'
+      : '把牌面里最打动你的那一句带走，慢慢走就好。';
+    return first + middle + (suitLine ? suitLine : '') + ending;
+  }
+
   function revLine(m) {
     if (!m.revs) return '全部正位，方向是顺的。要留意的不是阻力，而是别把顺利当成理所当然。';
     if (m.revRatio >= 0.5) return '逆位过半，说明这张牌阵里大部分能量是内收的、被推迟的，或者还没准备好被承认。';
@@ -1027,6 +1050,7 @@ window.DA_READING = (function () {
     return {
       meta: m,
       chapters: chapters,
+      summary: buildSummary(m, core, themeKw),
       session: session,
       link: L,
       core: core,

@@ -245,6 +245,15 @@ window.DA_PREMIUM = (function () {
     });
   }
 
+  /* ── 直连深度解读：次数由 DA_ACCESS 在本地判定，这里只负责产出文本 ──
+     不再走云端 da_ask_authorize（那会把本地已放行/已扣次的请求再次拦下）。
+     失败由调用方回落到本地推演，不冒充来源。 */
+  function askDirect(ctx) {
+    return callLLM(buildMessages(ctx)).then(function (text) {
+      return { text: text };
+    });
+  }
+
   /* ── 管理端 ─────────────────────────────────────────────────── */
   function adminStatus() {
     return rpc('da_is_admin').then(function (v) { return v === true; });
@@ -298,7 +307,7 @@ window.DA_PREMIUM = (function () {
 
   return {
     client: client, ready: ready, status: status, signedIn: signedIn,
-    ensureSignIn: ensureSignIn, redeem: redeem, ask: ask,
+    ensureSignIn: ensureSignIn, redeem: redeem, ask: ask, askDirect: askDirect,
     buildMessages: buildMessages, message: message,
     adminStatus: adminStatus, adminClaim: adminClaim,
     adminGenerate: adminGenerate, adminList: adminList,

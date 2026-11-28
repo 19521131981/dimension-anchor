@@ -1549,8 +1549,8 @@ body.rd[data-step="flip"] .rd__main { padding: 0; min-height: 0; }
 
   .swrap { top: 208px; bottom: 176px; }
   .fanwrap { width: 100vw; }
-  .fan { height: 156px; }
-  .fan__card { width: 68px; height: 102px; margin-left: -34px; }
+  .fan { height: 172px; }
+  .fan__card { width: 84px; height: 126px; margin-left: -42px; }
 
   .stray { bottom: 176px; padding: 5px 8px; gap: 6px; }
   .stray__lb { font-size: 9px; }
