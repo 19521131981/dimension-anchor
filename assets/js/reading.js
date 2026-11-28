@@ -259,13 +259,6 @@
       '</button>',
       '</div>',
 
-      '<p class="note">',
-      '<b>关于这套仪式：</b>塔罗观测站是一个幻想互动与象征性探索的空间。' +
-      '牌面与星座只用来帮你把感受说清楚，它不构成对任何真实人物的身份验证，' +
-      '也不声称能确认某种超自然对象。本次连接默认是一次临时会话，' +
-      '是否长期保存由你决定。',
-      '</p>',
-
       '<div class="actions">',
       '<a class="btn btn--ghost" href="observatory.html">回到观测站</a>',
       '</div>',
@@ -475,8 +468,6 @@
       '</ul>',
       '</div>',
       '</div>',
-
-      '<p class="note">这些描述是象征性的联想，不是对任何人的判定。它只是帮你说出"像不像"。</p>',
 
       '<div class="actions">',
       '<button class="btn btn--ghost" id="gBack">换一条路</button>',
@@ -719,9 +710,6 @@
       '<div class="slots__row"><span class="slots__n">3</span><em>连接摘要</em>' +
         '<span>' + esc(summary) + '</span></div>',
       '</div>',
-
-      '<p class="note"><b>说明：</b>这是一次基于你设定的幻想互动与象征性探索。' +
-        '牌面和星座只用来帮你把感受说清楚，不构成对任何真实人物的身份验证。</p>',
 
       '<div class="actions actions--split">',
       '<button class="btn btn--ghost" id="uBack">返回修改</button>',
