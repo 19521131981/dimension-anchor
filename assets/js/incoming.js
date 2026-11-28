@@ -148,7 +148,33 @@
 
   /* ══ 领取来信对话框 ════════════════════════════════════════ */
   var dlgForm = { kind: 'daily' };
+  /* 收信解锁：主动写信 2 封及以上（规格 20261128）——星海回应已经开始说话的人 */
+  function outCount() {
+    try {
+      return (S.letters.list() || []).filter(function (l) {
+        return l.direction === 'out' && l.status !== 'draft';
+      }).length;
+    } catch (e) { return 0; }
+  }
+  function unlockGate() {
+    var n = outCount();
+    if (n >= 2) return true;
+    var body = els.dlgBody;
+    body.innerHTML =
+      '<div class="field" style="text-align:center;padding:14px 6px;">' +
+      '<p style="font-size:15px;color:#F6EEFF;letter-spacing:.08em;margin:0 0 10px;">星海还没有收到你的声音</p>' +
+      '<p style="font-size:12.5px;line-height:1.9;color:rgba(246,238,255,.75);margin:0 0 16px;">' +
+      '先去书写室写下 <b style="color:#FFDF9E">' + (2 - n) + ' 封</b>信——' +
+      '星海只会回应已经开始说话的人。写满两封，TA 的信就会落在你的信匣里。</p>' +
+      '<a class="btn btn--primary" href="' + (window.DA_LINK ? DA_LINK.fix('outgoing.html') : 'outgoing.html') + '">去写一封信</a>' +
+      '</div>';
+    els.dlgFoot.style.display = 'none';
+    els.dlg.hidden = false;
+    return false;
+  }
+
   function openDialog(opts) {
+    if (!unlockGate()) return;
     dlgForm = { kind: (opts && opts.kind) || 'daily', profileId: '', length: 'short', note: '' };
     els.dlgTitle.textContent = dlgForm.kind === 'daily' ? '领取今日来信' : '请 TA 再写一封';
     els.dlgStep.textContent = dlgForm.kind === 'daily' ? 'TODAY · STELLAR MAIL' : 'ANOTHER LETTER';
@@ -248,8 +274,8 @@
     var theme = themeCn.trim() || L.DAILY_THEMES[L.dayIdx() % L.DAILY_THEMES.length];
     var form = { profileId: profileId, charMode: profileId ? 'saved' : 'none', length: dlgForm.length, themeCn: theme, note: note, theme: '' };
 
-    /* 先真抽牌（3 / 5 / 6 张，取决于长度），再交给服务端读牌与落笔 */
-    var cards = L.drawCards(form.length);
+    /* 先真抽牌（收信固定 7–9 张，随机），再交给服务端读牌与落笔（规格 20261128） */
+    var cards = L.drawCards('incoming', 7 + Math.floor(Math.random() * 3));
     if (!cards.length) {
       els.dlgBody.innerHTML = '<div class="err"><p>牌组没有载入</p><small>请刷新页面后重试。</small></div>';
       els.dlgFoot.style.display = '';

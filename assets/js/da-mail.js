@@ -273,6 +273,13 @@ window.DA_MAIL = (function () {
   /* 云端生成：抽牌 → 内核（不外传）→ 成信 → 落库（stream 收集完整 JSON） */
   function cloudGenerate(form, opts) {
     opts = opts || {};
+    /* 写信人自动对应 + 上下文注入（云端路径） */
+    if (!form.profileId && !form.charName) {
+      var tgt = recentOutTarget();
+      if (tgt.profileId) form.profileId = tgt.profileId;
+      else if (tgt.charName) form.charName = tgt.charName;
+    }
+    form.contextRecent = recentContext();
     var payload = LT.buildPayload(form, opts.kind || 'letter');
     var cards = (opts.cards && opts.cards.length) ? opts.cards : LT.drawCards(payload.length);
     var facts = LT.cardView(cards);
@@ -490,10 +497,65 @@ window.DA_MAIL = (function () {
   }
 
   /* AI 生成一封来信（server 模式由服务端生成；cloud 模式本地组装提示词） */
+  /* 写信人自动对应：多梦角时，看最近一封去信写给谁（规格 20261128） */
+  function recentOutTarget() {
+    var S = window.DA_STORE;
+    if (!S) return { profileId: '', charName: '' };
+    try {
+      var outs = (S.letters.list() || []).filter(function (l) {
+        return l.direction === 'out' && l.status !== 'draft';
+      }).sort(function (x, y) { return (y.at || 0) - (x.at || 0); });
+      if (!outs.length) return { profileId: '', charName: '' };
+      var r = outs[0];
+      var link = r.link || {};
+      return { profileId: link.profileId || '', charName: link.subjectName || r.charName || '' };
+    } catch (e) { return { profileId: '', charName: '' }; }
+  }
+  /* 上下文组装：最近占卜 + 最近传讯 + 过往信件（总长截 900 字） */
+  function recentContext() {
+    var S = window.DA_STORE;
+    if (!S) return '';
+    var bits = [];
+    try {
+      (S.readings.list() || []).slice(0, 3).forEach(function (r, i) {
+        var d = r.at ? new Date(r.at) : null;
+        bits.push('占卜' + (i + 1) + '：' + (r.title || '未命名') +
+          '（' + (d ? (d.getMonth() + 1) + '月' + d.getDate() + '日' : '近日') +
+          ' · ' + (r.spreadCn || '') + '）');
+      });
+    } catch (e) {}
+    try {
+      (S.threads.list() || []).slice(0, 1).forEach(function (t, i) {
+        var msgs = (t.messages || []).filter(function (m) { return m.text; });
+        var last = msgs.slice(-2).map(function (m) { return String(m.text || '').slice(0, 50); }).join(' / ');
+        if (last) bits.push('最近传讯片段：' + last);
+      });
+    } catch (e) {}
+    try {
+      (S.letters.list() || []).filter(function (l) { return l.status !== 'draft'; })
+        .sort(function (x, y) { return (y.at || 0) - (x.at || 0); }).slice(0, 3)
+        .forEach(function (l, i) {
+          var d = l.at ? new Date(l.at) : null;
+          var head = String(l.body || '').replace(/<[^>]+>/g, '').slice(0, 60);
+          bits.push((l.direction === 'out' ? '你写给' : 'TA 写来的') + '信' + (i + 1) +
+            '（' + (d ? (d.getMonth() + 1) + '月' + d.getDate() + '日' : '近日') +
+            ' · ' + (l.theme || '') + '）：' + head + '…');
+        });
+    } catch (e) {}
+    return bits.join('\n').slice(0, 900);
+  }
+
   function generateIncoming(form, opts) {
     opts = opts || {};
     opts.lid = opts.lid || lid();
     opts.dateKey = opts.kind === 'daily' ? LT.dayKey() : '';
+    /* 写信人自动对应：用户未显式选择时，取最近一封去信的收信梦角（多梦角看之前写给谁） */
+    if (!form.profileId && !form.charName) {
+      var tgt = recentOutTarget();
+      if (tgt.profileId) form.profileId = tgt.profileId;
+      else if (tgt.charName) form.charName = tgt.charName;
+    }
+    form.contextRecent = recentContext();
     return init().then(function (st) {
       if (st.mode === 'server') {
         var payload = LT.buildPayload(form, opts.kind || 'letter');

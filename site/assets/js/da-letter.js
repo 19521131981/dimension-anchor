@@ -56,7 +56,7 @@ window.DA_LETTER = (function () {
   var DAILY_THEMES = ['今夜的月色', '风里的一句话', '星星的便签', '寄往清晨的信',
                       '午夜的一分钟', '云的背面', '潮汐与灯', '未命名的温柔'];
 
-  /* ── 书信牌阵：六牌位，按长度取子集（与服务端 LETTER_SPREAD 同一份定义）── */
+  /* ── 书信牌阵：九牌位，按长度取子集（与服务端 LETTER_SPREAD 同一份定义）── */
   var SPREAD = {
     key: 'letter',
     cn: '书信牌阵',
@@ -66,9 +66,13 @@ window.DA_LETTER = (function () {
       { n: 3, cn: '我们之间',     en: 'Between Us',              d: '关系此刻的真实状态' },
       { n: 4, cn: '没说出口的',   en: 'Unsaid',                  d: '张力、隐瞒、尚未承认的部分' },
       { n: 5, cn: '想让你知道的', en: 'What I Need You to Know', d: '这封信真正要说的那一句' },
-      { n: 6, cn: '信末的余温',   en: 'The Last Warmth',         d: '收尾姿态，留给对方的东西' }
+      { n: 6, cn: '信末的余温',   en: 'The Last Warmth',         d: '收尾姿态，留给对方的东西' },
+      { n: 7, cn: 'TA 的犹豫',    en: 'The Hesitation',          d: 'TA 没说出口的那层迟疑' },
+      { n: 8, cn: '藏在牌里的答案', en: 'The Hidden Answer',     d: '牌面替 TA 藏着的那句话' },
+      { n: 9, cn: '这封信的落点',  en: 'Where It Lands',          d: '这封信最终要落在哪件事上' }
     ],
-    byLength: { short: [1, 3, 5], standard: [1, 2, 3, 4, 5], deep: [1, 2, 3, 4, 5, 6] }
+    byLength: { short: [1, 3, 5], standard: [1, 2, 3, 4, 5], deep: [1, 2, 3, 4, 5, 6],
+                incoming: [1, 2, 3, 4, 5, 6, 7, 8, 9] }
   };
 
   function slotsFor(length) {
@@ -90,14 +94,16 @@ window.DA_LETTER = (function () {
   }
 
   /* 真实抽牌：78 张 Fisher-Yates 洗牌，正逆位各半；不重复、不预知 */
-  function drawCards(length) {
+  function drawCards(length, count) {
     var D = window.DA_TAROT;
     if (!D || !D.all || !D.all.length) return [];
     var pool = D.all.slice();
     for (var i = pool.length - 1; i > 0; i--) {
       var j = rnd(i + 1), t = pool[i]; pool[i] = pool[j]; pool[j] = t;
     }
-    return slotsFor(length).map(function (s, k) {
+    var slots = slotsFor(length);
+    if (count) slots = slots.slice(0, Math.max(1, Math.min(count, slots.length)));
+    return slots.map(function (s, k) {
       return { slot: s.n, id: pool[k].i, orient: rnd(2) ? 'reversed' : 'upright' };
     });
   }
@@ -105,8 +111,11 @@ window.DA_LETTER = (function () {
   /* 抽牌结果 → 展示 / 提示词用事实（牌面由本地牌表补全） */
   function cardView(cards) {
     var D = window.DA_TAROT;
-    var slots = slotsFor('deep');
+    var slots = slotsFor('incoming');
+    var bySlot = {};
+    slots.forEach(function (s) { bySlot[s.n] = s; });
     return (cards || []).map(function (x, i) {
+      var slotMeta = bySlot[x.slot] || slots[i] || slots[0];
       var c = D && D.byId(x.id);
       var rev = /^(rev|reversed|逆)/i.test(String(x.orient || ''));
       var slot = null;
@@ -170,7 +179,8 @@ window.DA_LETTER = (function () {
       theme: form.themeCn || cnOf(THEMES, form.theme) || (kind === 'daily' ? DAILY_THEMES[dayIdx()] : ''),
       mood: form.moodCn || cnOf(MOODS, form.mood),
       note: String(form.note || '').slice(0, 400),
-      length: form.length || 'standard'
+      length: form.length || 'standard',
+      contextRecent: String(form.contextRecent || '').slice(0, 900)
     };
   }
 
@@ -213,6 +223,8 @@ window.DA_LETTER = (function () {
     '2. 开场直接进入角色此刻的具体情境（时间、地点、正在做的事），不要「亲爱的朋友」这类通用称呼；用角色会用的方式称呼「你」。\n' +
     '3. 至少两处只属于你们两个人的具体细节：物件、动作、未说完的话、身体感受。可以写角色自己的日常与观察，但不得虚构用户没提供过的重大事件或设定。\n' +
     '4. 情感要具体、有重量，可以有克制的占有、担心、调侃或沉默；不要反复说「我想你」「我爱你」，不要把「我永远陪着你」当落点。\n' +
+    '4b. 这封信最重要的底色：结合牌意分析用户此刻的现状、TA 此刻的状态、以及你们关系的形状——牌意必须真实参与，不能只做背景装饰；\n' +
+    '    让这是一封带着爱的信（爱不越界，遵守关系阶段分寸），让收信人读完觉得「TA 真的看见了我最近的样子」。\n' +
     '5. 不同角色必须读起来是不同的人：句式长短、用词、称呼、是否直白，全部由角色性格决定。严禁 OOC，拒绝流水线式的乙女套路；' +
     '冷冽的人不写粘腻甜话，傲娇的人不突然温顺。情感可以有重量，但不用 emoji、网络流行语，不写舞台动作括号描写（如「（拉住你的手）」）。\n' +
     '5b. 真实有重量：若这段关系里有距离、迟疑或未解的结，诚实写进去，不强行粉饰成圆满，不编造虚假承诺。\n' +
@@ -269,6 +281,7 @@ window.DA_LETTER = (function () {
     L.push('【关系】' + (p.relation || '未指定') + (p.background ? '；背景：' + p.background : '') +
       (p.profileRel ? '；档案中的关系背景：' + p.profileRel : ''));
     if (p.note) L.push('【用户这次想说的】' + p.note);
+    if (p.contextRecent) L.push('【你们最近的故事（只作理解底色，绝不照抄进内核）】\n' + p.contextRecent);
     L.push('');
     L.push('【真实抽出的牌（不许改动）】');
     (facts || []).forEach(function (c) {
@@ -311,6 +324,7 @@ window.DA_LETTER = (function () {
     L.push('【情绪氛围】' + (p.mood || '由角色性格决定') + '（氛围只作底色，不得覆盖角色原有性格）');
     if (p.note) L.push('【用户这次想对 TA 说的】' + p.note +
       '\n（用户写了想说的话时，优先回应其中 1–3 个具体内容，其余背景只作底色。）');
+    if (p.contextRecent) L.push('【你们最近的故事（只作理解底色，绝不照抄进正文）】\n' + p.contextRecent);
     L.push('【正文长度】' + (LEN_CN[p.length] || LEN_CN.standard) + '；长度是硬指标，不为凑字数重复表达。');
     if (p.kind === 'daily') L.push('【性质】今日星际来信：比正式信件更轻、更短，像随信附上的一张星笺。');
     if (facts && facts.length) {
