@@ -1147,14 +1147,42 @@
       sb2.addEventListener('click', function () { soundBtn.click(); });
     }
 
-    /* ---- 画板尺寸 ---- */
+    /* ---- 画板尺寸 ----
+       原先是按设计画布等比缩放，而三张 / 五张牌阵的画布（1120 / 1340 宽）
+       本来是给十张牌留的空间，手机上一缩，牌就只剩五六十像素。
+       现在：单行牌阵先把牌收拢成紧凑排列，再按真实内容尺寸放大；
+       同时给放大留上限（牌宽不超过 220px），避免桌面上糊成大牌。 */
     function fitBoard() {
-      var W = (boardWrap.clientWidth || window.innerWidth) - 46;
-      var H = (boardWrap.clientHeight || window.innerHeight * 0.6) - 34;
-      var s = Math.min(1, W / spread.w, H / spread.h);
+      var W = boardWrap.clientWidth || window.innerWidth;
+      var H = boardWrap.clientHeight || window.innerHeight * 0.6;
+      var cw = spread.cw;
+      var n = spread.slots.length;
+      var firstY = spread.slots.length ? spread.slots[0].y : 0;
+      var sameRow = spread.slots.every(function (sl) { return Math.abs(sl.y - firstY) < 1; });
+      var bw = spread.w, bh = spread.h;
+
+      if (sameRow && n >= 2 && n <= 5) {
+        /* 牌与牌之间留 18% 牌宽的空隙，刚好能看清又不散 */
+        var step = cw * 1.18;
+        bw = Math.round(cw + (n - 1) * step);
+        bh = Math.round(cw * 1.5) + 40;
+        spread.slots.forEach(function (sl, i) {
+          var el = slotEls[sl.n];
+          if (!el) return;
+          el.style.left = Math.round(cw / 2 + i * step) + 'px';
+          el.style.top = Math.round(bh / 2) + 'px';
+        });
+      }
+      boardEl.style.width = bw + 'px';
+      boardEl.style.height = bh + 'px';
+
+      var padX = W < 520 ? 16 : 32;
+      var s = Math.min(
+        (W - padX) / bw,
+        (H - 18) / bh,
+        220 / cw
+      );
       s = Math.max(0.14, s);
-      boardEl.style.width = spread.w + 'px';
-      boardEl.style.height = spread.h + 'px';
       boardEl.style.setProperty('--bs', s.toFixed(4));
     }
 
@@ -1632,20 +1660,36 @@
     // 重新挂载牌面
     var nb = view.querySelector('#board');
     var wrap = view.querySelector('#boardWrap');
-    var s2 = Math.min(1, wrap.clientWidth / spread.w);
-    nb.style.width = spread.w + 'px';
-    nb.style.height = spread.h + 'px';
-    nb.style.transform = 'translateX(-50%) scale(' + s2 + ')';
-    wrap.style.height = (spread.h * s2) + 'px';
 
-    spread.slots.forEach(function (sl) {
+    /* 和翻牌步骤同一套规则：单行牌阵（三张 / 五张）先收拢成紧凑排列，
+       再按真实内容尺寸整体放大，手机上不再缩成一小排。 */
+    var cw2 = spread.cw, n2 = spread.slots.length;
+    var rowY = n2 ? spread.slots[0].y : 0;
+    var rowOne = spread.slots.every(function (sl) { return Math.abs(sl.y - rowY) < 1; });
+    var compact = rowOne && n2 >= 2 && n2 <= 5;
+    var stepX = cw2 * 1.18;
+    var bw2 = compact ? Math.round(cw2 + (n2 - 1) * stepX) : spread.w;
+    var bh2 = compact ? Math.round(cw2 * 1.5) + 40 : spread.h;
+
+    function flowFit() {
+      var W = wrap.clientWidth || window.innerWidth;
+      var s = Math.min((W - (W < 520 ? 16 : 32)) / bw2, 220 / cw2);
+      s = Math.max(0.14, s);
+      nb.style.width = bw2 + 'px';
+      nb.style.height = bh2 + 'px';
+      nb.style.transform = 'translateX(-50%) scale(' + s + ')';
+      wrap.style.height = (bh2 * s) + 'px';
+    }
+    flowFit();
+
+    spread.slots.forEach(function (sl, i) {
       var entry = sess.cards.filter(function (c) { return c.slot === sl.n; })[0];
       if (!entry) return;
       var cw = spread.cw, ch = Math.round(cw * 1.5);
       var d = document.createElement('div');
       d.className = 'slot';
-      d.style.left = sl.x + 'px';
-      d.style.top = sl.y + 'px';
+      d.style.left = (compact ? Math.round(cw2 / 2 + i * stepX) : sl.x) + 'px';
+      d.style.top = (compact ? Math.round(bh2 / 2) : sl.y) + 'px';
       d.style.width = cw + 'px';
       d.style.height = ch + 'px';
       d.style.setProperty('--rot', (sl.rot || 0) + 'deg');
@@ -1661,11 +1705,7 @@
 
     paintCards();
 
-    window.addEventListener('resize', function () {
-      var s3 = Math.min(1, wrap.clientWidth / spread.w);
-      nb.style.transform = 'translateX(-50%) scale(' + s3 + ')';
-      wrap.style.height = (spread.h * s3) + 'px';
-    });
+    window.addEventListener('resize', flowFit);
 
     // 存档，供"继续上次探索"使用
     try {
