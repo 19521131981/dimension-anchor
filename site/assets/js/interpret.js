@@ -1115,7 +1115,9 @@
     if (!ch || ch.key !== 'cards') return;
     var cards = placed(), k = 0;
     (ch.blocks || []).forEach(function (b) {
+      /* 只给「带《牌名》的标题」绑牌，小节标题（你们之间 / 牌面深处的讯息）不占位 */
       if (b.t !== 'h') return;
+      if (String(b.x || '').indexOf('《') < 0) return;
       var e = cards[k];
       if (e) { b.card = e.id; b.slot = e.slot; k++; }
     });
