@@ -28,6 +28,61 @@
   var cur = null;      /* 当前阅读的信件 */
   var cache = [];      /* 收信箱缓存 */
 
+  /* ══ 次数：寄信免费，收到一封来信消耗 2 次 ═══════════════════
+     扣费在「请 TA 落笔」确认后、真正生成前用 consumeBatch(2) 预扣；
+     生成成功 settleBatch 确认，失败 refundBatch 原样退回。 */
+  var LETTER_COST = 2;
+  function refreshQuota() {
+    var A = window.DA_ACCESS;
+    var left = A ? A.status().left : 0;
+    var n = $('#imQuotaNum'); if (n) n.textContent = left;
+    var g = $('#imGateLeft'); if (g) g.textContent = left;
+  }
+  function openGate() {
+    refreshQuota();
+    var g = $('#imGate'); if (!g) return;
+    g.hidden = false;
+    var st = $('#imState'); if (st) { st.textContent = ''; st.className = 'im-gate__state'; }
+    setTimeout(function () { var i = $('#imCode'); if (i) i.focus(); }, 80);
+  }
+  function closeGate() { var g = $('#imGate'); if (g) g.hidden = true; }
+  function doRedeem() {
+    var A = window.DA_ACCESS;
+    var st = $('#imState'), btn = $('#imRedeem'), code = $('#imCode');
+    if (!A || !st || !btn) return;
+    st.className = 'im-gate__state is-busy';
+    st.textContent = '正在验证占卜码…';
+    btn.disabled = true;
+    var r = A.redeem(code ? code.value : '');
+    setTimeout(function () {
+      if (r && r.ok) {
+        st.className = 'im-gate__state is-ok';
+        st.textContent = '兑换成功 · 已增加 ' + r.uses + ' 次';
+        refreshQuota();
+        if (code) code.value = '';
+        setTimeout(closeGate, 1600);
+      } else {
+        st.className = 'im-gate__state is-err';
+        st.textContent = A.message(r);
+      }
+      btn.disabled = false;
+    }, 260);
+  }
+  function bindGate() {
+    var q = $('#imQuota'); if (q) q.addEventListener('click', openGate);
+    var rd = $('#imRedeem'); if (rd) rd.addEventListener('click', doRedeem);
+    var cp = $('#imWxCopy'); if (cp) cp.addEventListener('click', function () {
+      try {
+        if (navigator.clipboard) navigator.clipboard.writeText('liangyefei12345678');
+        toast('微信号已复制');
+      } catch (e) { toast('微信号：liangyefei12345678', 4000); }
+    });
+    var gate = $('#imGate');
+    if (gate) gate.addEventListener('click', function (e) {
+      if (e.target.closest('[data-im-close]')) closeGate();
+    });
+  }
+
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
@@ -274,9 +329,25 @@
     var theme = themeCn.trim() || L.DAILY_THEMES[L.dayIdx() % L.DAILY_THEMES.length];
     var form = { profileId: profileId, charMode: profileId ? 'saved' : 'none', length: dlgForm.length, themeCn: theme, note: note, theme: '' };
 
+    /* 收信计费：收到一封来信消耗 2 次占卜次数。寄信不扣费。 */
+    var A = window.DA_ACCESS;
+    if (A) {
+      if (!A.canUseN(LETTER_COST)) {
+        toast('剩余次数不足 ' + LETTER_COST + ' 次，收一封信需要 ' + LETTER_COST + ' 次。');
+        closeDialog();
+        openGate();
+        return;
+      }
+      var charge = A.consumeBatch(LETTER_COST);
+      if (!charge.ok) { toast(A.message(charge)); closeDialog(); openGate(); return; }
+      refreshQuota();
+    }
+
     /* 先真抽牌（收信固定 7–9 张，随机），再交给服务端读牌与落笔（规格 20261128） */
     var cards = L.drawCards('incoming', 7 + Math.floor(Math.random() * 3));
     if (!cards.length) {
+      if (A) A.refundBatch();
+      refreshQuota();
       els.dlgBody.innerHTML = '<div class="err"><p>牌组没有载入</p><small>请刷新页面后重试。</small></div>';
       els.dlgFoot.style.display = '';
       return;
@@ -285,11 +356,16 @@
 
     var t0 = Date.now();
     M.generateIncoming(form, { kind: dlgForm.kind, cards: cards }).then(function (rec) {
+      if (A) A.settleBatch();
+      refreshQuota();
       if (dlgForm.kind === 'daily') M.setDailyPointer(rec, form.profileId);
       closeDialog();
       todayRec = null;
       return load().then(function () { openReader(rec.id, true); });
     }).catch(function (e) {
+      /* 生成失败：次数原样退回，不让用户白扣 */
+      if (A) A.refundBatch();
+      refreshQuota();
       els.dlgBody.innerHTML =
         '<div class="err"><p>这封信没能送达</p><small>' + esc(ET(e, '未知错误')) + '</small>' +
         '<button class="btn" type="button" id="dRetry">再抽一次</button></div>';
@@ -425,12 +501,16 @@
   });
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
-    if (!els.dlg.hidden) closeDialog();
+    var gate = $('#imGate');
+    if (gate && !gate.hidden) closeGate();
+    else if (!els.dlg.hidden) closeDialog();
     else if (!els.reader.hidden) closeReader();
   });
 
   /* ══ 启动 ══════════════════════════════════════════════════ */
   if (S) S.migrate();
+  bindGate();
+  refreshQuota();
   M.init().then(function () {
     els.modeText.textContent = M.modeLabel();
     els.modeChip.hidden = false;

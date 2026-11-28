@@ -5,6 +5,7 @@
    · 每位访客免费完整体验 2 次（含深度解读），第 3 次起需占卜码。
    · 占卜码见 da-codes.js（只存哈希）；兑换后把对应次数计入本机额度。
    · 一个码只能兑换一次；次数用尽需再兑换。
+   · 寄信完全免费；收到一封来信消耗 2 次（consumeBatch/refundBatch/settleBatch）。
    数据只存在本机浏览器 localStorage，不上传、不冒充云端账号权益。
    ══════════════════════════════════════════════════════════════════════ */
 window.DA_ACCESS = (function () {
@@ -14,7 +15,7 @@ window.DA_ACCESS = (function () {
   var FREE_TIMES = 2;
 
   function blank() {
-    return { freeLeft: FREE_TIMES, paidLeft: 0, used: [], pending: null, updatedAt: 0 };
+    return { freeLeft: FREE_TIMES, paidLeft: 0, used: [], pending: null, batch: null, updatedAt: 0 };
   }
   function load() {
     try {
@@ -26,6 +27,9 @@ window.DA_ACCESS = (function () {
       s.paidLeft = Math.max(0, Number(s.paidLeft) || 0);
       s.used = Array.isArray(s.used) ? s.used : [];
       s.pending = (s.pending === 'free' || s.pending === 'paid') ? s.pending : null;
+      /* batch：批量扣费明细（如收信一次扣 2 次），{free:n, paid:n} */
+      var b = s.batch;
+      s.batch = (b && typeof b === 'object' && (b.free || b.paid)) ? { free: b.free || 0, paid: b.paid || 0 } : null;
       return s;
     } catch (e) { return blank(); }
   }
@@ -102,6 +106,41 @@ window.DA_ACCESS = (function () {
   /* 只读检查：还有没有次数 */
   function canUse() { return status().left > 0; }
 
+  /* ── 批量扣费：一次操作消耗 n 次（如收到一封信消耗 2 次）─────────
+     与单次 consume/pending 完全隔离：用独立 batch 字段记录本次扣的
+     免费/兑换明细，失败时可按明细原样退回，成功时 settleBatch 确认。
+     余额不足则一次都不扣。 */
+  function canUseN(n) { return status().left >= Math.max(1, Number(n) || 1); }
+  function consumeBatch(n) {
+    n = Math.max(1, Number(n) || 1);
+    var s = load();
+    if (s.freeLeft + s.paidLeft < n) return { ok: false, reason: 'NO_QUOTA' };
+    var takeFree = Math.min(s.freeLeft, n);
+    var takePaid = n - takeFree;
+    s.freeLeft -= takeFree;
+    s.paidLeft -= takePaid;
+    s.batch = { free: takeFree, paid: takePaid };
+    save(s);
+    return { ok: true, left: s.freeLeft + s.paidLeft, free: takeFree, paid: takePaid };
+  }
+  function refundBatch() {
+    var s = load();
+    var b = s.batch;
+    if (!b) return false;
+    s.freeLeft += b.free || 0;
+    s.paidLeft += b.paid || 0;
+    s.batch = null;
+    save(s);
+    return true;
+  }
+  function settleBatch() {
+    var s = load();
+    if (!s.batch) return false;
+    s.batch = null;
+    save(s);
+    return true;
+  }
+
   function message(r) {
     var map = {
       EMPTY_CODE: '请先输入占卜码。',
@@ -117,8 +156,9 @@ window.DA_ACCESS = (function () {
   function reset() { save(blank()); return status(); }
 
   return {
-    status: status, canUse: canUse, redeem: redeem, consume: consume,
+    status: status, canUse: canUse, canUseN: canUseN, redeem: redeem, consume: consume,
     refund: refund, settle: settle,
+    consumeBatch: consumeBatch, refundBatch: refundBatch, settleBatch: settleBatch,
     message: message, reset: reset, FREE_TIMES: FREE_TIMES
   };
 })();

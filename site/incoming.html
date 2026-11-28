@@ -8,7 +8,7 @@
 <title>来自星际的来信 · 收信站｜DIMENSION ANCHOR</title>
 <meta name="description" content="收信站：今日星笺、未读与历史来信，来自你设定的角色。信件保存在你自己的档案里。" />
 <link rel="preload" as="image" href="assets/media/post/incoming-hall.webp?v=20261128a" />
-<link rel="stylesheet" href="assets/css/post.css?v=20261128f" />
+<link rel="stylesheet" href="assets/css/post.css?v=20261128h" />
 <link rel="stylesheet" href="assets/css/ambient.css?v=20261128f" />
 <link rel="stylesheet" href="assets/css/typography.css?v=20261128f" />
 </head>
@@ -48,6 +48,7 @@
     <a href="outgoing.html">寄信站</a>
   </nav>
   <span class="nav__mode" id="modeChip" hidden><i class="dot"></i><span id="modeText"></span></span>
+  <button class="im-quota" id="imQuota" type="button" title="查看/补充剩余次数">✦ 剩余次数 <span id="imQuotaNum">2</span> 次</button>
 </header>
 
 <main>
@@ -56,6 +57,7 @@
       <p class="eyebrow">INCOMING LETTERS</p>
       <h1>来自星际的来信</h1>
       <p class="sp-head__lede">每天一封星笺，也可以随时请角色再写一封。信按 TA 的性格、你们的关系与你此刻的心意写成，读过的会安静落进信匣。</p>
+      <p class="im-cost-note">寄信不消耗次数 · 收到一封来信消耗 2 次占卜次数</p>
       <div class="sp-head__acts">
         <button class="btn btn--plate" id="btnDaily" type="button"><i class="dot" aria-hidden="true"></i><span id="btnDailyText">领取今日来信</span></button>
         <a class="btn btn--quiet" href="outgoing.html">去写一封回信</a>
@@ -146,8 +148,39 @@
   </div>
 </div>
 
+<!-- 次数不足时的兑换入口 -->
+<div class="im-gate" id="imGate" hidden>
+  <div class="im-gate__scrim" data-im-close></div>
+  <div class="im-gate__box" role="dialog" aria-modal="true" aria-labelledby="imGateTitle">
+    <button class="im-gate__x" type="button" data-im-close aria-label="关闭">✕</button>
+    <p class="im-gate__kicker">REMAINING</p>
+    <h2 class="im-gate__t" id="imGateTitle">剩余次数 <span id="imGateLeft">0</span> 次</h2>
+    <p class="im-gate__d">寄信完全免费；收到一封来信需要消耗 2 次占卜次数。次数不够时，输入占卜码即可继续收信。</p>
+    <div class="im-price">
+      <div class="im-price__head">占卜码 · 价格</div>
+      <div class="im-price__row"><span>9 次</span><b>¥5.99</b></div>
+      <div class="im-price__row"><span>31 次</span><b>¥18</b></div>
+      <div class="im-price__row"><span>39 次</span><b>¥19.99</b></div>
+      <div class="im-price__row"><span>80 次</span><b>¥39.99</b></div>
+      <div class="im-price__row"><span>99 次</span><b>¥44.99</b></div>
+      <p class="im-price__note">制作不易，多多支持 ✦</p>
+    </div>
+    <div class="im-contact">
+      <span>微信</span><b>liangyefei12345678</b>
+      <button class="im-contact__copy" type="button" id="imWxCopy">复制</button>
+    </div>
+    <label class="im-gate__label" for="imCode">占卜码</label>
+    <input class="im-gate__input" id="imCode" type="text" inputmode="text"
+           autocomplete="off" spellcheck="false" placeholder="DA-XXXX-XXXX-XXXX" maxlength="40">
+    <button class="im-gate__btn" type="button" id="imRedeem">兑换并继续</button>
+    <p class="im-gate__state" id="imState" role="status" aria-live="polite"></p>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
+<script src="assets/js/da-codes.js?v=20261128h"></script>
+<script src="assets/js/da-access.js?v=20261128h"></script>
 <script src="assets/js/da-link.js?v=20261128f"></script>
 <script src="assets/js/da-error-text.js?v=20261128f"></script>
 <script src="assets/js/da-store.js?v=20261128f"></script>
@@ -161,7 +194,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
 <script src="assets/js/da-auth.js?v=20261128g"></script>
 <script src="assets/js/da-mail.js?v=20261128f"></script>
-<script src="assets/js/incoming.js?v=20261128f"></script>
+<script src="assets/js/incoming.js?v=20261128h"></script>
 <script src="assets/js/motion-init.js?v=20261128f"></script>
 <script src="assets/js/media-lazy.js?v=20261128f" defer></script>
 </body>

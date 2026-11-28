@@ -292,18 +292,6 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: 13.4%;
   height: calc(var(--uh) * 17.85);
 }
-/* 每日探索背景板：最近生成的水晶星轨图做半透明底纹。
-   不设 z-index，让 ::before 作为首个绘制层，主题文案与抽牌按钮自然盖在图上方。 */
-.card--theme::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: url("../media/btn-gem-daily.webp?v=20261128f") center / cover no-repeat;
-  opacity: .42;
-  pointer-events: none;
-}
-
 .lived {
   position: absolute;
   margin: 0;
@@ -383,14 +371,15 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: 8.62cqw;
   height: 2.16cqw;
   border-radius: 999px;
-  /* 水晶按钮：星轨玻璃生图材质 + 金边，与全站按钮同一语言；
-     划光用背景层实现（背景自动裁进按钮，不影响 ::before 光晕补丁） */
-  /* 专属生图：紫水晶切面 + 鎏金星轨玻璃按钮，材质本身自带高光，
-     不再叠加划光渐变，避免把生图纹理冲淡成「廉价塑料感」。 */
-  background-image: url("../media/btn-gem-daily.webp?v=20261128f");
-  background-size: cover;
-  background-position: center;
+  /* 水晶按钮：紫水晶生图材质 + 金边；划光单独叠一层，不冲淡生图纹理。
+     划光走 background-position 动画，自动裁进按钮圆角，不影响 ::before 光晕。 */
+  background-image:
+    linear-gradient(100deg, transparent 22%, rgba(255, 244, 224, .3) 50%, transparent 78%),
+    url("../media/btn-gem-daily.webp?v=20261128f");
+  background-size: 48% 220%, cover;
+  background-position: -70% 50%, center;
   background-repeat: no-repeat;
+  animation: themeShine 4.8s var(--ease) infinite;
   border: 1px solid rgba(228, 208, 255, .5);
   box-shadow: 0 0 22px rgba(198, 170, 255, .35), inset 0 0 0 1px rgba(255, 245, 225, .08);
   font-size: .82cqw;
@@ -417,6 +406,11 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   border-color: rgba(255, 240, 214, .8);
   box-shadow: 0 0 2.6cqw rgba(214, 190, 255, .55);
   transform: translate(-50%, -50%) translateY(-1px);
+}
+/* 划光：淡高光从左扫到右，走 background-position 动画 */
+@keyframes themeShine {
+  0%   { background-position: -70% 50%, center; }
+  100% { background-position: 250% 50%, center; }
 }
 
 /* ══ F · 五大入口 ══════════════════════════════════════════════ */
