@@ -543,6 +543,20 @@ window.DA_READING = (function () {
 
   /* 只取一句：先按标点切到第一句，仍超长才硬截。
      解读整体走「短句」，不再把一段牌义整段铺开。 */
+  /* 在标点处收口：宁可句短一点，也不要出现「还没承认对…」这种断在半句的残句 */
+  function cutAt(t, max) {
+    if (t.length <= max) return t;
+    var seg = t.slice(0, max);
+    var marks = ['。', '！', '？', '；', '——', '，', '、'];
+    var best = -1;
+    marks.forEach(function (mk) {
+      var i = seg.lastIndexOf(mk);
+      if (i > best) best = i;
+    });
+    /* 断点太靠前（不到六成）就不算数，免得剩下三个字 */
+    if (best >= Math.floor(max * 0.55)) return seg.slice(0, best);
+    return seg.slice(0, max - 1) + '…';
+  }
   function brief(s, max) {
     var t = String(s == null ? '' : s).replace(/\s+/g, '');
     if (!t) return '';
@@ -550,7 +564,7 @@ window.DA_READING = (function () {
     if (t.length <= max) return t;
     var cut = t.split(/[。！？；]/).filter(function (x) { return x; })[0] || t;
     if (cut.length <= max) return cut;
-    return t.slice(0, max - 1) + '…';
+    return cutAt(t, max);
   }
   /* 同上，并保证以句号收尾（用于正文一句话，不用于标签） */
   function sent(s, max) {
@@ -558,17 +572,19 @@ window.DA_READING = (function () {
     if (!t) return '';
     return /[。！？…]$/.test(t) ? t : t + '。';
   }
-  /* 取最后一段：行动建议通常落在句尾，截头不如取尾 */
+  /* 取最后一段：行动建议通常落在句尾，截头不如取尾。
+     片段太短（「再动手」这种）不算数，否则语义会丢。 */
   function tail(s, max) {
     var t = String(s == null ? '' : s).replace(/\s+/g, '');
     if (!t) return '';
     max = max || 18;
     if (t.length <= max) return t;
+    var floor = Math.min(7, Math.floor(max * 0.4));
     var parts = t.split(/[。；，,]/).filter(function (x) { return x; });
     for (var i = parts.length - 1; i >= 0; i--) {
-      if (parts[i].length <= max) return parts[i];
+      if (parts[i].length <= max && parts[i].length >= floor) return parts[i];
     }
-    return t.slice(0, max - 1) + '…';
+    return brief(t, max);
   }
   function joinCn(arr) {
     if (!arr.length) return '';
@@ -629,10 +645,10 @@ window.DA_READING = (function () {
   }
 
   function revLine(m) {
-    if (!m.revs) return '全部正位，方向是顺的。要留意的不是阻力，而是别把顺利当成理所当然。';
-    if (m.revRatio >= 0.5) return '逆位过半，说明这张牌阵里大部分能量是内收的、被推迟的，或者还没准备好被承认。';
-    if (m.revRatio >= 0.25) return '逆位不多不少，正好是「有阻力但推得动」的状态。';
-    return '逆位很少，方向是顺的，阻力主要来自节奏而不是结构。';
+    if (!m.revs) return '方向是顺的。要留意的不是阻力，是别把顺利当成理所当然。';
+    if (m.revRatio >= 0.5) return '多数东西还收在里面，没到能拿出来的那一步。';
+    if (m.revRatio >= 0.25) return '有阻力，但推得动。';
+    return '方向顺，阻力主要来自节奏，不是结构。';
   }
 
   /* ── 单张的牌位串接句 ─────────────────────────────────────── */
@@ -716,13 +732,16 @@ window.DA_READING = (function () {
 
     /* ── I 整体解读 ─────────────────────────────────────── */
     var b1 = [];
+    /* 不再播报「抽了几张、几张正位、几张逆位、花色各几张」——
+       那是占卜软件的数据面板，不是两个人之间的连接。改成一句人话。 */
     b1.push({
       t: 'p',
-      x: '这一次，你在「' + T(session.spreadCn, '这次牌阵') + '」里抽出了 ' + m.n + ' 张牌：' +
-        m.ups + ' 张正位、' + m.revs + ' 张逆位；其中 ' + m.majors + ' 张大牌，' + m.minors + ' 张小牌。' +
-        (session.deckMode === 22
-          ? '你只用了大阿尔卡那，这是一次把问题拉回主线本身的抽法。'
-          : '你用的是完整牌库，四组花色都在场，细节会更具体。')
+      x: '这一次，牌落在' + cards.map(function (e) { return '「' + T(e.positionCn, '这一格') + '」'; }).join('') +
+        '。' + (m.revs === 0
+          ? '全部正着，力量是往外走的。'
+          : m.revs === m.n
+            ? '全部逆着，多数东西还收在里面。'
+            : '一半往外走，一半还没落地。')
     });
     b1.push({
       t: 'p',
@@ -738,21 +757,25 @@ window.DA_READING = (function () {
     }
 
     var facts = [];
+    /* 不再输出「花色分布：火 1 · 水 0 · 风 1 · 土 0」这种表格行，
+       改成一句：在场的是哪两组，缺的是哪两组。 */
+    var FOUR = ['wands', 'cups', 'swords', 'pentacles'];
+    var present = FOUR.filter(function (k) { return m.suits[k]; });
+    var missing = FOUR.filter(function (k) { return !m.suits[k]; });
     if (m.minors) {
-      facts.push('花色分布：火（权杖）' + m.suits.wands + ' · 水（圣杯）' + m.suits.cups +
-        ' · 风（宝剑）' + m.suits.swords + ' · 土（星币）' + m.suits.pentacles);
+      facts.push('这次在场的是' + (present.length
+        ? present.map(function (k) { return SUITS[k].cn; }).join('、')
+        : '看起来什么都没带来') + '。');
     }
     if (m.dominant) {
-      facts.push(T(SUITS[m.dominant] && SUITS[m.dominant].cn, '这一组') + '出现最多（' + m.dominantCount + ' 次），元素是' +
-        T(SUITS[m.dominant] && SUITS[m.dominant].el, '—') + '——' + T(DOMINANT[m.dominant], '这股力量反复出现。'));
+      facts.push('主要由' + T(SUITS[m.dominant] && SUITS[m.dominant].cn, '这一组') + '在推——' +
+        T(DOMINANT[m.dominant], '这股力量反复出现。'));
     }
-    if (m.absent.length && m.minors) {
-      facts.push(m.absent.map(function (k) { return T(SUITS[k] && SUITS[k].cn, '这一组'); }).join(' / ') + ' 完全没有出现——' +
-        T(ABSENT[m.absent[0]], '这一组暂时没有出现。'));
+    if (missing.length && m.minors) {
+      facts.push(missing.map(function (k) { return SUITS[k].cn; }).join('、') + '没有出现。');
     }
     if (m.majors >= 3 && m.minors > 0) {
-      facts.push('大牌 ' + m.majors + ' 张，占到 ' + Math.round(m.majors / m.n * 100) +
-        '%——这不是一件小事，是一段正在推进的周期。');
+      facts.push('大牌 ' + m.majors + ' 张同时在场，这不是小事，是一段正在推进的周期。');
     }
     facts.push(revLine(m));
 
@@ -779,7 +802,7 @@ window.DA_READING = (function () {
       : '这次牌面最核心的一格是「' + themeKw + '」：' + themeList + '。';
     var tension = [];
     if (m.revs && m.ups) {
-      tension.push('一边是 ' + m.ups + ' 张正位往外推，一边是 ' + m.revs + ' 张逆位往里收：想靠近和想停一停，可能同时在场。');
+      tension.push('一边往外推，一边往里收：想靠近和想停一停，可能同时在场。');
     }
     if (m.dominant && m.absent.length) {
       tension.push(SUITS[m.dominant].cn + '偏重、' + m.absent.map(function (k) { return SUITS[k].cn; }).join(' / ') +
@@ -817,7 +840,7 @@ window.DA_READING = (function () {
       });
       /* 一张牌只给一句：这张牌在你们之间指着什么，不做牌义背诵 */
       var oneLine = sent(
-        T(dim(e, 'love'), '') || T(dim(e, 'mood'), '') || T(pick(e, c.up || '', c.rev || ''), ''), 34
+        T(dim(e, 'love'), '') || T(dim(e, 'mood'), '') || T(pick(e, c.up || '', c.rev || ''), ''), 44
       );
       if (oneLine) b2.push({ t: 'p', x: '「' + T(e.positionCn, '这个位置') + '」上，' + oneLine });
       b2.push({
@@ -829,10 +852,7 @@ window.DA_READING = (function () {
       });
       if (idx < cards.length - 1) b2.push({ t: 'rule' });
     });
-    if (m.revs) {
-      /* 逆位机制说明收进一处短句，不再整段铺开 */
-      b2.push({ t: 'note', x: '逆位不是坏牌，是还没落地的那部分。' });
-    }
+    /* 不再追加「逆位不是坏牌…」这类解释：牌面自己会说话，解释只会打断 */
     bA = bA.concat(b2);
 
     /* ── III 牌间联系 ───────────────────────────────────── */
@@ -878,8 +898,8 @@ window.DA_READING = (function () {
       if (m.majors) {
         b3.push({
           t: 'p',
-          x: '大牌落在 ' + m.majorCards.map(function (c) { return '「' + T(c.positionCn, '这个位置') + '」'; }).join('') +
-            '，' + (m.majors >= 3 ? '分量集中在这几处。' : '只是点了一下，没有接管整个牌阵。')
+          x: '大牌落在' + m.majorCards.map(function (c) { return '「' + T(c.positionCn, '这个位置') + '」'; }).join('') +
+            '，' + (m.majors >= 3 ? '分量集中在这几处。' : '分量集中在最后这一格。')
         });
       }
     }
@@ -890,16 +910,24 @@ window.DA_READING = (function () {
     var b4 = [];
     var hasSubject = !!(L.subjectName && String(L.subjectName).trim());
     /* 不再复述「你连接的对象是…」「你写下的背景是…」：
-       这些是用户刚填过的信息，重复一遍只是噪音。只留牌面读出来的那层。 */
-    var coreKwLine = T(kwOf(core), '') || T(core.cn, '这件事');
-    b4.push({ t: 'p', x: '牌面把这段关系收在《' + T(core.cn, '这张牌') + '》的「' + coreKwLine + '」上。' });
+       这些是用户刚填过的信息，重复一遍只是噪音。
+       这一节讲人，不讲牌——把牌的「关键词」直接抛出来会像在念报告。 */
+    var shape;
+    if (m.n === 1) {
+      shape = '这一格只放了一张牌，答案也只能是一件事。';
+    } else if (m.revs >= 2) {
+      shape = '往回看的人比往前走的那个多，谁都没先把话挑明。';
+    } else if (m.revs === 0) {
+      shape = '两个人都还在往前，只是节奏不一样。';
+    } else {
+      shape = '一个在推，一个在等，卡在中间那一步。';
+    }
+    b4.push({ t: 'p', x: shape });
 
     if (m.revs >= 2) {
-      b4.push({ t: 'p', x: '逆位偏多：不是没路，是还在等一个其实不必等的条件。' });
+      b4.push({ t: 'p', x: '不是没有路，是还在等一个其实不必等的条件。' });
     } else if (m.revs === 0) {
-      b4.push({ t: 'p', x: '全正位：没有暗流，风险是太稳，谁都不去动真正想动的那块。' });
-    } else if (m.revs === 1) {
-      b4.push({ t: 'p', x: '只有一处逆位，卡点集中，其余都还顺畅。' });
+      b4.push({ t: 'p', x: '风险不是冲突，是太稳——谁都不去动真正想动的那块。' });
     }
     bA = bA.concat(b4);
 
