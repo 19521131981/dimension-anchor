@@ -90,6 +90,9 @@
     setTimeout(function () { DA_CARD.decorateAll(view); }, 140);
   }
 
+  /* 情绪疏导：新数据写 heal，历史存档里可能是 heal-disabled，两者都认 */
+  function isHealMode(m) { return m === 'heal' || m === 'heal-disabled'; }
+
   function go(step) {
     S.page();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -163,7 +166,7 @@
 
   function renderRitual() {
     setStep('ritual');
-    if (state.mode === 'heal-disabled') return renderHeal();
+    if (isHealMode(state.mode)) return renderHeal();
     renderRitualChoose();
   }
 
@@ -214,7 +217,7 @@
     $('#healNext').addEventListener('click', function () {
       var txt = $('#moodText').value.trim();
       saveLink({
-        mode: 'dream',
+        mode: 'heal',
         subjectName: '此刻的自己',
         relation: '自我',
         relationKey: 'self',
@@ -745,7 +748,7 @@
     var L = state.link || {};
     var rel = L.relation || '暂不确定';
     var theme = L.mode === 'unknown' ? '未确认对象的探索' :
-      (L.mode === 'heal-disabled' ? '情绪疗愈' : '已知对象的连接');
+      (isHealMode(L.mode) ? '情绪疗愈' : '已知对象的连接');
 
     view.innerHTML = [
       '<div class="pane">',
@@ -798,7 +801,7 @@
 
     $('#cBack').addEventListener('click', function () {
       if ((state.link || {}).mode === 'unknown') renderUnknownConfirm();
-      else if ((state.link || {}).mode === 'heal-disabled') renderHeal();
+      else if (isHealMode((state.link || {}).mode)) renderHeal();
       else renderKnown();
     });
 
@@ -1765,7 +1768,7 @@
   (function boot() {
     var q = new URLSearchParams(location.search);
     var step = q.get('step') || 'ritual';
-    if (q.get('mode') === 'heal-disabled') state.mode = 'heal';
+    if (/^heal/.test(q.get('mode') || '')) state.mode = 'heal';
 
     /* ══ 实时传讯：跳过连接仪式与牌阵选择，直接洗牌抽一张 ══ */
     if (q.get('mode') === 'relay') {
