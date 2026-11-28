@@ -6,7 +6,8 @@
    · 照片墙：用户从相册选图 → canvas 压缩 → base64 存本机。
    · 特殊日期：纪念日 / 生日 / 特别的日子。
    · 关系追踪：小屋里自己记下的里程碑，与塔罗档案无关。
-   · 惊喜话语：内置句子 + 用户自己写的句子。
+   · 惊喜话语：只存用户自己写的句子；飘落的话语由 da-cottage-voices.js
+     从真实占卜/传讯/来信记录里摘取，不使用任何内置句子。
    ══════════════════════════════════════════════════════════════════════ */
 (function () {
   'use strict';
@@ -16,26 +17,6 @@
   var MAX_REL = 60;
   var MAX_DAYS = 40;
   var MAX_LINES = 80;
-
-  /* 内置惊喜话语：温柔、短，落下来像一句悄悄话 */
-  var BUILTIN_LINES = [
-    '炉火还热着，坐一会儿吧。',
-    '今天也想你了，一点点。',
-    '你笑起来的样子，我收好了。',
-    '这张照片里的光，是为我们留的。',
-    '有些话不用说，火光替我说了。',
-    '又到一个值得记住的日子。',
-    '你在的日子，都是好日子。',
-    '门一直开着，随时回来。',
-    '想把这一刻，轻轻放进匣子里。',
-    '星海再远，这里也亮着一盏灯。',
-    '慢慢来，我一直在。',
-    '你今天也很可爱，我知道的。',
-    '把烦心事放下，先喝口热的。',
-    '记得吗，那天你说过的话。',
-    '想把你所有的样子都收进相框。',
-    '有你在的小屋，才有烟火气。'
-  ];
 
   function blank() {
     return { v: 1, photos: [], rel: [], days: [], lines: [], updatedAt: 0 };
@@ -176,8 +157,9 @@
 
   /* ── 惊喜话语 ─────────────────────────────────────────────────────── */
   function lines() { return load().lines.slice(); }
+  /* 仅保留用户自己写下的句子；不再拼接任何内置句子 */
   function allLines() {
-    return BUILTIN_LINES.concat(load().lines.map(function (l) { return l.text; }));
+    return load().lines.map(function (l) { return l.text; });
   }
   function addLine(text) {
     var d = load();
@@ -200,7 +182,6 @@
     photos: photos, addPhoto: addPhoto, removePhoto: removePhoto, setPhotoTitle: setPhotoTitle,
     rel: rel, addRel: addRel, removeRel: removeRel,
     days: days, addDay: addDay, removeDay: removeDay, daysUntil: daysUntil,
-    lines: lines, allLines: allLines, addLine: addLine, removeLine: removeLine,
-    BUILTIN_LINES: BUILTIN_LINES
+    lines: lines, allLines: allLines, addLine: addLine, removeLine: removeLine
   };
 })();

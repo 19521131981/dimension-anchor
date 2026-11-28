@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════════════════════════
    DIMENSION ANCHOR — 我们的小屋 COTTAGE（新中式 · 回忆宝藏之地）
    ----------------------------------------------------------------------
-   · 场景底图由 ImageGen 生成（cottage-scene-new.webp），CSS 只做罩层与光效。
+   · 场景底图由 ImageGen 生成（cottage-golden-vase.webp 紫调国风器物图），CSS 只做薄罩层保文字可读。
    · 本文件只写小屋专属层；导航、弹窗骨架、按钮基类复用 post.css。
    ══════════════════════════════════════════════════════════════════════ */
 
@@ -9,13 +9,16 @@
 /* 场景底图：ImageGen 生成的紫调国风器物图，不用 CSS 画场景 */
 body.ct .scene__img { object-position: center 46%; }
 body.ct .scene__veil {
+  /* 薄罩：让紫调宝瓶生图清晰可见，只在顶部留一点压暗保证导航可读 */
   background:
-    linear-gradient(180deg, rgba(16,10,26,.58) 0%, rgba(20,12,32,.74) 32%, rgba(14,9,22,.9) 68%, rgba(11,7,18,.96) 100%);
+    linear-gradient(180deg, rgba(16,10,26,.34) 0%, rgba(20,12,32,.16) 24%, rgba(14,9,22,.30) 62%, rgba(11,7,18,.74) 100%);
 }
+/* 首屏不再用 post.css 的 42vh 深色渐隐，否则底图被整片吞掉 */
+body.ct .scene::after { height: 16vh; background: linear-gradient(180deg, transparent, rgba(11,7,18,.9) 96%); }
 /* 内容整体压在可读的暗底上 */
 .cot-hall { position: relative; z-index: 2; }
 
-/* 壁炉区：用 ImageGen 生成的暖色小屋图作独立背景，不再用 CSS 画假火光 */
+/* 壁炉区：不再用新年风格图，统一换成紫调宝瓶生图（与首屏同一张，取不同裁切） */
 .hearth { display: none; }
 html[data-motion="reduced"] .fall-line { animation: none !important; }
 
@@ -56,17 +59,17 @@ body.ct .brand { color: rgba(243,222,196,.85); }
 .nd-name { font-family: var(--serif, serif); font-size: 17px; letter-spacing: .1em; color: #FFE9C9; }
 .nd-count { font-size: 12px; letter-spacing: .08em; color: #F0C48D; }
 
-/* 壁炉区：ImageGen 暖色小屋内景作底 */
+/* 壁炉区：与首屏同一张紫调宝瓶生图，取右侧裁切露出器物与炉火氛围 */
 .hearth-scene {
   position: relative; z-index: 2; margin: 0 0 clamp(22px, 4vh, 40px);
   border-radius: 18px; overflow: hidden;
   border: 1px solid rgba(216,198,162,.28);
-  background: url("../media/cottage/cottage-scene-new.webp") center 46% / cover no-repeat;
+  background: url("../media/cottage/cottage-golden-vase.webp") 68% 42% / cover no-repeat;
   box-shadow: 0 22px 54px rgba(6,3,10,.5), inset 0 1px 0 rgba(255,250,235,.1);
 }
 .hearth-scene__veil {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(20,12,10,.34), rgba(20,12,14,.62) 60%, rgba(14,9,12,.82));
+  background: linear-gradient(180deg, rgba(20,12,26,.24), rgba(20,12,26,.44) 60%, rgba(14,9,20,.68));
 }
 .hearth-scene__inner {
   position: relative; z-index: 1; text-align: center;

@@ -99,8 +99,9 @@ window.DA_COTTAGE = (function () {
   function dropLine(text) {
     var layer = $('#cotFalling');
     if (!layer || !D) return;
-    var lines = D.allLines();
-    var t = text || lines[Math.floor(Math.random() * lines.length)] || '炉火还热着。';
+    var V = window.DA_COTTAGE_VOICES;
+    /* 优先从真实记录（传讯/占卜/来信/自己写的）摘句；没有记录才用一句兜底 */
+    var t = text || (V && V.pick()) || '先去做一次占卜吧，TA 的话会落进这里。';
     var el = document.createElement('span');
     el.className = 'fall-line';
     el.textContent = t;
