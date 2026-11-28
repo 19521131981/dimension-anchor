@@ -445,23 +445,23 @@
             mask-image: linear-gradient(180deg, #000 34%, rgba(0, 0, 0, .4) 72%, transparent 100%);
   }
   .portal[data-space="tarot"]::after {
-    background-image: url("../media/observatory-desktop.jpg");
+    background-image: url("../media/observatory-desktop.webp?v=20261128a");
     background-position: 50% 36%;
   }
   .portal[data-space="post"]::after {
-    background-image: url("../media/post/portal-hall.jpg");
+    background-image: url("../media/post/portal-hall.webp?v=20261128a");
     background-position: 50% 56%;
   }
   .portal[data-space="cottage"]::after {
-    background-image: url("../media/cottage/cottage-scene.jpg");
+    background-image: url("../media/cottage/cottage-scene.webp?v=20261128a");
     background-position: 50% 42%;
   }
   .portal[data-space="archive"]::after {
-    background-image: url("../media/ritual-hall.jpg");
+    background-image: url("../media/ritual-hall.webp?v=20261128a");
     background-position: 50% 40%;
   }
   .portal[data-space="daily"]::after {
-    background-image: url("../media/hall/moon-disc.png");
+    background-image: url("../media/hall/moon-disc.webp?v=20261128a");
     background-position: 50% 40%;
   }
   .portal::before {

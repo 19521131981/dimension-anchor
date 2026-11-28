@@ -174,7 +174,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: inline-block;
   padding: 12px 26px 10px;
   border-radius: 999px;
-  background-image: url("../media/archive/btn.jpg");
+  background-image: url("../media/archive/btn.webp?v=20261128a");
   background-size: 190% 340%;
   background-position: 50% 34%;
   box-shadow: 0 16px 34px -16px rgba(2, 1, 10, .9), inset 0 0 0 1px rgba(255, 244, 210, .35);
@@ -221,7 +221,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: 100%;
   aspect-ratio: 2 / 2.86;
   border-radius: 10px;
-  background-image: url("../media/archive/paper.jpg");
+  background-image: url("../media/archive/paper.webp?v=20261128a");
   background-size: 100% 100%;
   box-shadow:
     0 24px 50px -20px rgba(2, 1, 10, .95),
@@ -351,7 +351,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   width: min(560px, calc(100vw - 30px));
   max-height: min(88vh, 900px);
   aspect-ratio: 2 / 2.6;
-  background-image: url("../media/archive/frame.jpg");
+  background-image: url("../media/archive/frame.webp?v=20261128a");
   background-size: 100% 100%;
   box-shadow: 0 60px 120px -40px rgba(0, 0, 0, .95), 0 0 60px -18px rgba(180, 150, 240, .28);
   animation: arPopIn .5s var(--ease) both;

@@ -3,19 +3,20 @@
 <head>
 <meta charset="utf-8">
 <link rel="icon" href="data:,">
+<link rel="preload" as="image" href="assets/media/observatory-desktop.webp?v=20261128a" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>塔罗观测站 · THE MOONLIT OBSERVATORY — DIMENSION ANCHOR</title>
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="DIMENSION ANCHOR · 维度锚点" />
 <meta property="og:title" content="塔罗观测站 · THE MOONLIT OBSERVATORY — DIMENSION ANCHOR" />
 <meta property="og:description" content="原创七十八张塔罗、水晶星核与月环之门，开始一次连接仪式。" />
-<meta property="og:image" content="https://dimanchor.xyz/assets/media/observatory-desktop.jpg" />
+<meta property="og:image" content="https://dimanchor.xyz/assets/media/observatory-desktop.webp?v=20261128a" />
 <meta property="og:image:alt" content="DIMENSION ANCHOR 月光塔罗观测站" />
 <meta property="og:url" content="https://dimanchor.xyz/observatory.html" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="塔罗观测站 · THE MOONLIT OBSERVATORY — DIMENSION ANCHOR" />
 <meta name="twitter:description" content="原创七十八张塔罗、水晶星核与月环之门，开始一次连接仪式。" />
-<meta name="twitter:image" content="https://dimanchor.xyz/assets/media/observatory-desktop.jpg" />
+<meta name="twitter:image" content="https://dimanchor.xyz/assets/media/observatory-desktop.webp?v=20261128a" />
 <meta name="description" content="DIMENSION ANCHOR 维度锚点塔罗观测站：月光宫殿中的水晶星核、月环之门与原创七十八张塔罗。">
 <link rel="stylesheet" href="assets/css/observatory.css?v=20261126a">
 <link rel="stylesheet" href="assets/css/ambient.css?v=20261108d">
@@ -55,13 +56,12 @@
 <section class="stage" aria-labelledby="obsTitle">
 
   <div class="stage__frame">
-    <img class="stage__art" src="assets/media/observatory-desktop.jpg"
+    <img decoding="async" class="stage__art" src="assets/media/observatory-desktop.webp?v=20261128a"
          alt="月光宫殿中的塔罗观测站：水晶星核悬于银色星轨环中央，圆形占卜台之下是通往穹顶的大理石长厅。" />
     <!-- VIDEO-LAZYLOAD-P1 -->
     <!-- 带宽优化：窄屏(≤900px)视频本就被 CSS 隐藏/效果甚微，不下载 ~2MB 光层视频，静态底图照常显示 -->
-<script>(function(){function load(){if(window.innerWidth>900){var v=document.getElementById("stage__light-lazy");if(v&&v.hasAttribute("data-src")){v.src=v.getAttribute("data-src");v.removeAttribute("data-src");v.load();var p=v.play();if(p&&p.catch)p.catch(function(){});}}}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",load);else load();})();</script>
-<video class="stage__light" id="stage__light-lazy" autoplay muted loop playsinline preload="metadata" aria-hidden="true"
-           poster="assets/media/observatory-desktop.jpg"
+<video class="stage__light" id="stage__light-lazy" autoplay muted loop playsinline preload="none" aria-hidden="true"
+           poster="assets/media/observatory-desktop.webp?v=20261128a"
            data-src="assets/media/observatory.mp4"></video>
     <!-- 拱廊水晶吊灯：只变色，绝不移动 -->
     <span class="stage__lamp stage__lamp--1" aria-hidden="true"></span>
@@ -183,7 +183,7 @@
                   aria-label="翻开今日之牌" aria-expanded="false">
             <span class="dcard__inner">
               <span class="dcard__face dcard__face--back">
-                <img src="assets/media/backs/major.jpg" alt="" aria-hidden="true">
+                <img decoding="async" src="assets/media/backs/major.webp?v=20261128a" alt="" aria-hidden="true">
                 <span class="dcard__seal" aria-hidden="true">✦</span>
               </span>
               <span class="dcard__face dcard__face--front">
@@ -338,12 +338,12 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="assets/js/da-link.js"></script>
-<script src="assets/js/tarot-sound.js"></script>
-<script src="assets/js/observatory.js"></script>
-<script src="assets/js/tarot-deck.js"></script>
-<script src="assets/js/tarot-deck-reversed.js"></script>
-<script src="assets/js/tarot-images.js"></script>
+<script src="assets/js/da-link.js?v=20261128a"></script>
+<script src="assets/js/tarot-sound.js?v=20261128a"></script>
+<script src="assets/js/observatory.js?v=20261128a"></script>
+<script src="assets/js/tarot-deck.js?v=20261128a"></script>
+<script src="assets/js/tarot-deck-reversed.js?v=20261128a"></script>
+<script src="assets/js/tarot-images.js?v=20261128a"></script>
 <script src="assets/js/observatory-daily.js?v=20261108"></script>
 
 <script>
@@ -356,5 +356,6 @@ try {
   if (m === 'reduced') document.querySelectorAll('video').forEach(function (v) { v.pause(); });
 } catch (e) {}
 </script>
+<script src="assets/js/media-lazy.js?v=20261128b" defer></script>
 </body>
 </html>

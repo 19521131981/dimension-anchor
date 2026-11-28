@@ -62,7 +62,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .hall__ambient {
   position: fixed;
   inset: -10%;
-  background: url("../media/starrtrack-hall.jpg") center / cover no-repeat;
+  background: url("../media/starrtrack-hall.webp?v=20261128a") center / cover no-repeat;
   filter: blur(46px) saturate(1.15) brightness(.5);
   transform: scale(1.08);
   z-index: 0;
@@ -207,7 +207,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   padding: .52cqw 1.14cqw;
   border-radius: 999px;
   /* 水晶长签：星轨玻璃生图材质 + 金边，与全站按钮同一语言 */
-  background: url("../media/nav-gem.jpg") center / cover no-repeat;
+  background: url("../media/nav-gem.webp?v=20261128a") center / cover no-repeat;
   border: 1px solid rgba(228, 208, 255, .34);
   box-shadow:
     0 .25cqw 1.6cqw rgba(20, 12, 44, .45),
@@ -376,7 +376,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
      划光用背景层实现（背景自动裁进按钮，不影响 ::before 光晕补丁） */
   background-image:
     linear-gradient(100deg, transparent 12%, rgba(255, 241, 218, .38) 50%, transparent 88%),
-    url("../media/btn-gem-pill.jpg");
+    url("../media/btn-gem-pill.webp?v=20261128a");
   background-size: 44% 220%, cover;
   background-position: -70% 50%, center;
   background-repeat: no-repeat;
@@ -688,7 +688,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   text-decoration: none;
   color: #FFF7E6;
   text-shadow: 0 1px 10px rgba(28, 13, 62, .65);
-  background: url("../media/btn-gem-primary.jpg") center / cover no-repeat;
+  background: url("../media/btn-gem-primary.webp?v=20261128a") center / cover no-repeat;
   border: 1px solid rgba(228, 208, 255, .42);
   box-shadow: 0 0 26px rgba(198, 170, 255, .35), inset 0 0 0 1px rgba(255, 245, 225, .08);
   overflow: hidden;
@@ -993,7 +993,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     position: absolute;
     left: 0; right: 0; top: 0;
     height: 54%;
-    background-image: url("../media/starrtrack-hall.jpg");
+    background-image: url("../media/starrtrack-hall.webp?v=20261128a");
     background-repeat: no-repeat;
     background-size: 460cqw auto;
     -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, .95) 0%, rgba(0, 0, 0, .58) 55%, transparent 100%);

@@ -108,7 +108,7 @@
   /* ---------- 填充 ---------- */
   function fill() {
     if (dImg) {
-      var src = IMG[card.i] || ('assets/media/tarot/' + card.i + '.jpg');
+      var src = IMG[card.i] || ('assets/media/tarot/' + card.i + '.webp?v=20261128a');
       dImg.src = src;
       dImg.alt = card.cn + '（' + (rev ? '逆位' : '正位') + '）';
     }

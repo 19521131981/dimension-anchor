@@ -28,7 +28,7 @@ body.it {
 .itbg { position: fixed; inset: 0; z-index: 0; overflow: hidden; }
 .itbg__img {
   position: absolute; inset: -3%;
-  background: url("../media/ritual-hall.jpg") center 46% / cover no-repeat;
+  background: url("../media/ritual-hall.webp?v=20261128a") center 46% / cover no-repeat;
   filter: brightness(1.16) saturate(1.16) contrast(1.03);
   transform: scale(1.03);
 }
@@ -1804,7 +1804,7 @@ html[data-motion="reduced"] .itbg__spark, html[data-motion="reduced"] .panel__st
   font-size: 12px; letter-spacing: .12em;
   color: #FFF8E8;
   border: 1px solid rgba(255, 236, 200, .55);
-  background-image: url("../media/btn-gem-pill.jpg");
+  background-image: url("../media/btn-gem-pill.webp?v=20261128a");
   background-size: cover; background-position: center;
   box-shadow:
     0 12px 26px -14px rgba(30, 16, 60, .8),
@@ -1846,7 +1846,7 @@ html[data-motion="reduced"] .itbg__spark, html[data-motion="reduced"] .panel__st
 .hero .stats, .stats {
   position: relative;
   border: 1px solid rgba(255, 236, 200, .5) !important;
-  background-image: url("../media/btn-gem-pill.jpg") !important;
+  background-image: url("../media/btn-gem-pill.webp?v=20261128a") !important;
   background-size: cover; background-position: center;
   border-radius: 10px;
   padding: 9px 6px !important;

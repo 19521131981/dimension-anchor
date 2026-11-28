@@ -84,7 +84,7 @@ img { display: block; }
   filter: drop-shadow(0 10px 24px rgba(4, 2, 14, .45));
   transition: transform .45s var(--ease), filter .45s var(--ease);
   isolation: isolate;
-  background: url("../media/post/btn-plate.png") center / 100% 100% no-repeat;
+  background: url("../media/post/btn-plate.webp?v=20261128a") center / 100% 100% no-repeat;
   padding: 17px 46px 19px;
   min-height: 62px;
 }
@@ -355,7 +355,7 @@ img { display: block; }
 .compose__paper {
   position: relative; border-radius: 4px; overflow: hidden;
   background:
-    url("../media/post/paper.jpg") center / cover,
+    url("../media/post/paper.webp?v=20261128a") center / cover,
     linear-gradient(176deg, #FFFDFB 0%, #FBF4F9 55%, #FFF8F4 100%);
   background-blend-mode: multiply, normal;
   color: #38294F;
@@ -435,7 +435,7 @@ img { display: block; }
   position: relative; width: min(660px, 100%);
   border-radius: 4px; overflow: hidden;
   background:
-    url("../media/post/paper.jpg") center / cover,
+    url("../media/post/paper.webp?v=20261128a") center / cover,
     linear-gradient(172deg, #FFFDFB 0%, #FAF2FB 46%, #FFF8F5 100%);
   background-blend-mode: multiply, normal;
   color: #38294F;
@@ -584,7 +584,7 @@ img { display: block; }
 .btn--plate, .reader__acts .btn--plate, .compose__foot .btn--plate, .dialog__foot .btn--plate,
 .reader__acts .btn--plate:hover, .compose__foot .btn--plate:hover {
   border: none;
-  background: url("../media/post/btn-plate.png") center / 100% 100% no-repeat;
+  background: url("../media/post/btn-plate.webp?v=20261128a") center / 100% 100% no-repeat;
   padding: 16px 44px 18px; min-height: 60px;
   color: var(--gold-2); font-size: 14px; letter-spacing: .24em;
   box-shadow: none;
@@ -836,7 +836,7 @@ html[data-motion="reduced"] .scene__img, html[data-motion="reduced"] .gen__env, 
 .glass::after {
   content: ""; position: absolute; right: -18px; bottom: -26px;
   width: 108px; height: 112px; pointer-events: none;
-  background: url("../media/post/ornament-corner.png") center / contain no-repeat;
+  background: url("../media/post/ornament-corner.webp?v=20261128a") center / contain no-repeat;
   opacity: .5; transform: rotate(180deg);
 }
 .daily-card::after { opacity: .42; }
@@ -844,7 +844,7 @@ html[data-motion="reduced"] .scene__img, html[data-motion="reduced"] .gen__env, 
 .lt-card::after {
   content: ""; position: absolute; right: -14px; bottom: -20px;
   width: 76px; height: 80px; pointer-events: none;
-  background: url("../media/post/ornament-corner.png") center / contain no-repeat;
+  background: url("../media/post/ornament-corner.webp?v=20261128a") center / contain no-repeat;
   opacity: .34; transform: rotate(180deg);
 }
 

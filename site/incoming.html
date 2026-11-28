@@ -7,7 +7,7 @@
 <link rel="icon" href="data:,">
 <title>来自星际的来信 · 收信站｜DIMENSION ANCHOR</title>
 <meta name="description" content="收信站：今日星笺、未读与历史来信，来自你设定的角色。信件保存在你自己的档案里。" />
-<link rel="preload" as="image" href="assets/media/post/incoming-hall.jpg" />
+<link rel="preload" as="image" href="assets/media/post/incoming-hall.webp?v=20261128a" />
 <link rel="stylesheet" href="assets/css/post.css?v=20261108d" />
 <link rel="stylesheet" href="assets/css/ambient.css?v=20261108d" />
 <link rel="stylesheet" href="assets/css/typography.css?v=20261108e" />
@@ -15,9 +15,9 @@
 <body>
 
 <div class="scene" aria-hidden="true">
-  <img class="scene__img" src="assets/media/post/incoming-hall.jpg" alt="" />
-  <video class="scene__light" autoplay muted loop playsinline preload="auto"
-         poster="assets/media/post/incoming-hall.jpg" src="assets/media/post/incoming-hall.mp4"></video>
+  <img decoding="async" class="scene__img" src="assets/media/post/incoming-hall.webp?v=20261128a" alt="" />
+  <video class="scene__light" autoplay muted loop playsinline preload="none"
+         poster="assets/media/post/incoming-hall.webp?v=20261128a" data-src="assets/media/post/incoming-hall.mp4"></video>
   <div class="amb-dust" aria-hidden="true"></div>
   <div class="scene__veil"></div>
 </div>
@@ -98,11 +98,11 @@
   <div class="overlay__scrim" data-close></div>
   <div class="overlay__stage">
     <article class="paper" id="paper">
-      <img class="paper__corner paper__corner--tl" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
-      <img class="paper__corner paper__corner--tr" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
-      <img class="paper__corner paper__corner--bl" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
-      <img class="paper__corner paper__corner--br" src="assets/media/post/ornament-corner.png" alt="" aria-hidden="true" />
-      <img class="paper__flourish" src="assets/media/post/flourish.png" alt="" aria-hidden="true" />
+      <img decoding="async" class="paper__corner paper__corner--tl" src="assets/media/post/ornament-corner.webp?v=20261128a" alt="" aria-hidden="true" />
+      <img decoding="async" class="paper__corner paper__corner--tr" src="assets/media/post/ornament-corner.webp?v=20261128a" alt="" aria-hidden="true" />
+      <img decoding="async" class="paper__corner paper__corner--bl" src="assets/media/post/ornament-corner.webp?v=20261128a" alt="" aria-hidden="true" />
+      <img decoding="async" class="paper__corner paper__corner--br" src="assets/media/post/ornament-corner.webp?v=20261128a" alt="" aria-hidden="true" />
+      <img decoding="async" class="paper__flourish" src="assets/media/post/flourish.webp?v=20261128a" alt="" aria-hidden="true" />
       <p class="paper__kind" id="pKind"></p>
       <h2 class="paper__title" id="pTitle"></h2>
       <p class="paper__greet" id="pGreet"></p>
@@ -112,7 +112,7 @@
       <div class="deck" id="deck" hidden>
         <button class="deck__bar" id="deckBar" type="button" aria-expanded="false" aria-controls="deckBody">
           <span class="deck__hint" id="deckHint"></span>
-          <img class="deck__chev" src="assets/media/post/select-arrow.webp" alt="" aria-hidden="true">
+          <img decoding="async" class="deck__chev" src="assets/media/post/select-arrow.webp" alt="" aria-hidden="true">
         </button>
         <div class="deck__tray" id="deckBody" hidden>
           <div class="deck__row" id="deckRow"></div>
@@ -148,20 +148,21 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-<script src="assets/js/da-link.js"></script>
-<script src="assets/js/da-error-text.js"></script>
-<script src="assets/js/da-store.js"></script>
-<script src="assets/js/tarot-deck.js"></script>
-<script src="assets/js/tarot-deck-reversed.js"></script>
-<script src="assets/js/tarot-art.js"></script>
-<script src="assets/js/tarot-scenes.js"></script>
-<script src="assets/js/tarot-images.js"></script>
+<script src="assets/js/da-link.js?v=20261128a"></script>
+<script src="assets/js/da-error-text.js?v=20261128a"></script>
+<script src="assets/js/da-store.js?v=20261128a"></script>
+<script src="assets/js/tarot-deck.js?v=20261128a"></script>
+<script src="assets/js/tarot-deck-reversed.js?v=20261128a"></script>
+<script src="assets/js/tarot-art.js?v=20261128a"></script>
+<script src="assets/js/tarot-scenes.js?v=20261128a"></script>
+<script src="assets/js/tarot-images.js?v=20261128a"></script>
 <script src="assets/js/da-letter.js?v=20261128e"></script>
 <script src="assets/js/da-cloud-config.js?v=20261113b"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
-<script src="assets/js/da-auth.js"></script>
+<script src="assets/js/da-auth.js?v=20261128a"></script>
 <script src="assets/js/da-mail.js?v=20261128e"></script>
 <script src="assets/js/incoming.js?v=20261128e"></script>
-<script src="assets/js/motion-init.js"></script>
+<script src="assets/js/motion-init.js?v=20261128a"></script>
+<script src="assets/js/media-lazy.js?v=20261128b" defer></script>
 </body>
 </html>

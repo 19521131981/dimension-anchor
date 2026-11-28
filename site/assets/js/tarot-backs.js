@@ -1,7 +1,7 @@
 /* ══════════════════════════════════════════════════════════════════════
    DIMENSION ANCHOR · 五套牌背
    ----------------------------------------------------------------------
-   五个花色各有一张独立的 AI 生成牌背（assets/media/backs/*.jpg）。
+   五个花色各有一张独立的 AI 生成牌背（assets/media/backs/*.webp）。
    这里只做「花色 → 图片」的查表与几个渲染助手，不改动任何牌面数据。
    ══════════════════════════════════════════════════════════════════════ */
 (function (global) {
@@ -10,11 +10,11 @@
   var DIR = 'assets/media/backs/';
 
   var MAP = {
-    major:     DIR + 'major.jpg',
-    wands:     DIR + 'wands.jpg',
-    cups:      DIR + 'cups.jpg',
-    swords:    DIR + 'swords.jpg',
-    pentacles: DIR + 'pentacles.jpg'
+    major:     DIR + 'major.webp?v=20261128a',
+    wands:     DIR + 'wands.webp?v=20261128a',
+    cups:      DIR + 'cups.webp?v=20261128a',
+    swords:    DIR + 'swords.webp?v=20261128a',
+    pentacles: DIR + 'pentacles.webp?v=20261128a'
   };
 
   var CN = {
