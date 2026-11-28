@@ -215,7 +215,7 @@
     st.textContent = '';
     st.className = 'pm-gate__state';
     refreshUc();
-    setTimeout(function () { $('pmCode').focus(); }, 60);
+    setTimeout(function () { var i = $('ucSignIn'); if (i && !i.hidden) i.focus(); }, 80);
   }
   function closeGate() { if ($('pmGate')) $('pmGate').hidden = true; }
 
@@ -241,8 +241,9 @@
     U.payConfig().then(function (cfg) {
       if ($('ucWechat')) $('ucWechat').textContent = cfg.wechat || 'liangyefei12345678';
       if ($('ucQrBox')) {
-        $('ucQrBox').hidden = !cfg.qr;
-        if (cfg.qr) $('ucQr').src = cfg.qr;
+        var show = !!cfg.qr && U.signedIn();
+        $('ucQrBox').hidden = !show;
+        if (show) $('ucQr').src = cfg.qr;
       }
     });
     if (U.signedIn()) {
@@ -1593,10 +1594,15 @@
       if (!U) return;
       U.ensureCode().then(function (code) {
         paintUcCode(code);
+        refreshUc();
         toast('专属编码已生成：' + U.pretty(code));
       }).catch(function (e) { toast(U.message(e)); });
     });
     if ($('ucSync')) $('ucSync').addEventListener('click', syncUc);
+    document.addEventListener('da:authchange', function () {
+      var g = $('pmGate');
+      if (g && !g.hidden) refreshUc();
+    });
     if ($('pmGateX')) $('pmGateX').addEventListener('click', closeGate);
     if ($('pmGate')) $('pmGate').querySelectorAll('[data-pm-close]').forEach(function (el) {
       el.addEventListener('click', closeGate);

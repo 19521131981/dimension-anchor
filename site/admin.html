@@ -38,6 +38,18 @@
 
   <!-- 控制台 -->
   <div id="console" hidden>
+    <section class="pm-card" id="flowCard">
+      <h2>每天怎么发放</h2>
+      <ol style="margin:0 0 0 18px;padding:0;font-size:13.5px;line-height:1.95;color:#5A4673">
+        <li>用户在站内看到自己的专属编码 <b>DA-XXXXXX</b>，扫码付款时把备注写成「<b>DA-XXXXXX + 次数</b>」。</li>
+        <li>每天固定时间打开微信收款账单，把每条备注复制出来，<b>一行一条</b>粘进下面的「付款备注清单」。</li>
+        <li>点「统一发放」。提示里会写成功几条；编码不存在、格式不对的行会单独列出来，核对后再补发一次即可。</li>
+        <li>用户回到网站点「同步到账」，次数自动加进他的剩余次数。同一条发放记录只会到账一次，重复点击不会多给。</li>
+      </ol>
+      <p style="margin:12px 0 0;font-size:12.5px;line-height:1.8;color:#8A6FB0">
+        小提示：备注里除了编码和数字不要写别的内容，比如「DA-7K2M9Q 9次」最好；写成「9次 DA-7K2M9Q」也能识别，但一行里不要出现两个数字。
+      </p>
+    </section>
     <section class="pm-card" id="statsCard">
       <h2>运营概览</h2>
       <p>全站聚合数据，账号信息已脱敏。仅管理员可见，每次进入控制台时向服务端读取。</p>
@@ -107,7 +119,7 @@
       <p class="pm-msg" id="grantMsg"></p>
       <div class="pm-scroll" style="margin-top:12px">
         <table class="pm-table">
-          <thead><tr><th>编号</th><th>编码</th><th>次数</th><th>批次</th><th>到账</th><th>时间</th></tr></thead>
+          <thead><tr><th>编号</th><th>编码</th><th>次数</th><th>批次</th><th>到账</th><th>时间</th><th>付款备注原文</th></tr></thead>
           <tbody id="grantRows"></tbody>
         </table>
       </div>
@@ -115,12 +127,13 @@
 
     <section class="pm-card" id="payCard">
       <h2>收款二维码</h2>
-      <p>上传你自己的收款二维码，会显示在用户的补充次数弹窗里；不上传时只显示微信号。</p>
+      <p>已经内置你的收款码，用户端弹窗会直接显示。要换图就重新选一张，再点保存；不选文件直接保存不会覆盖原二维码。</p>
       <div class="pm-grid">
         <div><label for="payWechat">微信号</label><input id="payWechat" type="text" maxlength="40" value="liangyefei12345678"></div>
-        <div><label for="qrFile">二维码图片</label><input id="qrFile" type="file" accept="image/*"></div>
+        <div><label for="qrFile">更换二维码（选填）</label><input id="qrFile" type="file" accept="image/*"></div>
       </div>
-      <div id="qrPreview" style="margin:12px 0;min-height:20px"></div>
+      <p style="margin:14px 0 6px;font-size:12.5px;color:#8A6FB0">当前用户端看到的二维码</p>
+      <div id="qrPreview" style="margin:0 0 14px;min-height:20px"></div>
       <button class="pm-btn" type="button" id="payCfgBtn">保存收款配置</button>
       <p class="pm-msg" id="payCfgMsg"></p>
     </section>
@@ -134,6 +147,6 @@
 <script src="assets/js/da-auth.js?v=20261128g"></script>
 <script src="assets/js/da-premium.js?v=20261128f"></script>
 <script src="assets/js/da-usercode.js?v=20261128n"></script>
-<script src="assets/js/admin.js?v=20261128n"></script>
+<script src="assets/js/admin.js?v=20261128q"></script>
 </body>
 </html>

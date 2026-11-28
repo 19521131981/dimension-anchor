@@ -98,8 +98,9 @@
       $('grantRows').innerHTML = rows.length ? rows.map(function (g) {
         return '<tr><td>' + esc(g.id) + '</td><td><b>' + esc(g.code_mask) + '</b></td>' +
           '<td>' + esc(g.uses) + '</td><td>' + esc(g.batch || '—') + '</td>' +
-          '<td>' + esc(g.claimed) + '</td><td>' + fmt(g.created_at) + '</td></tr>';
-      }).join('') : '<tr><td colspan="6">还没有发放记录。</td></tr>';
+          '<td>' + esc(g.claimed) + '</td><td>' + fmt(g.created_at) + '</td>' +
+          '<td>' + esc(g.note || '—') + '</td></tr>';
+      }).join('') : '<tr><td colspan="7">还没有发放记录。</td></tr>';
     }).catch(function (e) { msg($('grantMsg'), U.message(e), 'err'); });
   }
 
@@ -112,9 +113,9 @@
       var tips = [];
       if (r.unknown && r.unknown.length) tips.push('未找到编码：' + r.unknown.join('、'));
       if (r.invalid && r.invalid.length) tips.push('格式不对：' + r.invalid.join('、'));
+      if (r.repeated && r.repeated.length) tips.push('请留意重复：' + r.repeated.join('；'));
       msg($('grantMsg'), '已发放 ' + r.granted + ' 条 / 共 ' + r.lines + ' 行。' + tips.join('；'), tips.length ? 'err' : 'ok');
-      if (r.granted > 0) $('grantLines').value = '';
-      loadGrants();
+      if (r.granted > 0) { $('grantLines').value = ''; loadGrants(); }
     }).catch(function (e) { msg($('grantMsg'), U.message(e), 'err'); })
       .then(function () { b.disabled = false; });
   }
@@ -142,14 +143,18 @@
     });
   }
 
+  var currentQr = '';
   function showQr(data) {
-    $('qrPreview').innerHTML = data ? '<img src="' + data + '" alt="收款二维码" style="width:120px;height:120px;object-fit:contain;background:#fff;border:1px solid #CBB08A;border-radius:8px">' : '';
+    $('qrPreview').innerHTML = data
+      ? '<img src="' + data + '" alt="收款二维码" style="width:152px;height:152px;object-fit:contain;background:#fff;border:1px solid #CBB08A;border-radius:8px">'
+      : '<span style="display:inline-block;padding:10px 12px;font-size:13px;color:#8A6FB0;border:1px dashed #CBB08A;border-radius:8px">当前没有配置二维码，用户端只显示微信号。</span>';
   }
   function loadPayCfg() {
     if (!U || !U.payConfig) return;
     U.payConfig().then(function (c) {
+      currentQr = c.qr || '';
       $('payWechat').value = c.wechat || 'liangyefei12345678';
-      showQr(c.qr || '');
+      showQr(currentQr);
     }).catch(function () {});
   }
   function savePayCfg() {
@@ -157,10 +162,14 @@
     var b = $('payCfgBtn'); b.disabled = true;
     msg($('payCfgMsg'), '正在保存…');
     readQr($('qrFile').files && $('qrFile').files[0]).then(function (qr) {
-      return U.adminSetPayConfig(qr, $('payWechat').value).then(function (r) {
+      var next = qr || currentQr;
+      if (!next) throw new Error('请选择一张二维码图片');
+      return U.adminSetPayConfig(next, $('payWechat').value).then(function (r) {
         if (!r || !r.ok) { msg($('payCfgMsg'), U.message({ code: (r && r.reason) || 'SERVER_ERROR' }), 'err'); return; }
+        currentQr = next;
+        showQr(next);
+        if ($('qrFile')) $('qrFile').value = '';
         msg($('payCfgMsg'), '已保存，用户端弹窗会显示这张二维码。', 'ok');
-        showQr(qr);
       });
     }).catch(function (e) {
       msg($('payCfgMsg'), e && e.message ? e.message : U.message(e), 'err');
