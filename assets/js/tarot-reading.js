@@ -29,7 +29,7 @@ window.DA_READING = (function () {
 
   /* 每章的导语（只描述这一章在讲什么，不预设结论） */
   var LEADS = {
-    analysis: '资深塔罗师顺着牌面，读你们的现状、张力与走向',
+    analysis: '顺着牌面与你们的故事，读现状、张力与走向',
     voice: '有些话没有说出口，但它确实存在',
     /* 旧版六章存档的兼容映射 */
     overview: '在不确定中寻找方向的星光',
@@ -139,7 +139,7 @@ window.DA_READING = (function () {
   /* ══════════════════════════════════════════════════════════════
      跨次元传讯引擎（第六章专用）
      输入：角色档案(DA_ARCHIVE) + 连接信息(link) + 本次牌的本意(cards)
-     输出：一段 TA 的第一人称回应，≥200 字，不复读用户原话、不照牌意背书。
+     输出：一段 TA 的第一人称回应，100–150 字，不复读用户原话、不照牌意背书。
      ══════════════════════════════════════════════════════════════ */
 
   function escText(s) { return T(s, '').replace(/[<>]/g, ''); }
@@ -505,10 +505,10 @@ window.DA_READING = (function () {
     ].filter(Boolean);
 
     var text = parts.join('');
-    // 字数兜底：循环补足，直到 scrub 后的净文本也稳定超过 200 字
+    // 字数兜底：循环补足，直到 scrub 后的净文本稳定落在 100–150 字（规格 20261128）
     var fillers = [].concat(lib.feel, lib.toward, personal).filter(Boolean);
     var guard = 0;
-    while (text.length < 240 && guard < 6) {
+    while (text.length < 130 && guard < 6) {
       var filler = AT(fillers, (seed >>> 10) + guard * 3, fillers[0] || '');
       if (filler && text.indexOf(filler) < 0) text = text.replace(closing, filler + closing);
       else text = text.replace(closing, '我把这些话翻来覆去想了很多遍，每一句都不是随便说说的。' + closing);
@@ -742,12 +742,8 @@ window.DA_READING = (function () {
     b1.push({ t: 'li2', k: '整体主题', v: themeLine });
     b1.push({ t: 'li2', k: '核心矛盾', v: tension.join(' ') + '这股张力就藏在这次翻开的牌里，值得你顺着往下读。' });
     b1.push({ t: 'ul', items: facts });
-    b1.push({
-      t: 'note',
-      x: '以上每一条都能在这 ' + m.n + ' 张牌的真实字段里对上：花色、正逆位、牌位、翻牌顺序。下面是逐张的展开。'
-    });
     /* ══════════════════════════════════════════════════════════
-       I · 关系分析（原五章合并为一章，以小节推进，塔罗师视角）
+       I · 关系分析（按牌阵模式逐张解读 + 关系小结）
        结构：整体 → 逐张的牌 → 牌与牌之间 → 你们之间 → 深层讯息
        ══════════════════════════════════════════════════════════ */
     var bA = b1;
@@ -871,7 +867,7 @@ window.DA_READING = (function () {
         });
       }
     }
-    b3.push({ t: 'note', x: '牌与牌之间彼此呼应，像几段话在互相接话——顺着这条线读下去，意思会自己浮出来。' });
+    b3.push({ t: 'note', x: '顺着这条线读下去，意思会自己浮出来。' });
     bA = bA.concat(b3);
 
     /* ── IV 关系脉络 ────────────────────────────────────── */
@@ -1001,7 +997,7 @@ window.DA_READING = (function () {
             语境，绝不原样出现在文案里（不写「你问的是…」「我们之间是…」）。
          2. 不照牌意背书——不逐张解释这张牌正位逆位说什么；牌只提供意象
             与情绪底色，文案里不出现牌名、牌位、方位词。
-         3. 每次 200 字以上——由多段结构 + 足量素材保证，不靠注水。
+         3. 100–150 字——具体、贴人，不靠注水凑长。
        ══════════════════════════════════════════════════════════ */
     var b6 = [];
     var persona = readPersona(L, hasSubject);

@@ -325,6 +325,7 @@ body.rd[data-step="board"] .rd__ambient {
   box-shadow: 0 0 0 3px rgba(215, 197, 164, .18);
 }
 .field__hint { margin-top: 7px; font-size: 11px; line-height: 1.7; color: var(--ink-3); opacity: .86; }
+.field__hint-lite { margin-top: 6px; font-size: 10px; letter-spacing: .04em; color: var(--ink-3); opacity: .5; }
 
 /* 单选卡片 */
 .rcs { display: grid; gap: 10px; }

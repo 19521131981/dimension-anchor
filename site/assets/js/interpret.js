@@ -32,17 +32,20 @@
     var raw = (s === undefined || s === null) ? '' : String(s);
     raw = raw.replace(/\bundefined\b/g, '').replace(/\bnull\b/g, '');
     /* 沉浸铁律：任何来源漏出的 AI/模型/程序字眼都在渲染前抹除——
-       用户看到的永远是「塔罗师」与「TA」。只处理中文语境，
-       不碰英文单词内部的字母（如 DAILY / AVAILABLE）。 */
+       既不出现「AI」，也不暗示「真人在线操作」（世界观：牌与你们的连接本身）。
+       只处理中文语境，不碰英文单词内部的字母（如 DAILY / AVAILABLE）。 */
     raw = raw
-      .replace(/作为\s*AI/g, '作为塔罗师')
-      .replace(/AI\s*(生成|解读|创作|提供|模型|助手|写作|写出)/g, '塔罗师$1')
-      .replace(/(生成|解读|创作|提供|写出|来自|由)\s*AI/g, '$1塔罗师')
-      .replace(/人工智能|大模型|语言模型|DeepSeek|deepseek/g, '塔罗师')
-      /* 独立 AI 只在中文语境（一侧是中文/标点）时替换，英文句子不误伤 */
-      .replace(/(^|[\u4e00-\u9fa5。！？，：；「」『』（）\s])\s*AI\s*([\u4e00-\u9fa5。！？，：；「」『』（）]|$)/g, '$1塔罗师$2')
-      .replace(/模型/g, '塔罗师');
-    return esc(raw).replace(/&lt;br&gt;/gi, '<br>').replace(/\n/g, '<br>');
+      .replace(/作为\s*AI/g, '')
+      .replace(/AI\s*(生成|解读|创作|提供|模型|助手|写作|写出)/g, '写成$1')
+      .replace(/(生成|解读|创作|提供|写出|来自|由)\s*AI/g, '$1')
+      .replace(/人工智能|大模型|语言模型|DeepSeek|deepseek/g, '')
+      /* 独立 AI 只在中文语境（一侧是中文/标点）时抹除，英文句子不误伤 */
+      .replace(/(^|[\u4e00-\u9fa5。！？，：；「」『』（）\s])\s*AI\s*([\u4e00-\u9fa5。！？，：；「」『』（）]|$)/g, '$1$2')
+      .replace(/模型/g, '');
+    return esc(raw)
+      .replace(/&lt;br&gt;/gi, '<br>').replace(/\n/g, '<br>')
+      /* 重点词强调：牌名/作品名自动金色加粗（用户要求重点突出） */
+      .replace(/《([^》]{1,14})》/g, '<b class="gold-em">《$1》</b>');
   }
   function clone(o) { return JSON.parse(JSON.stringify(o || null)); }
   function attr(s) { return String(s == null ? '' : s).replace(/["\\]/g, '\\$&'); }
@@ -560,13 +563,13 @@
       '<h3 class="m-title" id="mTitle">这份解读是怎么来的</h3>' +
       '<p class="m-sub">' +
         (state.source === 'ai'
-          ? '关系分析由塔罗师顺着你们的牌与故事深读，TA 的话按 TA 的性格与你们的连接接通；牌面始终来自这一次真实抽出的牌'
+          ? '关系分析顺着这次的牌与你们的故事写成，TA 的话按 TA 的性格与你们的连接接通；牌面始终来自这一次真实抽出的牌'
           : '关系分析由站内塔罗规则推演，TA 的话顺着 TA 的性格与你们的连接接通；牌面始终来自这一次真实抽出的牌') +
       '</p>' +
-      '<div class="m-pos"><b>解读通道：' + (ok ? '塔罗师深读' : '星轨推演') + '</b>' +
+      '<div class="m-pos"><b>解读通道：' + (ok ? '星语深读' : '星轨推演') + '</b>' +
         (ok ? '' : '<br>说明：' + esc(AI.state.lastError || '本地推演')) +
         '<br><b>TA 的传讯：' + (state.voiceEnhanced ? 'TA 的声音已清晰接通' : '已接通（登录可听得更清楚）') + '</b></div>' +
-      '<div class="m-sec"><h4>两种声音，两种口吻</h4><p>关系分析是塔罗师视角：以这次抽出的牌为依据，结合你填写的角色与故事，看你们之间的现状、张力与走向。TA 的话是跨次元传讯：以牌为通道，顺着你填写的角色性格、说话方式与这次的连接，让 TA 把心里的话说给你听。两段口吻不同，是因为它们本来就在做两件事——一段陪你看清，一段陪你靠近。</p></div>' +
+      '<div class="m-sec"><h4>两种声音，两种口吻</h4><p>关系分析是占卜视角：以这次抽出的牌为依据，结合你填写的角色与故事，看你们之间的现状、张力与走向。TA 的话是跨次元传讯：以牌为通道，顺着你填写的角色性格、说话方式与这次的连接，让 TA 把心里的话说给你听。两段口吻不同，是因为它们本来就在做两件事——一段陪你看清，一段陪你靠近。</p></div>' +
       '<div class="m-sec"><h4>解读所依据的内容（仅这些）</h4>' +
         '<div class="m-src">' + rows.map(function (r) {
           return '<div class="m-src__row"><em>' + esc(r.k) + '</em><span>' + esc(r.v) + '</span></div>';
@@ -724,13 +727,13 @@
   function deepenAI() {
     if (!window.DA_INTERPRET_AI) { toast('深化组件未能加载，请刷新页面。'); return; }
     if (!window.DA_INTERPRET_AI.signedIn()) {
-      toast('先点亮星际通行证，才能请塔罗师深读这次解读。');
+      toast('先点亮星际通行证，才能深读这次解读。');
       if (window.DA_AUTH && window.DA_AUTH.open) window.DA_AUTH.open();
       return;
     }
     var label = $('aiDeepenTxt'), btn = $('aiDeepenBtn');
     if (btn) btn.disabled = true;
-    if (label) label.textContent = '塔罗师正在深读…';
+    if (label) label.textContent = '正在深读…';
     var r = state.result || {};
     var L = state.link || {};
     var ctx = {
@@ -750,12 +753,12 @@
       }
       try { persistSession(); } catch (e) {}
       renderHero(); renderRows(); renderTail();
-      if (label) label.textContent = '塔罗师已深读';
+      if (label) label.textContent = '深读完成';
       toast('六章已深化，牌面保持原样。');
     }).catch(function (e) {
       var fresh = $('aiDeepenBtn'), fl = $('aiDeepenTxt');
       if (fresh) fresh.disabled = false;
-      if (fl) fl.textContent = '请塔罗师深读这次解读';
+      if (fl) fl.textContent = '让这次解读更入微';
       var code = e && e.message;
       var m = code === 'SIGN_IN_REQUIRED' ? '请先登录' :
         (code === 'TOO_SHORT' || code === 'VOICE_TOO_SHORT' || code === 'BAD_JSON' || code === 'NUMBER_MISMATCH' || code === 'SHAPE_MISMATCH' || code === 'BLOCK_MISMATCH' || code === 'CARD_NAME_LEAK' ? '这次结果不完整' :
@@ -1057,7 +1060,7 @@
     if (state.busy || state.displaySource === 'ai') return;
     if (state.archiveReadOnly) { setSrc('本地推演'); return; }
     state.busy = true;
-    setSrc('塔罗师正在为你解读', true);
+    setSrc('正在为你解读', true);
 
     AI.interpret(ctxOf()).then(function (j) {
       var n = mergeAI(j.chapters);
@@ -1067,7 +1070,7 @@
       state.displaySource = 'ai';
       state.source = 'ai';
       state.model = j.model || AI.state.model;
-      setSrc('塔罗师深读完成');
+      setSrc('深读完成');
 
       if (state.record) {
         state.record = ST.readings.patch(state.record.id, {
@@ -1081,7 +1084,7 @@
       renderHero();
       renderRows();
       renderTail();
-      toast('解读已由塔罗师重新读过。牌面、正逆位、牌位仍取自这一次真实抽出的牌。');
+      toast('解读已重新读过。牌面、正逆位、牌位仍取自这一次真实抽出的牌。');
       /* §7.1 三态日志：ai_normal / local_template / abnormal（不存用户原文） */
       try { console.log('[interpret] ai_normal · chapters=' + n + ' · model=' + (state.model || '')); } catch (e) {}
       S.complete();
@@ -1433,7 +1436,7 @@
 
     AI.probe().then(function (s) {
       /* 展示来源只由「原始 source + 内容完整性」决定，探活不得改写它 */
-      if (state.displaySource === 'ai') { setSrc('塔罗师深读完成'); return; }
+      if (state.displaySource === 'ai') { setSrc('深读完成'); return; }
       if (!s.ok || state.archiveReadOnly) { setSrc('本地推演'); return; }
       upgrade();
     });

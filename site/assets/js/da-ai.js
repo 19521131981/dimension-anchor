@@ -130,6 +130,7 @@ window.DA_AI = (function () {
       relationStage: link.relationStage || 'unspecified',
       background: link.background || '',
       mode: link.mode || 'known',
+      origin: link.origin || 'canon',
       profile: profile || '',
       spread: (o.session && o.session.spreadCn) || '',
       deck: (o.session && o.session.deckMode) || 78,

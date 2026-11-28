@@ -143,7 +143,6 @@
           '" data-k="' + s.k + '" data-t="' + s.t + '">' + s.t + '</button>';
       }).join('') +
       '</div>' +
-      '<p class="field__hint">只决定说话的分寸，不改变关系类型。不选就按「未说明」，绝不替你推断亲疏。</p>' +
       '</div>';
   }
   function bindStageChips(view, id, onChange) {
@@ -164,7 +163,7 @@
 
   function renderRitual() {
     setStep('ritual');
-    if (state.mode === 'heal') return renderHeal();
+    if (state.mode === 'heal-disabled') return renderHeal();
     renderRitualChoose();
   }
 
@@ -215,7 +214,7 @@
     $('#healNext').addEventListener('click', function () {
       var txt = $('#moodText').value.trim();
       saveLink({
-        mode: 'heal',
+        mode: 'dream',
         subjectName: '此刻的自己',
         relation: '自我',
         relationKey: 'self',
@@ -241,15 +240,21 @@
 
       '<div class="paths">',
       '<button class="path" type="button" data-path="known">',
-      '<span class="path__t">我已经知道想连接的对象</span>',
-      '<span class="path__d">填写角色名、作品、关系类型与这次连接的背景。' +
-        '也可以只写一句"最近在想一个很久没联系的人"。</span>',
+      '<span class="path__t">TA 是既定角色</span>',
+      '<span class="path__d">TA 来自某部作品或某段设定。填写角色名、作品来源、' +
+        '关系类型与这次连接的背景。</span>',
+      '<span class="path__go">走这条路 →</span>',
+      '</button>',
+      '<button class="path" type="button" data-path="oc">',
+      '<span class="path__t">TA 是我自创的 OC</span>',
+      '<span class="path__d">TA 由你自己创造。写下 TA 的名字、性格设定与你们的关系背景，' +
+        '解读会完全按这个设定来展开。</span>',
       '<span class="path__go">走这条路 →</span>',
       '</button>',
       '<button class="path" type="button" data-path="unknown">',
-      '<span class="path__t">我暂时不知道具体是谁</span>',
+      '<span class="path__t">还不确定是谁</span>',
       '<span class="path__d">先抽一张连接引导牌，它会给出一些特征。' +
-        '你来说像不像，我们一轮轮收窄，最后确认一个临时的轮廓。</span>',
+        '你来说像不像，一轮轮收窄，最后确认一个临时的轮廓。</span>',
       '<span class="path__go">开始探索 →</span>',
       '</button>',
       '</div>',
@@ -270,20 +275,36 @@
     Array.prototype.forEach.call(view.querySelectorAll('.path'), function (b) {
       b.addEventListener('click', function () {
         S.hover();
-        if (b.dataset.path === 'known') renderKnown();
+        if (b.dataset.path === 'known') renderKnown('canon');
+        else if (b.dataset.path === 'oc') renderKnown('oc');
         else renderGuide();
       });
     });
   }
 
-  /* ---- 已知对象 ---- */
-  function renderKnown() {
+  /* ---- 已知对象 / 自创 OC（origin: 'canon' | 'oc'）---- */
+  function renderKnown(origin) {
+    origin = origin === 'oc' ? 'oc' : 'canon';
+    var isOC = origin === 'oc';
+    var profiles = [];
+    try { profiles = (S.profiles.list() || []).slice(0, 8); } catch (e) {}
+    var picker = profiles.length ? (
+      '<div class="field">' +
+      '<span class="field__label">从我的角色档案中选择（可选）</span>' +
+      '<div class="chips" id="kProfile">' +
+      profiles.map(function (pr) {
+        return '<button type="button" class="chip" data-pid="' + (pr.id || '') + '">' +
+          (pr.name || '未命名档案') + '</button>';
+      }).join('') +
+      '</div>' +
+      '<p class="field__hint-lite">选过的角色会自动带出设定；也可以直接重新填写。</p>' +
+      '</div>') : '';
     view.innerHTML = [
       '<div class="pane">',
       '<div class="hd">',
-      '<p class="hd__kicker">Known Subject</p>',
-      '<h1 class="hd__title">你在想的那个人</h1>',
-      '<p class="hd__desc">除了关系类型，其他都可以留空。留空也是一种信息。</p>',
+      '<p class="hd__kicker">' + (isOC ? 'Original Character' : 'Known Subject') + '</p>',
+      '<h1 class="hd__title">' + (isOC ? '你的自创 OC' : '你在想的那个人') + '</h1>',
+      '<p class="hd__desc">' + (isOC ? 'TA 的设定以你写下的为准——占卜师会完全按这个设定来解读。' : '除了关系类型，其他都可以留空。留空也是一种信息。') + '</p>',
       '<div class="hd__rule"></div>',
       '</div>',
 
@@ -293,8 +314,8 @@
       '</div>',
 
       '<div class="field">',
-      '<label class="field__label" for="kWork">作品名称（选填）</label>',
-      '<input type="text" id="kWork" placeholder="来自哪本书、哪部剧、哪段真实生活">',
+      '<label class="field__label" for="kWork">' + (isOC ? 'TA 的世界（选填）' : '作品名称（选填）') + '</label>',
+      '<input type="text" id="kWork" placeholder="' + (isOC ? 'TA 活在哪个世界、什么时代？' : '来自哪本书、哪部剧、哪段真实生活') + '">',
       '</div>',
 
       '<div class="field">',
@@ -312,7 +333,6 @@
       '<div class="field">',
       '<label class="field__label" for="kCtx">本次连接的背景（选填）</label>',
       '<textarea id="kCtx" placeholder="最近发生了什么？你为什么想问这件事？一句话也行。"></textarea>',
-      '<p class="field__hint">这段会作为解读的情境前提，不会发送给任何外部服务。</p>',
       '</div>',
 
       '<div class="actions actions--split">',
@@ -342,6 +362,7 @@
       var name = $('#kName').value.trim();
       return {
         mode: 'known',
+        origin: origin,
         subjectName: name || '未命名的对象',
         workName: $('#kWork').value.trim(),
         relation: rel.t,
@@ -352,6 +373,29 @@
       };
     }
 
+    /* 从角色档案选择：一键带出设定（多角色连接——下次占卜直接选用） */
+    Array.prototype.forEach.call(view.querySelectorAll('#kProfile .chip'), function (chip) {
+      chip.addEventListener('click', function () {
+        var pr = null;
+        try { pr = S.profiles.get(chip.dataset.pid); } catch (e) {}
+        if (!pr) return;
+        var nameEl = $('#kName'), workEl = $('#kWork'), ctxEl = $('#kCtx');
+        if (nameEl && !nameEl.value.trim()) nameEl.value = pr.name || '';
+        if (workEl && !workEl.value.trim()) workEl.value = pr.work || '';
+        if (ctxEl && !ctxEl.value.trim()) {
+          var bits = [];
+          if (pr.role) bits.push('身份：' + pr.role);
+          if (pr.traits) bits.push('性格：' + pr.traits);
+          if (pr.speech) bits.push('说话方式：' + pr.speech);
+          if (pr.values) bits.push('在意：' + pr.values);
+          if (pr.history) bits.push('你们之间：' + pr.history);
+          if (pr.relation) bits.push('关系：' + pr.relation);
+          ctxEl.value = bits.length ? bits.join('；') : '';
+        }
+        S.hover();
+        toast(chip.textContent.trim() + ' 的设定已带入，可继续修改。');
+      });
+    });
     $('#kBack').addEventListener('click', function () { go('ritual'); });
     $('#kSkip').addEventListener('click', function () {
       saveLink({
@@ -713,7 +757,7 @@
     var L = state.link || {};
     var rel = L.relation || '暂不确定';
     var theme = L.mode === 'unknown' ? '未确认对象的探索' :
-      (L.mode === 'heal' ? '情绪疗愈' : '已知对象的连接');
+      (L.mode === 'heal-disabled' ? '情绪疗愈' : '已知对象的连接');
 
     view.innerHTML = [
       '<div class="pane">',
@@ -766,7 +810,7 @@
 
     $('#cBack').addEventListener('click', function () {
       if ((state.link || {}).mode === 'unknown') renderUnknownConfirm();
-      else if ((state.link || {}).mode === 'heal') renderHeal();
+      else if ((state.link || {}).mode === 'heal-disabled') renderHeal();
       else renderKnown();
     });
 
@@ -1693,7 +1737,7 @@
   (function boot() {
     var q = new URLSearchParams(location.search);
     var step = q.get('step') || 'ritual';
-    if (q.get('mode') === 'heal') state.mode = 'heal';
+    if (q.get('mode') === 'heal-disabled') state.mode = 'heal';
 
     /* ══ 实时传讯：跳过连接仪式与牌阵选择，直接洗牌抽一张 ══ */
     if (q.get('mode') === 'relay') {

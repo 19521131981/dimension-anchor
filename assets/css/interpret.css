@@ -527,28 +527,46 @@ body.it {
 .hero__lead::after { right: -14px; }
 
 .hero p {
-  font-size: 13px;
-  line-height: 2;
-  color: rgba(252, 248, 255, .86);
-  margin: 0 0 11px;
+  font-size: 15.5px;
+  line-height: 1.95;
+  color: rgba(252, 248, 255, .93);
+  margin: 0 0 12px;
   text-align: justify;
   text-shadow: 0 1px 6px rgba(24, 12, 44, .35);
 }
+.hero p .gold-em,
+.hero ul .gold-em, .hero .li2 .gold-em, .hero .quote .gold-em {
+  font-weight: 700;
+  font-style: normal;
+  color: #FFDF9E;
+  text-shadow: 0 0 10px rgba(255, 224, 158, .5);
+  padding: 0 1px;
+}
 .hero .h {
   font-family: var(--serif);
-  font-size: 13px; letter-spacing: .1em;
-  color: #FFF3DC;
-  margin: 16px 0 7px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 236, 200, .16);
+  font-size: 17px; letter-spacing: .12em;
+  color: #FFE9BC;
+  margin: 20px 0 10px;
+  padding: 12px 0 0 14px;
+  position: relative;
+  text-shadow: 0 0 14px rgba(255, 233, 188, .35);
 }
+.hero .h::before {
+  content: "";
+  position: absolute; left: 0; top: 12px; bottom: 2px;
+  width: 3px; border-radius: 2px;
+  background: linear-gradient(180deg, #FFE9BC, rgba(190, 156, 240, .5));
+  box-shadow: 0 0 8px rgba(255, 224, 158, .55);
+}
+.hero .h:first-child { margin-top: 0; padding-top: 0; }
+.hero .h:first-child::before { top: 0; }
 .hero .h:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
 .hero ul { margin: 0 0 11px; padding: 0; list-style: none; display: grid; gap: 6px; }
 .hero ul li {
   position: relative;
   padding-left: 14px;
-  font-size: 12px; line-height: 1.9;
-  color: rgba(247, 241, 251, .74);
+  font-size: 14px; line-height: 1.9;
+  color: rgba(247, 241, 251, .87);
 }
 .hero ul li::before {
   content: "";
@@ -1748,3 +1766,29 @@ html[data-motion="reduced"] .itbg__spark, html[data-motion="reduced"] .panel__st
   background: transparent; border-color: transparent; color: #8A6733;
 }
 .voice-boost:focus-visible { outline: 2px solid #B08A47; outline-offset: 3px; }
+
+/* ══ 排印升级（20261128）：重点突出与层次 ══ */
+.hero .li2 { display: flex; gap: 10px; margin: 0 0 10px; align-items: baseline; }
+.hero .li2 b {
+  flex: 0 0 auto; max-width: 9em;
+  font-family: var(--serif); font-size: 14px; letter-spacing: .06em;
+  color: #FFDF9E; text-shadow: 0 0 8px rgba(255, 223, 158, .45);
+  white-space: nowrap;
+}
+.hero .li2 span { font-size: 14px; line-height: 1.85; color: rgba(247,241,251,.87); }
+.hero .quote {
+  position: relative;
+  border-left: 2px solid rgba(255, 223, 158, .6);
+  padding: 4px 0 4px 12px;
+  color: rgba(255, 244, 224, .92) !important;
+}
+.hero .kv > div { padding: 8px 0; border-bottom: 1px solid rgba(255,236,200,.09); }
+.hero .kv em { color: #FFDF9E; font-style: normal; font-size: 13.5px; }
+.hero .kv span { font-size: 14px; color: rgba(247,241,251,.85); }
+.hero p.note {
+  font-size: 12.5px !important;
+  color: rgba(240, 232, 250, .55) !important;
+  font-style: normal;
+  opacity: .85;
+}
+.hero p b { color: #FFDF9E; font-weight: 700; }
