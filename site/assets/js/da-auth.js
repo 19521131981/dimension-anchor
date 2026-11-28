@@ -29,9 +29,29 @@ window.DA_AUTH = (function () {
   var subs = [], countdown = 0, cdTimer = null;
   var PENDING_KEY = 'DA2_PENDING_OTP';
 
+  /* SDK 没加载成功时补一次：本地文件优先，避免依赖外部 CDN */
+  var sdkRetry = false;
+  function loadSdk() {
+    if (window.WorkBuddyCloud || sdkRetry) return;
+    sdkRetry = true;
+    try {
+      var s = document.createElement('script');
+      s.src = 'assets/js/workbuddy-cloud-sdk.global.js?v=20261128f';
+      s.async = true;
+      document.head.appendChild(s);
+    } catch (e) {}
+  }
+
+  function noClientReason() {
+    if (!window.WorkBuddyCloud) return '云端组件还没加载完，刷新一次页面再试';
+    if (!cfg || !cfg.endpoint || !cfg.publishableKey) return '云服务地址没有就绪，刷新一次页面再试';
+    return '云端连接没建立起来，稍后再试';
+  }
+
   function client() {
     if (cloud) return cloud;
-    if (!window.WorkBuddyCloud || !cfg.endpoint || !cfg.publishableKey) return null;
+    if (!window.WorkBuddyCloud) { loadSdk(); return null; }
+    if (!cfg.endpoint || !cfg.publishableKey) return null;
     try {
       cloud = window.WorkBuddyCloud.createWorkBuddyCloud({
         endpoint: cfg.endpoint,
@@ -161,7 +181,7 @@ window.DA_AUTH = (function () {
   /* ── 发送验证码 ───────────────────────────────────────────── */
   function sendCode(mail) {
     var c = client();
-    if (!c) return Promise.reject(new Error('云服务未配置，暂时无法登录'));
+    if (!c) return Promise.reject(new Error(noClientReason()));
     if (inflight) return Promise.reject(new Error('正在发送，请稍候'));
     inflight = true;
     return c.auth.sendOtp({ email: mail }).then(function (r) {
@@ -179,7 +199,7 @@ window.DA_AUTH = (function () {
 
   function verifyCode(token) {
     var c = client();
-    if (!c) return Promise.reject(new Error('云服务未配置，暂时无法登录'));
+    if (!c) return Promise.reject(new Error(noClientReason()));
     var p = pending || loadPending();
     if (!p || p.channel !== 'email') return Promise.reject(new Error('请先获取验证码'));
     return finish(c, { email: p.email, verificationId: p.verificationId, isExistingUser: !!p.isExistingUser, token: token });
@@ -188,7 +208,7 @@ window.DA_AUTH = (function () {
   /* ── 手机号分支（复用同一 client / pending / session / notify）───── */
   function sendPhoneCode(tel) {
     var c = client();
-    if (!c) return Promise.reject(new Error('云服务未配置，暂时无法登录'));
+    if (!c) return Promise.reject(new Error(noClientReason()));
     if (inflight) return Promise.reject(new Error('正在发送，请稍候'));
     inflight = true;
     return c.auth.sendOtp({ phone: tel }).then(function (r) {
@@ -206,7 +226,7 @@ window.DA_AUTH = (function () {
 
   function verifyPhoneCode(token) {
     var c = client();
-    if (!c) return Promise.reject(new Error('云服务未配置，暂时无法登录'));
+    if (!c) return Promise.reject(new Error(noClientReason()));
     var p = pending || loadPending();
     if (!p || p.channel !== 'phone') return Promise.reject(new Error('请先获取验证码'));
     return finish(c, { phone: p.phone, verificationId: p.verificationId, isExistingUser: !!p.isExistingUser, token: token });
