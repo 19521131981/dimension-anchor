@@ -3,36 +3,37 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#171017" />
+<meta name="theme-color" content="#1a1210" />
 <link rel="icon" href="data:,">
 <title>我们的小屋 · DIMENSION ANCHOR</title>
-<meta name="description" content="我们的小屋：壁炉边收藏每一段时光——最近的信、未读的牵挂与时光印记。" />
+<meta name="description" content="我们的小屋：纪念日与特别日子的惊喜空间，壁炉、照片墙、关系足迹与悄悄话，收藏每一段美好瞬间。" />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="DIMENSION ANCHOR · 维度锚点" />
 <meta property="og:title" content="我们的小屋 · DIMENSION ANCHOR" />
-<meta property="og:description" content="壁炉边收藏每一段时光——最近的信、未读的牵挂与时光印记。" />
-<meta property="og:image" content="https://www.dimanchor.xyz/assets/media/observatory-desktop.webp?v=20261128a" />
+<meta property="og:description" content="纪念日与特别日子的惊喜空间，收藏每一段美好瞬间。" />
+<meta property="og:image" content="https://www.dimanchor.xyz/assets/media/cottage/cottage-golden-vase.webp?v=20261128i" />
 <meta property="og:image:alt" content="DIMENSION ANCHOR 我们的小屋" />
 <meta property="og:url" content="https://www.dimanchor.xyz/cottage.html" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="我们的小屋 · DIMENSION ANCHOR" />
-<meta name="twitter:description" content="壁炉边收藏每一段时光——最近的信、未读的牵挂与时光印记。" />
-<meta name="twitter:image" content="https://www.dimanchor.xyz/assets/media/observatory-desktop.webp?v=20261128a" />
-<link rel="preload" as="image" href="assets/media/cottage/cottage-scene.webp?v=20261128a" />
-<link rel="stylesheet" href="assets/css/post.css?v=20261128h" />
-<link rel="stylesheet" href="assets/css/cottage.css?v=20261128f" />
+<meta name="twitter:description" content="纪念日与特别日子的惊喜空间，收藏每一段美好瞬间。" />
+<meta name="twitter:image" content="https://www.dimanchor.xyz/assets/media/cottage/cottage-golden-vase.webp?v=20261128i" />
+<link rel="preload" as="image" href="assets/media/cottage/cottage-golden-vase.webp?v=20261128i" />
+<link rel="stylesheet" href="assets/css/post.css?v=20261128i" />
+<link rel="stylesheet" href="assets/css/cottage.css?v=20261128i" />
 <link rel="stylesheet" href="assets/css/typography.css?v=20261128f" />
+<link rel="stylesheet" href="assets/css/ambient.css?v=20261128f" />
 </head>
 <body class="ct">
 
 <div class="scene" aria-hidden="true">
-  <img decoding="async" class="scene__img" src="assets/media/cottage/cottage-scene.webp?v=20261128a" alt="" />
+  <img decoding="async" class="scene__img" src="assets/media/cottage/cottage-golden-vase.webp?v=20261128i" alt="" />
   <div class="scene__veil"></div>
-  <div class="hearth" aria-hidden="true">
-    <i class="hearth__glow"></i>
-    <i class="hearth__glow hearth__glow--far"></i>
-  </div>
+  <div class="amb-dust" aria-hidden="true"></div>
 </div>
+
+<!-- 实时飘落的话语 -->
+<div class="cot-falling" id="cotFalling" aria-hidden="true"></div>
 
 <header class="nav">
   <a class="brand" href="hall-motion.html" aria-label="返回星轨大厅">
@@ -51,45 +52,122 @@
   <span class="nav__mode" id="modeChip" hidden><i class="dot"></i><span id="modeText"></span></span>
 </header>
 
-<main class="hall">
-  <section class="hall-hero">
-    <div class="hall-hero__hd">
-      <p class="eyebrow">OUR COTTAGE</p>
-      <h1>我们的小屋</h1>
-      <p class="hall-hero__lede">壁炉刚刚点起。这里收藏每一段时光——最近的信、没拆开的牵挂，和你们一起走过的印记。</p>
+<main class="hall cot-hall">
+  <section class="cot-hero">
+    <p class="eyebrow">OUR LITTLE HOME</p>
+    <h1>我们的小屋</h1>
+    <p class="cot-hero__lede">这里留给值得记住的日子——你的、TA 的，还有只属于你们的那些瞬间。</p>
+
+    <div class="cot-next" id="nextDay" hidden></div>
+  </section>
+
+  <!-- 壁炉：ImageGen 暖色小屋图作底，拨炉火听悄悄话 -->
+  <section class="hearth-scene" aria-label="壁炉">
+    <div class="hearth-scene__veil"></div>
+    <div class="hearth-scene__inner">
+      <p class="hearth-scene__kicker">THE FIRE IS LIT</p>
+      <h2 class="hearth-scene__title">炉火一直亮着</h2>
+      <p class="hearth-scene__sub">坐一会儿吧，听一句话落下来。</p>
+      <button class="hearth-btn" id="hearthBtn" type="button" aria-label="拨一拨炉火，听一句话">
+        <span class="hearth-btn__ring"></span>
+        <span class="hearth-btn__ico">✦</span>
+        <span class="hearth-btn__txt">拨一拨炉火</span>
+      </button>
     </div>
+  </section>
 
-    <section class="shelf" aria-label="时光架">
-      <div class="shelf__hd">
+  <!-- 照片墙 -->
+  <section class="cot-sec">
+    <div class="cot-sec__hd">
+      <div>
+        <p class="cot-sec__no">I · PHOTO WALL</p>
+        <h2>照片墙</h2>
+        <p class="cot-sec__lede">把约的稿子、心动的一帧放进来。它们只留在这间小屋里。</p>
+      </div>
+      <button class="cot-btn" id="addPhoto" type="button"><i>＋</i> 添一张照片</button>
+    </div>
+    <div class="photo-wall" id="photoWall"></div>
+  </section>
+
+  <!-- 特殊日期 -->
+  <section class="cot-sec">
+    <div class="cot-sec__hd">
+      <div>
+        <p class="cot-sec__no">II · SPECIAL DAYS</p>
+        <h2>特别的日子</h2>
+        <p class="cot-sec__lede">生日、纪念日，都在这里等着。到了那天，小屋会亮起来。</p>
+      </div>
+      <button class="cot-btn" id="addDay" type="button"><i>＋</i> 记一个日子</button>
+    </div>
+    <div class="days-row" id="daysRow"></div>
+  </section>
+
+  <!-- 关系追踪：独立于档案 -->
+  <section class="cot-sec">
+    <div class="cot-sec__hd">
+      <div>
+        <p class="cot-sec__no">III · OUR FOOTSTEPS</p>
+        <h2>我们的足迹</h2>
+        <p class="cot-sec__lede">只属于这间小屋的记录，和塔罗档案分开存放，互不打扰。</p>
+      </div>
+      <button class="cot-btn" id="addRel" type="button"><i>＋</i> 记一件事</button>
+    </div>
+    <div class="rel-track" id="relTrack"></div>
+  </section>
+
+  <!-- 悄悄话 -->
+  <section class="cot-sec cot-sec--whisper">
+    <div class="cot-sec__hd">
+      <div>
+        <p class="cot-sec__no">IV · WHISPERS</p>
+        <h2>悄悄话</h2>
+        <p class="cot-sec__lede">炉火会不定时捎来一句话。你也可以写下自己的，让它一起飘着。</p>
+      </div>
+      <button class="cot-btn" id="writeLine" type="button"><i>✎</i> 写一句悄悄话</button>
+    </div>
+    <div class="whisper-note">✦ 话会轻轻落下来，点一下炉火就能听见一句。</div>
+  </section>
+
+  <!-- 时光架：信件入口（保留） -->
+  <section class="cot-sec">
+    <div class="cot-sec__hd">
+      <div>
+        <p class="cot-sec__no">V · LETTERS</p>
         <h2>时光架</h2>
-        <span>SHELF OF MOMENTS</span>
+        <p class="cot-sec__lede">最近的信、还没拆的牵挂和一路走来的印记。</p>
       </div>
-      <div class="shelf__row">
-        <button class="mem" type="button" id="memRecent" aria-label="最近的信"></button>
-        <button class="mem" type="button" id="memUnread" aria-label="未读的牵挂"></button>
-        <button class="mem" type="button" id="memStats" aria-label="时光印记"></button>
-      </div>
-      <div class="shelf__plank" aria-hidden="true"></div>
-    </section>
-
+    </div>
+    <div class="shelf__row">
+      <button class="mem" type="button" id="memRecent" aria-label="最近的信"></button>
+      <button class="mem" type="button" id="memUnread" aria-label="未读的牵挂"></button>
+      <button class="mem" type="button" id="memStats" aria-label="时光印记"></button>
+    </div>
+    <div class="shelf__plank" aria-hidden="true"></div>
     <div class="warmrow">
       <a class="wbtn" href="outgoing.html" id="cotWrite"><i></i>去写一封信</a>
       <a class="wbtn wbtn--quiet" href="incoming.html" id="cotRead"><i></i>去收信站</a>
     </div>
-
-    <p class="cot-foot">THE FIRE IS KEPT FOR YOU · DIMENSION ANCHOR</p>
   </section>
+
+  <p class="cot-foot">THE FIRE IS KEPT FOR YOU · DIMENSION ANCHOR</p>
 </main>
+
+<footer class="pt-foot">
+  <span aria-hidden="true">✦</span> 每一段回忆，都在这里有了归处。 <span aria-hidden="true">✦</span>
+  <nav class="da-legal" aria-label="法律与合规说明"><a href="privacy.html">隐私政策</a><a href="terms.html">用户协议</a><a href="minor.html">未成年人提示</a></nav>
+</footer>
+
+<div class="toast" id="cotToast" role="status" aria-live="polite" hidden></div>
 
 <script src="assets/js/da-link.js?v=20261128f"></script>
 <script src="assets/js/da-store.js?v=20261128f"></script>
-<script src="assets/js/da-letter.js?v=20261128f"></script>
+<script src="assets/js/da-cottage-data.js?v=20261128i"></script>
 <script src="assets/js/da-cloud-config.js?v=20261128f"></script>
 <script src="assets/js/da-error-text.js?v=20261128f"></script>
 <script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
 <script src="assets/js/da-auth.js?v=20261128g"></script>
 <script src="assets/js/da-mail.js?v=20261128f"></script>
-<script src="assets/js/da-cottage.js?v=20261128f"></script>
+<script src="assets/js/da-cottage.js?v=20261128i"></script>
 <script>DA_COTTAGE.init();</script>
 <script src="assets/js/motion-init.js?v=20261128f"></script>
 </body>
