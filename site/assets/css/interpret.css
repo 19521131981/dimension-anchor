@@ -1919,3 +1919,102 @@ html[data-motion="reduced"] .itbg__spark, html[data-motion="reduced"] .panel__st
   .verdict { padding: 18px 16px; }
   .verdict p { font-size: 13.5px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   解读卷轴 · 右侧解读面板改成纸本卷轴，点击展开
+   纸面是生图的宣纸纹理（scroll-paper.webp），上下各一根木轴；
+   收起时只露出一段纸与一句话，点击后向下展开，正文淡入。
+   ══════════════════════════════════════════════════════════════════════ */
+.panel--scroll {
+  position: relative;
+  overflow: hidden;
+  border: 0;
+  border-radius: 6px;
+  padding: 0;
+  max-height: 100%;
+  background: #F2E6CC url("../media/scroll/scroll-paper.webp?v=20261128a") center / 100% 100% no-repeat;
+  box-shadow:
+    0 0 0 1px rgba(201, 162, 104, .55),
+    inset 0 0 46px rgba(150, 112, 60, .16),
+    inset 0 2px 8px rgba(120, 88, 44, .18),
+    0 34px 80px -44px rgba(20, 10, 44, .72);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  transition: max-height .95s cubic-bezier(.22, .9, .2, 1);
+}
+.panel--scroll .panel__frame { display: none; }
+.panel--scroll .panel__star { display: none; }
+.panel--scroll::before, .panel--scroll::after { display: none; }
+
+/* 上下木轴 */
+.scroll__rod {
+  position: absolute; left: 0; right: 0; height: 20px; z-index: 6;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 244, 214, .5), rgba(255, 244, 214, 0) 46%),
+    linear-gradient(180deg, #5B4028 0%, #8A6338 26%, #3E2A18 68%, #6B4A2C 100%);
+  box-shadow: 0 3px 14px rgba(28, 16, 8, .5), inset 0 1px 0 rgba(255, 236, 196, .38);
+}
+.scroll__rod--t { top: 0; border-radius: 0 0 8px 8px; }
+.scroll__rod--b { bottom: 0; border-radius: 8px 8px 0 0; }
+.scroll__rod::before, .scroll__rod::after {
+  content: ""; position: absolute; top: 50%; width: 30px; height: 30px;
+  margin-top: -15px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #FBEBC6, #D3A96A 42%, #8C6330 74%, #5A3E1E 100%);
+  box-shadow: 0 4px 14px rgba(28, 16, 8, .48), inset 0 1px 2px rgba(255, 248, 224, .6);
+}
+.scroll__rod::before { left: -7px; }
+.scroll__rod::after { right: -7px; }
+
+/* 内容让开轴 */
+.panel--scroll .tabbar {
+  padding: 27px 16px 9px;
+  border-bottom: 1px solid rgba(201, 162, 104, .45);
+  background: linear-gradient(180deg, rgba(255, 252, 244, .34), transparent);
+}
+.panel--scroll .rbody { padding: 12px 20px 30px; }
+.panel--scroll .src { color: rgba(70, 44, 108, .78); }
+.panel--scroll .src__dot { background: #B98F4E; }
+
+/* 收起态 / 展开态 */
+.js .panel--scroll:not(.is-open) { max-height: 168px; }
+.panel--scroll .tabbar,
+.panel--scroll .rbody,
+.panel--scroll .verdict,
+.panel--scroll .tail { transition: opacity .42s ease .16s; }
+.js .panel--scroll:not(.is-open) .tabbar,
+.js .panel--scroll:not(.is-open) .rbody,
+.js .panel--scroll:not(.is-open) .verdict,
+.js .panel--scroll:not(.is-open) .tail { opacity: 0; pointer-events: none; }
+
+.scroll__hint {
+  position: absolute; inset: 20px 0; z-index: 7;
+  display: none; flex-direction: column; align-items: center; justify-content: center; gap: 9px;
+  border: 0; background: transparent; cursor: pointer;
+}
+.js .panel--scroll:not(.is-open) .scroll__hint { display: flex; }
+.panel--scroll.is-open .scroll__hint { display: none; }
+.scroll__hint-t {
+  font-family: var(--serif); font-size: 15px; letter-spacing: .2em; color: #4B2E6E;
+}
+.scroll__hint-d { font-size: 12px; letter-spacing: .14em; color: rgba(75, 46, 110, .66); }
+.scroll__hint-line {
+  width: 1px; height: 30px;
+  background: linear-gradient(180deg, transparent, rgba(160, 120, 64, .8));
+}
+.scroll__hint-line::after {
+  content: "✦"; display: block; margin: 2px 0 0 -4px; font-size: 8px; color: #B98F4E;
+}
+
+@keyframes scrollUnroll {
+  from { opacity: .4; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+.panel--scroll.is-open { animation: scrollUnroll .6s var(--ease, ease) both; }
+
+@media (max-width: 900px) {
+  .panel--scroll { min-height: 0; }
+  .panel--scroll .tabbar { padding: 25px 14px 8px; }
+  .panel--scroll .rbody { padding: 10px 16px 28px; }
+  .js .panel--scroll:not(.is-open) { max-height: 148px; }
+}

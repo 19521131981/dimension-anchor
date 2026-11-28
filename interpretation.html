@@ -19,11 +19,12 @@
 <meta name="twitter:description" content="六章解读：整体能量、单牌解析、牌间联系、关系脉络、深层讯息，以及 TA 跨次元传来的那一段话。">
 <meta name="twitter:image" content="https://www.dimanchor.xyz/assets/media/observatory-desktop.webp?v=20261128a">
 <link rel="stylesheet" href="assets/css/observatory.css?v=20261128g">
-<link rel="stylesheet" href="assets/css/interpret.css?v=20261128f">
+<link rel="stylesheet" href="assets/css/interpret.css?v=20261128t">
 <link rel="stylesheet" href="assets/css/cards.css?v=20261128f">
 <link rel="stylesheet" href="assets/css/ambient.css?v=20261128f">
 <link rel="stylesheet" href="assets/css/typography.css?v=20261128f">
 <link rel="stylesheet" href="assets/css/premium.css?v=20261128n">
+<script>document.documentElement.className += ' js';</script>
 </head>
 <body class="it">
 
@@ -130,10 +131,17 @@
       </div>
     </section>
 
-    <!-- ══ 右：AI 解读 ══ -->
-    <section class="panel panel--right" aria-label="解读内容">
+    <!-- ══ 右：AI 解读（纸本卷轴，点击展开）══ -->
+    <section class="panel panel--right panel--scroll" id="readPanel" aria-label="解读内容">
       <div class="panel__frame" aria-hidden="true"></div>
       <span class="panel__star" aria-hidden="true">✦</span>
+      <div class="scroll__rod scroll__rod--t" aria-hidden="true"></div>
+      <div class="scroll__rod scroll__rod--b" aria-hidden="true"></div>
+      <button class="scroll__hint" id="scrollHint" type="button">
+        <span class="scroll__hint-t">这一次的解读已经写好了</span>
+        <span class="scroll__hint-line" aria-hidden="true"></span>
+        <span class="scroll__hint-d">轻触展开卷轴</span>
+      </button>
 
       <div class="tabbar">
         <div class="tabs" id="tabs" role="tablist"></div>
@@ -280,7 +288,7 @@
 <script src="assets/js/da-usercode.js?v=20261128n"></script>
 <script src="assets/js/da-transmission.js?v=20261128f"></script>
 <script src="assets/js/da-interpret-ai.js?v=20261128f"></script>
-<script src="assets/js/interpret.js?v=20261128r"></script>
+<script src="assets/js/interpret.js?v=20261128t"></script>
 <script src="assets/js/da-sharecard.js?v=20261128f"></script>
 <script src="assets/js/motion-init.js?v=20261128f"></script>
 <div style="text-align:center;font-size:10px;letter-spacing:.08em;opacity:.45;padding:14px 0 18px;">仅供娱乐，不构成任何专业建议。</div>

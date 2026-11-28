@@ -1345,7 +1345,23 @@
   }
 
   /* ══ 启动 ══════════════════════════════════════════════════ */
+  /* ══ 卷轴：收起 → 点击展开 ═════════════════════════════════ */
+  function scrollInit() {
+    var panel = $('readPanel'), hint = $('scrollHint');
+    if (!panel || !hint) return;
+    var KEY = 'DA_SCROLL_SEEN', seen = false;
+    try { seen = sessionStorage.getItem(KEY) === '1'; } catch (e) {}
+    if (seen) panel.classList.add('is-open');
+    hint.addEventListener('click', function () {
+      panel.classList.add('is-open');
+      try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+      var rb = $('rbody');
+      if (rb) rb.scrollTop = 0;
+    });
+  }
+
   function boot() {
+    scrollInit();
     var legacyRaw = rawOf(ST.keys.v1Reading);
     var da2Raw = rawOf(ST.keys.readings);
     var legacy = legacyRaw.valid && usableRecord(legacyRaw.value) ? legacyRaw.value : null;
