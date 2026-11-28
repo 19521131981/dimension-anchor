@@ -22,7 +22,24 @@
       .trim();
   }
 
-  /* 从一段真实文字里切出适合飘落的短句（8–38 字） */
+  /* 占卜师口吻过滤：小纸条只留「两人说过的话」，不出现解说牌面的句子 */
+  var DIVINER = [
+    '你连接的对象', '连接的对象', '未命名的对象', '你心里想的', '你写下的背景', '你没有写背景',
+    '牌面', '牌阵', '牌位', '牌组', '这张牌', '那张牌', '正位', '逆位',
+    '塔罗', '占卜', '抽到', '象征物', '现实建议', '核心矛盾', '整体主题', '关键词',
+    '整体', '读出来', '顺着', '说明', '暗示', '建议', '解读', '结构', '能量',
+    ' reconnect', '连结', '接通', '信号源'
+  ];
+  function isDiviner(s) {
+    for (var i = 0; i < DIVINER.length; i++) {
+      if (s.indexOf(DIVINER[i]) >= 0) return true;
+    }
+    /* 第三人称称呼对方（「TA 觉得」「他觉得」）也是解说口吻，不是本人说话 */
+    if (/^(你连接|这次|这份|这段|牌|从|按|据|综合|整体)/.test(s)) return true;
+    return false;
+  }
+
+  /* 从一段真实文字里切出适合飘落的短句（6–38 字），顺手滤掉占卜师口吻 */
   function segments(text) {
     var s = clean(text);
     if (!s) return [];
@@ -33,9 +50,9 @@
       if (part.length > 40) {
         part.split(/[，,、]+/).forEach(function (q) {
           q = q.trim();
-          if (q.length >= 6 && q.length <= 38) out.push(q);
+          if (q.length >= 6 && q.length <= 38 && !isDiviner(q)) out.push(q);
         });
-      } else if (part.length >= 6 && part.length <= 38) {
+      } else if (part.length >= 6 && part.length <= 38 && !isDiviner(part)) {
         out.push(part);
       }
     });
@@ -62,16 +79,15 @@
       });
     } catch (e) {}
 
-    /* ② 占卜记录：TA 想对你说的话优先，其次解读正文与追问 */
+    /* ② 占卜记录：只取 TA 想对你说的话（quote6）与追问台词。
+          解读正文 / note / li2 是占卜师口吻（如「你连接的对象是xx」），
+          一律不进小屋的话语池。 */
     try {
       (S.readings.list() || []).forEach(function (r) {
         (r.chapters || []).forEach(function (ch) {
           (ch.blocks || []).forEach(function (b) {
             if (b.t === 'quote6' || b.t === 'quote') {
               segments(b.x).forEach(function (x) { pool.push({ text: x, kind: 'ta' }); });
-            } else if (b.t === 'p' || b.t === 'note' || b.t === 'li2') {
-              var raw = b.t === 'li2' ? (b.k + '：' + b.v) : b.x;
-              segments(raw).forEach(function (x) { pool.push({ text: x, kind: 'reading' }); });
             }
           });
         });
