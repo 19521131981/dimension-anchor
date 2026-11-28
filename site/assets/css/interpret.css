@@ -1792,3 +1792,82 @@ html[data-motion="reduced"] .itbg__spark, html[data-motion="reduced"] .panel__st
   opacity: .85;
 }
 .hero p b { color: #FFDF9E; font-weight: 700; }
+
+/* ══ 水晶按钮材质化 + 动效（20261128）═════════════════════════════
+   四个操作按钮与牌组信息条统一改用站内水晶材质图（btn-gem-pill / primary），
+   与首屏按钮同一生图逻辑；入场渐显上浮 + hover 光泽扫过。 */
+.lp-acts .act {
+  position: relative;
+  overflow: hidden;
+  height: 44px;
+  padding: 0 16px;
+  font-size: 12px; letter-spacing: .12em;
+  color: #FFF8E8;
+  border: 1px solid rgba(255, 236, 200, .55);
+  background-image: url("../media/btn-gem-pill.jpg");
+  background-size: cover; background-position: center;
+  box-shadow:
+    0 12px 26px -14px rgba(30, 16, 60, .8),
+    inset 0 1px 0 rgba(255, 250, 236, .55),
+    inset 0 -8px 18px rgba(96, 66, 160, .4);
+  text-shadow: 0 1px 4px rgba(28, 14, 54, .8);
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+  animation: actIn .7s var(--ease) both;
+}
+.lp-acts .act:nth-child(2) { animation-delay: .08s; }
+.lp-acts .act:nth-child(3) { animation-delay: .16s; }
+.lp-acts .act:nth-child(4) { animation-delay: .24s; }
+@keyframes actIn {
+  from { opacity: 0; transform: translateY(10px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.lp-acts .act::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 30%, rgba(255, 250, 238, .34) 46%, rgba(255, 250, 238, .1) 54%, transparent 68%);
+  transform: translateX(-120%);
+  transition: transform .8s var(--ease);
+  pointer-events: none;
+}
+.lp-acts .act:hover::after,
+.lp-acts .act:focus-visible::after { transform: translateX(120%); }
+.lp-acts .act:hover,
+.lp-acts .act:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(255, 240, 214, .85);
+  box-shadow:
+    0 18px 32px -16px rgba(30, 16, 60, .9),
+    0 0 18px rgba(255, 224, 158, .28),
+    inset 0 1px 0 rgba(255, 250, 236, .6);
+}
+.lp-acts .act:active { transform: translateY(0) scale(.98); }
+
+/* 牌组 / 正逆位信息条：同套水晶材质 */
+.hero .stats, .stats {
+  position: relative;
+  border: 1px solid rgba(255, 236, 200, .5) !important;
+  background-image: url("../media/btn-gem-pill.jpg") !important;
+  background-size: cover; background-position: center;
+  border-radius: 10px;
+  padding: 9px 6px !important;
+  box-shadow:
+    0 10px 24px -16px rgba(30, 16, 60, .8),
+    inset 0 1px 0 rgba(255, 250, 236, .4);
+  overflow: hidden;
+  animation: actIn .7s var(--ease) .1s both;
+}
+.stats::before {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(24, 14, 46, .52), rgba(38, 24, 70, .58));
+  backdrop-filter: blur(2px);
+}
+.stats > * { position: relative; z-index: 1; }
+.stats .stat {
+  color: rgba(255, 246, 230, .92) !important;
+  border-right-color: rgba(255, 236, 200, .3) !important;
+  text-shadow: 0 1px 5px rgba(24, 12, 44, .8);
+}
+.stats .stat b { color: #FFF8E8 !important; }
+.stats .stat em { color: #BFE6C9 !important; }
+.stats .stat i { color: #E8B9C9 !important; }

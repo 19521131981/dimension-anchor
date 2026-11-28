@@ -1428,7 +1428,7 @@
       var st = $('#ssteps');
       if (st) st.innerHTML = stepsHTML('flip');
       bar.innerHTML = '<span>' + (state.mode === 'relay'
-          ? '翻开这张牌 · 它是今晚信号的源头' : '逐张点击翻开 · 也可以一次揭示剩余') + '</span>' +
+          ? '翻开这张牌 · 它是今晚信号的源头' : '点击卡牌翻开') + '</span>' +
         '<span class="statusbar__pill" id="flipCount">已翻 0 / ' + state.session.cards.length + '</span>';
       $('#drawActions').innerHTML =
         '<button class="btn btn--ghost" id="revealRest" style="display:none">揭示剩余星轨</button>' +
