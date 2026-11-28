@@ -291,7 +291,17 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   top: calc(var(--uh) * 22.21);
   width: 13.4%;
   height: calc(var(--uh) * 17.85);
+  /* 「一键试抽」背后的背景板：ImageGen 水晶星轨生图，薄罩保文字可读 */
+  border-radius: 1.1cqw;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(18, 11, 32, .30), rgba(18, 11, 32, .18) 42%, rgba(18, 11, 32, .42)),
+    url("../media/btn-gem-daily.webp?v=20261128f") center / cover no-repeat;
+  border: 1px solid rgba(228, 208, 255, .34);
+  box-shadow: 0 1.4cqw 3.4cqw rgba(6, 3, 14, .5), inset 0 1px 0 rgba(255, 250, 240, .14);
 }
+.card--theme .lived,
+.card--theme .theme-go { z-index: 2; }
 .lived {
   position: absolute;
   margin: 0;
@@ -906,12 +916,12 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
     gap: 3vw;
     padding: 5vw 6vw;
     border-radius: 3vw;
-    border: 1px solid rgba(240, 222, 190, .22);
+    border: 1px solid rgba(228, 208, 255, .36);
+    /* 手机端同样用 ImageGen 水晶星轨生图做背景板 */
     background:
-      radial-gradient(90% 70% at 50% 0%, rgba(238, 222, 244, .16), transparent 72%),
-      linear-gradient(170deg, rgba(56, 45, 84, .84), rgba(32, 26, 52, .9));
-    backdrop-filter: blur(10px);
-    box-shadow: inset 0 1px 0 rgba(255, 250, 240, .12);
+      linear-gradient(180deg, rgba(18, 11, 32, .28), rgba(18, 11, 32, .16) 42%, rgba(18, 11, 32, .44)),
+      url("../media/btn-gem-daily.webp?v=20261128f") center / cover no-repeat;
+    box-shadow: 0 10px 28px rgba(6, 3, 14, .45), inset 0 1px 0 rgba(255, 250, 240, .14);
     animation: none;
   }
   .tagline {
