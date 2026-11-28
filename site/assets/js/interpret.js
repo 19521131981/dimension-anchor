@@ -79,6 +79,8 @@
     /* 深度探索：只以云数据库返回的状态为准，不在本地存储付费标记 */
     premium: { tier: 'free', active: false, valid_until: null },
     voiceEnhanced: false,
+    /* 这次抽牌还没扣到次数（余额不足），解锁后需要重新加载 */
+    needQuota: false,
     transmission: '',
     askChapter: '',
     feedback: ''
@@ -268,6 +270,7 @@
         st.className = 'pm-gate__state is-ok';
         st.textContent = '到账 ' + r.added + ' 次，现在共剩 ' + s.left + ' 次';
         refreshPremium();
+        if (state.needQuota) { setTimeout(function () { location.reload(); }, 900); return; }
         setTimeout(closeGate, 1800);
       } else {
         st.className = 'pm-gate__state';
@@ -294,6 +297,8 @@
       S.flip();
       $('pmCode').value = '';
       refreshPremium();
+      /* 这次连接还差 1 次时，兑换成功直接把解读打开 */
+      if (state.needQuota) { setTimeout(function () { location.reload(); }, 900); return; }
       setTimeout(closeGate, 1900);
     } else {
       st.className = 'pm-gate__state is-err';
@@ -1436,6 +1441,22 @@
     }
     if (!rec || !rec.cards || !rec.cards.length) { showEmpty(); bindGlobal(); return; }
 
+    /* ══ 每一次抽牌解读消耗 1 次 ═══════════════════════════════════
+       同一条记录只扣一次（写 charged 标记），刷新或继续查看不会重复扣；
+       只对「刚抽完 30 分钟内第一次打开」的记录计费，翻旧档案不扣。 */
+    var ACC = window.DA_ACCESS;
+    var created = rec.at || rec.createdAt || 0;
+    var justDrawn = !!(legacy && legacy.id === rec.id) && created &&
+      (Date.now() - created < 30 * 60 * 1000);
+    if (ACC && typeof ACC.canUse === 'function' && !rec.charged && justDrawn) {
+      if (!ACC.canUse()) { showNeedQuota(); bindGlobal(); return; }
+      ACC.consume();
+      if (typeof ACC.settle === 'function') ACC.settle();
+      try { ST.readings.patch(rec.id, { charged: true }); } catch (e) {}
+      rec = ST.readings.get(rec.id) || rec;
+      refreshPremium();
+    }
+
     var complete = chaptersComplete(rec);
     var aiFlag = rec.source === 'ai';
     if (aiFlag && !complete) {
@@ -1545,6 +1566,17 @@
     $('split').hidden = true;
   }
 
+  /* 次数不足：牌已经抽好、记录也存了，只是余额不够这一次 */
+  function showNeedQuota() {
+    state.needQuota = true;
+    $('empty').hidden = true;
+    $('split').hidden = true;
+    var box = $('needQuota');
+    if (box) box.hidden = false;
+    refreshPremium();
+    setTimeout(function () { try { openGate(); } catch (e) {} }, 220);
+  }
+
   function bindGlobal() {
     ['pointerdown', 'keydown'].forEach(function (ev) {
       window.addEventListener(ev, function once() {
@@ -1626,6 +1658,9 @@
       el.addEventListener('click', closeGate);
     });
     if ($('pmRedeem')) $('pmRedeem').addEventListener('click', doRedeem);
+    if ($('needQuotaGet')) $('needQuotaGet').addEventListener('click', function () {
+      try { openGate(); } catch (e) {}
+    });
     if ($('pmCode')) $('pmCode').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); doRedeem(); }
     });
